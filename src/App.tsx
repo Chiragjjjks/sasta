@@ -2,7 +2,7 @@ import { App as CapApp } from '@capacitor/app'
 import { Capacitor } from '@capacitor/core'
 import { ChevronDown, PackageSearch } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { adapters, IS_SAMPLE_DATA, LIVE_PLATFORMS } from '@/adapters'
+import { adapters, IS_NATIVE, IS_SAMPLE_DATA, LIVE_PLATFORMS } from '@/adapters'
 import { AccountsSheet } from '@/components/AccountsSheet'
 import { BestValueCard } from '@/components/BestValueCard'
 import { CartBar } from '@/components/CartBar'
@@ -18,7 +18,7 @@ import { Segmented } from '@/components/Segmented'
 import { VariantChips } from '@/components/VariantChips'
 import { ACCOUNT_CONFIG, connectWeb, disconnectWeb, loadAccounts, recheckWebSessions, saveAccounts, type Account } from '@/lib/accounts'
 import { connectSwiggy, disconnectSwiggy } from '@/lib/swiggy'
-import { fetchBlinkitBill } from '@/adapters/blinkit'
+import { fetchBlinkitBill, openBlinkitWithCart } from '@/adapters/blinkit'
 import { blinkitRuleFromBill, type FeeRules } from '@/lib/fees'
 import { addItem, addItems, extraOverCheapest, fromGroup, pin, pinAll, refreshCart, setQty, summarize, type CartItem } from '@/lib/cart'
 import {
@@ -323,6 +323,15 @@ export default function App() {
         onRefresh={refreshPrices}
         onClear={() => { setCart([]); setCartOpen(false) }}
         fees={fees}
+        canCheckout={(p) => IS_NATIVE && p === 'blinkit'}
+        onCheckout={async (p) => {
+          if (p !== 'blinkit') return
+          const lines = summarize(cart).lines.flatMap((l) => (l.offer?.platform === 'blinkit' && l.offer.meta?.cartItem
+            ? [{ cartItem: l.offer.meta.cartItem as Record<string, unknown>, qty: l.item.qty }] : []))
+          await openBlinkitWithCart(lines, location)
+          // Coming back from checkout may change sign-in state.
+          setAccounts(await recheckWebSessions(accounts).catch(() => accounts))
+        }}
         onPinMap={(pins) => setCart((c) => c.map((i) => ({ ...i, pinned: pins[i.key] })))}
       />
       <SaveToListSheet group={saveTarget} lists={lists} onClose={() => setSaveTarget(null)} onToggle={toggleSaved} onCreate={createAndMaybeSave} />

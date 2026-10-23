@@ -131,6 +131,18 @@ public class SignInActivity extends AppCompatActivity {
             finishWith(Activity.RESULT_OK, "redirect", u);
             return true;
         }
+        // Payment and app links (upi:, intent:, tel:, …) open the matching app instead of failing in the WebView.
+        if (u != null && !u.startsWith("http://") && !u.startsWith("https://") && !u.startsWith("about:") && !u.startsWith("data:") && !u.startsWith("blob:")) {
+            try {
+                Intent i = u.startsWith("intent:") ? Intent.parseUri(u, Intent.URI_INTENT_SCHEME) : new Intent(Intent.ACTION_VIEW, android.net.Uri.parse(u));
+                i.addCategory(Intent.CATEGORY_BROWSABLE);
+                i.setComponent(null);
+                startActivity(i);
+            } catch (Exception e) {
+                android.widget.Toast.makeText(this, "No app found to open this", android.widget.Toast.LENGTH_SHORT).show();
+            }
+            return true;
+        }
         return false;
     }
 

@@ -138,3 +138,39 @@ export async function fetchBlinkitBill(cartItems: unknown[], loc: Location): Pro
   if (!res.ok) throw new Error(res.error || 'Blinkit pricing failed')
   return res.value
 }
+
+export interface HandoffLine { cartItem: Record<string, unknown>; qty: number }
+
+/**
+ * Script that puts Sasta's Blinkit items into blinkit.com's own cart (kept in its localStorage)
+ * and sets the delivery location, so the site opens on a ready cart and the user checks out
+ * there with their own account, coupons and payment. Existing Blinkit cart items are kept.
+ */
+export function handoffScript(lines: HandoffLine[], loc: Location): string {
+  const items = Object.fromEntries(lines.map(({ cartItem: c, qty }) => [String(c.product_id), {
+    product: { product_id: c.product_id, price: c.price, image_url: c.image_url, name: c.display_name || c.product_name, unit: c.unit, mrp: c.mrp, group_id: c.group_id },
+    quantity: qty,
+  }]))
+  return `
+    const add = ${JSON.stringify(items)};
+    const cart = (() => { try { return JSON.parse(localStorage.getItem('cart') || '{}') } catch { return {} } })();
+    cart.items = Object.assign({}, cart.items || {}, add);
+    const all = Object.values(cart.items);
+    cart.count = all.reduce((s, i) => s + (i.quantity || 0), 0);
+    cart.total = all.reduce((s, i) => s + (i.quantity || 0) * ((i.product && i.product.price) || 0), 0);
+    cart.uniqueSkuInCart = all.length;
+    cart.version = cart.version || 1;
+    localStorage.setItem('cart', JSON.stringify(cart));
+    const location = (() => { try { return JSON.parse(localStorage.getItem('location') || '{}') } catch { return {} } })();
+    location.coords = Object.assign({}, location.coords || {}, { isDefault: false, lat: ${loc.lat}, lon: ${loc.lng}, locality: ${JSON.stringify(loc.label)} });
+    localStorage.setItem('location', JSON.stringify(location));
+    return { count: cart.count, total: cart.total };
+  `
+}
+
+export async function openBlinkitWithCart(lines: HandoffLine[], loc: Location): Promise<void> {
+  if (!loc.lat || !loc.lng) throw new Error('Set your location with "current location" first.')
+  const res = await PlatformSession.pageRun({ origin: BLINKIT_ORIGIN, script: handoffScript(lines, loc), timeoutMs: 12000 })
+  if (!res.ok) throw new Error(res.error || 'Could not prepare the Blinkit cart')
+  await PlatformSession.signIn({ url: `${BLINKIT_ORIGIN}/`, title: 'Blinkit · check out' })
+}

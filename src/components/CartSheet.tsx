@@ -1,4 +1,5 @@
 import { ArrowUpRight, Minus, Plus, RefreshCw, Trash2 } from 'lucide-react'
+import { useState } from 'react'
 import { chosenOffer, singleAppOptions, summarize, type CartItem } from '@/lib/cart'
 import { billsFor, cheapestAfterFees, grandTotal, type FeeRules } from '@/lib/fees'
 import { PLATFORM } from '@/lib/platforms'
@@ -20,6 +21,8 @@ interface Props {
   onClear: () => void
   fees: FeeRules
   onPinMap: (pins: Record<string, Platform>) => void
+  onCheckout?: (platform: Platform) => Promise<void>
+  canCheckout: (platform: Platform) => boolean
 }
 
 function ago(ts: number): string {
@@ -27,7 +30,9 @@ function ago(ts: number): string {
   return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : `${Math.round(m / 60)} h ago`
 }
 
-export function CartSheet({ open, items, refreshing, onClose, onQty, onPin, onPinAll, onRefresh, onClear, fees, onPinMap }: Props) {
+export function CartSheet({ open, items, refreshing, onClose, onQty, onPin, onPinAll, onRefresh, onClear, fees, onPinMap, onCheckout, canCheckout }: Props) {
+  const [checkingOut, setCheckingOut] = useState<Platform | null>(null)
+  const [checkoutError, setCheckoutError] = useState('')
   const summary = summarize(items)
   const cheapest = summarize(items.map((i) => ({ ...i, pinned: undefined })))
   const options = singleAppOptions(items)
@@ -115,6 +120,19 @@ export function CartSheet({ open, items, refreshing, onClose, onQty, onPin, onPi
                   <span className="flex-1 text-[13.5px] font-bold">{PLATFORM[platform].name}</span>
                   <span className="tabular text-[13px] font-semibold">{rupee(billFor(platform)?.total ?? lines.reduce((s, l) => s + l.lineTotal, 0))}</span>
                 </header>
+                {onCheckout && canCheckout(platform) && (
+                  <div className="border-b border-line px-4 py-2">
+                    <button
+                      disabled={checkingOut === platform}
+                      onClick={async () => { setCheckingOut(platform); setCheckoutError(''); try { await onCheckout(platform) } catch (e) { setCheckoutError((e as Error).message) } finally { setCheckingOut(null) } }}
+                      className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-ink py-2.5 text-[13px] font-semibold text-bg disabled:opacity-60"
+                    >
+                      {checkingOut === platform ? 'Opening…' : `Open in ${PLATFORM[platform].name} with these items`} <ArrowUpRight className="size-3.5" />
+                    </button>
+                    {checkoutError && <p className="mt-1 text-center text-[11.5px] text-accent">{checkoutError}</p>}
+                    <p className="mt-1 text-center text-[11px] text-faint">Check out there with your account, coupons and payment.</p>
+                  </div>
+                )}
                 {billFor(platform)?.known && (
                   <div className="border-b border-line px-4 py-1.5 text-[11.5px] text-muted">
                     Items {rupee(billFor(platform)!.itemsTotal)}

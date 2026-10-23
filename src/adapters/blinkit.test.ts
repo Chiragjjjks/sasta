@@ -33,3 +33,16 @@ describe('Blinkit adapter', () => {
     expect(s).toContain("'lat': \"12.99\"")
   })
 })
+
+describe('Blinkit cart hand-off', () => {
+  it('writes items into blinkit.com storage without dropping what is already there', async () => {
+    const { handoffScript } = await import('./blinkit')
+    const store: Record<string, string> = { cart: JSON.stringify({ count: 1, items: { '1': { product: { price: 10 }, quantity: 1 } }, version: 1 }) }
+    const localStorage = { getItem: (k: string) => store[k] ?? null, setItem: (k: string, v: string) => { store[k] = v } }
+    const script = handoffScript([{ cartItem: { product_id: 432779, price: 39, mrp: 48, unit: '80 g', group_id: 2593130, display_name: 'Magic Masala' }, qty: 2 }], { pincode: '560010', label: 'Rajajinagar', lat: 12.99, lng: 77.55 })
+    const result = await new Function('localStorage', `return (async () => {${script}})()`)(localStorage)
+    expect(result).toEqual({ count: 3, total: 88 })
+    expect(Object.keys(JSON.parse(store.cart).items)).toEqual(['1', '432779'])
+    expect(JSON.parse(store.location).coords).toMatchObject({ lat: 12.99, lon: 77.55, locality: 'Rajajinagar', isDefault: false })
+  })
+})
