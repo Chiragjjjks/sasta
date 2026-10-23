@@ -129,7 +129,7 @@ Do not write any live adapter before its spike note exists.
 | Platform | Verdict | Notes |
 |---|---|---|
 | Blinkit | B | Live in the app via a hidden WebView on blinkit.com. Search works logged out; signed-in sessions are used automatically |
-| Zepto | ? | |
+| Zepto | B | Search works by capturing the page's own signed request. Location setting still open |
 | Instamart | ? | |
 | BigBasket | ? | |
 | Flipkart Minutes | ? | |
