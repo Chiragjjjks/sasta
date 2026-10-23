@@ -8,6 +8,8 @@ const config: CapacitorConfig = {
   plugins: {
     // Native HTTP so live adapters (Phase 2) bypass browser CORS.
     CapacitorHttp: { enabled: true },
+    // Shares the WebView cookie store with native HTTP, so platform sign-in sessions reach adapters.
+    CapacitorCookies: { enabled: true },
     SystemBars: { insetsHandling: 'css' },
   },
 }
