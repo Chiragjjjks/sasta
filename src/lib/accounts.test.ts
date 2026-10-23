@@ -8,6 +8,11 @@ describe('accounts', () => {
     expect(ACCOUNT_CONFIG.instamart.method).toBe('mcp')
     expect(ACCOUNT_CONFIG.blinkit.method).toBe('web')
   })
+  it('knows the session cookies for Blinkit and Zepto', () => {
+    expect(judgeWebSignIn(ACCOUNT_CONFIG.blinkit, ['gr_1_deviceId', 'gr_1_accessToken'])).toEqual({ status: 'connected', verified: true })
+    expect(judgeWebSignIn(ACCOUNT_CONFIG.zepto, ['session_id']).status).toBe('disconnected')
+    expect(judgeWebSignIn(ACCOUNT_CONFIG.zepto, ['session_id', 'user_id']).status).toBe('connected')
+  })
   it('marks a cookie sign-in unverified until session cookie names are known', () => {
     expect(judgeWebSignIn({ ...ACCOUNT_CONFIG.blinkit, sessionCookies: [] }, ['x'])).toEqual({ status: 'connected', verified: false })
   })

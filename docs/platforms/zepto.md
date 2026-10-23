@@ -16,3 +16,12 @@
 **Fixture:** `fixtures/zepto/lays.json`
 
 ## Notes
+
+## Logged in
+
+| Item | Finding |
+|---|---|
+| Session cookie | `user_id`. Not `session_id`, which anonymous visits also get |
+| Bot protection | Aggressive. Third-party tools drive a real Chrome rather than raw HTTP |
+
+Source (third-party): [quick-commerce-mcp auth notes](https://github.com/Hardik500/quick-commerce-mcp/blob/main/AUTHENTICATION.md).

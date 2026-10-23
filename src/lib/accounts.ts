@@ -17,7 +17,10 @@ export interface AccountConfig {
   loginUrl: string
   /** Every origin whose cookies belong to this session, for sign-in checks and disconnect. */
   origins: string[]
-  /** Cookie names that prove a signed-in session. Empty until the Phase 1 spike records them. */
+  /**
+   * Cookie names that prove a signed-in session. Empty means unknown, so sign-in is trusted but unverified.
+   * Sources: docs/platforms/<platform>.md ("Logged in").
+   */
   sessionCookies: string[]
   note?: string
   mcpUrl?: string
@@ -32,12 +35,13 @@ export const ACCOUNT_CONFIG: Record<Platform, AccountConfig> = {
   },
   blinkit: {
     platform: 'blinkit', method: 'web', account: 'Blinkit',
-    loginUrl: 'https://blinkit.com/', origins: ['https://blinkit.com'], sessionCookies: [],
+    loginUrl: 'https://blinkit.com/', origins: ['https://blinkit.com'], sessionCookies: ['gr_1_accessToken'],
     note: 'Separate from Zomato. Tap Login on the Blinkit page.',
   },
   zepto: {
     platform: 'zepto', method: 'web', account: 'Zepto',
-    loginUrl: 'https://www.zeptonow.com/', origins: ['https://www.zeptonow.com', 'https://zeptonow.com'], sessionCookies: [],
+    // Not session_id: anonymous visits get one too.
+    loginUrl: 'https://www.zeptonow.com/', origins: ['https://www.zeptonow.com', 'https://zeptonow.com'], sessionCookies: ['user_id'],
   },
   bigbasket: {
     platform: 'bigbasket', method: 'web', account: 'BigBasket',
@@ -97,6 +101,22 @@ export async function connectWeb(platform: Platform): Promise<Account> {
   const { names } = await PlatformSession.cookieNames({ urls: cfg.origins })
   const judged = judgeWebSignIn(cfg, names)
   return { platform, ...judged, connectedAt: judged.status === 'connected' ? Date.now() : undefined }
+}
+
+/**
+ * Re-checks cookie sessions on this phone. A verified sign-in whose session cookie is gone becomes "expired".
+ * Unverifiable sign-ins and MCP connections are left as they are.
+ */
+export async function recheckWebSessions(accounts: Partial<Record<Platform, Account>>): Promise<Partial<Record<Platform, Account>>> {
+  const next = { ...accounts }
+  for (const cfg of Object.values(ACCOUNT_CONFIG)) {
+    const acc = next[cfg.platform]
+    if (cfg.method !== 'web' || !cfg.sessionCookies.length || !acc || acc.status === 'disconnected') continue
+    const { names } = await PlatformSession.cookieNames({ urls: cfg.origins })
+    const judged = judgeWebSignIn(cfg, names)
+    next[cfg.platform] = judged.status === 'connected' ? { ...acc, ...judged } : { ...acc, status: 'expired', verified: false }
+  }
+  return next
 }
 
 export async function disconnectWeb(platform: Platform): Promise<Account> {

@@ -14,7 +14,7 @@ import { ProductCard, ProductCardSkeleton } from '@/components/ProductCard'
 import { SearchHeader } from '@/components/SearchHeader'
 import { Segmented } from '@/components/Segmented'
 import { VariantChips } from '@/components/VariantChips'
-import { ACCOUNT_CONFIG, connectWeb, disconnectWeb, loadAccounts, saveAccounts, type Account } from '@/lib/accounts'
+import { ACCOUNT_CONFIG, connectWeb, disconnectWeb, loadAccounts, recheckWebSessions, saveAccounts, type Account } from '@/lib/accounts'
 import { connectSwiggy, disconnectSwiggy } from '@/lib/swiggy'
 import { addItem, extraOverCheapest, fromGroup, pin, pinAll, refreshCart, setQty, summarize, type CartItem } from '@/lib/cart'
 import { groupOffers, variantFromQuery } from '@/lib/normalize'
@@ -52,7 +52,12 @@ export default function App() {
     loadLocation().then(setLocation)
     loadRecents().then(setRecents)
     loadCart().then((c) => { setCart(c); cartLoaded.current = true })
-    loadAccounts().then(setAccounts)
+    loadAccounts().then(async (a) => {
+      setAccounts(a)
+      const checked = await recheckWebSessions(a).catch(() => a)
+      setAccounts(checked)
+      saveAccounts(checked)
+    })
   }, [])
 
   useEffect(() => { if (cartLoaded.current) saveCart(cart) }, [cart])

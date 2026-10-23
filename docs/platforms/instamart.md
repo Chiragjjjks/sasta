@@ -16,3 +16,12 @@
 **Fixture:** `fixtures/instamart/lays.json`
 
 ## Notes
+
+## Logged in
+
+| Item | Finding |
+|---|---|
+| Preferred route | Swiggy's official MCP server `https://mcp.swiggy.com/instamart` (OAuth, see docs/LOGIN_PLAN.md) |
+| Web session cookie (fallback route) | `_session_tid` on swiggy.com |
+
+Source (third-party): [quick-commerce-mcp auth notes](https://github.com/Hardik500/quick-commerce-mcp/blob/main/AUTHENTICATION.md).
