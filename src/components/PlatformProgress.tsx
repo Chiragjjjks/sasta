@@ -1,4 +1,4 @@
-import { Check, Loader2, Lock, TriangleAlert } from 'lucide-react'
+import { Check, Clock, Loader2, Lock, TriangleAlert } from 'lucide-react'
 import { PLATFORM, PLATFORMS } from '@/lib/platforms'
 import type { AdapterStatus, Platform } from '@/lib/types'
 
@@ -8,6 +8,7 @@ const LABEL: Record<AdapterStatus['state'], (s: AdapterStatus) => string> = {
   failed: () => 'Failed',
   timeout: () => 'Timed out',
   needs_login: () => 'Needs login · skipped',
+  unavailable: () => 'Not live yet',
 }
 
 /** Per-platform rows shown while a search is in flight. */
@@ -25,6 +26,7 @@ export function PlatformProgress({ statuses }: { statuses: Partial<Record<Platfo
             {s.state === 'done' && <Check className="size-4 text-good" />}
             {(s.state === 'failed' || s.state === 'timeout') && <TriangleAlert className="size-4 text-accent" />}
             {s.state === 'needs_login' && <Lock className="size-4 text-faint" />}
+            {s.state === 'unavailable' && <Clock className="size-4 text-faint" />}
           </li>
         )
       })}

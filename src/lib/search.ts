@@ -1,5 +1,5 @@
 import type { Adapter, AdapterStatus, Location, Offer, Platform } from './types'
-import { NeedsLoginError } from './types'
+import { NeedsLoginError, NotLiveError } from './types'
 
 export const ADAPTER_TIMEOUT_MS = 6000
 const CACHE_TTL_MS = 10 * 60 * 1000
@@ -56,6 +56,10 @@ export async function runSearch(
         } catch (err) {
           if (signal.aborted) return
           const e = err as Error
+          if (err instanceof NotLiveError) {
+            cb.onStatus({ platform, state: 'unavailable', count: 0 })
+            return
+          }
           if (err instanceof NeedsLoginError) {
             cb.onStatus({ platform, state: 'needs_login', count: 0 })
             return

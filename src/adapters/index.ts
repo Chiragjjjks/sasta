@@ -1,10 +1,31 @@
-import type { Adapter } from '@/lib/types'
+import { Capacitor } from '@capacitor/core'
+import { PLATFORMS } from '@/lib/platforms'
+import { NotLiveError, type Adapter, type Platform } from '@/lib/types'
+import { createBlinkitAdapter } from './blinkit'
 import { mockAdapters } from './mock'
 
 /**
- * The adapter list the app searches. Phase 2 swaps each mock for a live adapter
- * (e.g. `createBlinkitAdapter()`) once docs/platforms/<platform>.md has a verdict of A or B.
+ * In the Android app, only live adapters return prices; platforms without one say "Not live yet"
+ * rather than mixing generated prices with real ones. The browser preview has no live access,
+ * so it uses sample data for every platform.
  */
-export const adapters: Adapter[] = mockAdapters
+const LIVE: Partial<Record<Platform, () => Adapter>> = {
+  blinkit: createBlinkitAdapter,
+}
 
-export const IS_SAMPLE_DATA = true
+function notLive(platform: Platform): Adapter {
+  return {
+    platform,
+    async setLocation() {},
+    async search() { throw new NotLiveError(platform) },
+  }
+}
+
+export const IS_NATIVE = Capacitor.isNativePlatform()
+
+export const adapters: Adapter[] = IS_NATIVE
+  ? PLATFORMS.map((p) => LIVE[p.id]?.() ?? notLive(p.id))
+  : mockAdapters
+
+export const LIVE_PLATFORMS = IS_NATIVE ? (Object.keys(LIVE) as Platform[]) : []
+export const IS_SAMPLE_DATA = !IS_NATIVE

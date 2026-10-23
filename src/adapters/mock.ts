@@ -78,6 +78,7 @@ export function mockOffers(platform: Platform, query: string, loc: Location): Of
       etaMinutes: 6 + ((seed >>> 11) % 12),
       deepLink: PLATFORM[platform].searchUrl(item.titles.base),
       fetchedAt: Date.now(),
+      sample: true,
     })
   }
   return out

@@ -19,6 +19,9 @@ export const BRANDS: BrandRule[] = [
   { brand: 'Maggi', aliases: ['maggi', 'nestle maggi'] },
   { brand: 'Kurkure', aliases: ['kurkure'] },
   { brand: 'Amul', aliases: ['amul'] },
+  { brand: 'Pringles', aliases: ['pringles'] },
+  { brand: 'Bingo', aliases: ['bingo'] },
+  { brand: 'Bikano', aliases: ['bikano'] },
 ]
 
 /** Hand-made synonym map. Order matters: longer, more specific aliases first. */
@@ -27,7 +30,9 @@ export const VARIANTS: VariantRule[] = [
   { brand: "Lay's", key: 'magic-masala', label: "India's Magic Masala", aliases: ["india's magic masala", 'indias magic masala', 'india s magic masala', 'magic masala', 'masala'] },
   { brand: "Lay's", key: 'cream-onion', label: 'American Style Cream & Onion', aliases: ['american style cream and onion', 'american cream and onion', 'cream and onion', 'sour cream and onion', 'sour cream onion', 'cream onion', 'onion'] },
   { brand: "Lay's", key: 'tomato-tango', label: 'Spanish Tomato Tango', aliases: ['spanish tomato tango', 'tomato tango', 'tomato'] },
-  { brand: "Lay's", key: 'chile-limon', label: 'Chile Limón', aliases: ['chile limon', 'chile limón', 'chilli limon', 'chili limon', 'chile lemon', 'chilli lemon', 'chile', 'chilli', 'limon'] },
+  { brand: "Lay's", key: 'chile-limon', label: 'Chile Limón', aliases: ['chile limon', 'chile limón', 'chilli limon', 'chili limon', 'chile lemon', 'chilli lemon', 'limon'] },
+  { brand: "Lay's", key: 'hot-sweet-chilli', label: 'West Indies Hot n Sweet Chilli', aliases: ['west indies hot n sweet chilli', 'hot n sweet chilli', 'hot and sweet chilli', 'west indies'] },
+  { brand: "Lay's", key: 'sizzling-hot', label: 'Sizzling Hot', aliases: ['sizzling hot'] },
   { brand: 'Maggi', key: 'masala-noodles', label: '2-Minute Masala Noodles', aliases: ['2 minute masala noodles', '2-minute masala', 'masala noodles', 'masala'] },
   { brand: 'Maggi', key: 'atta-noodles', label: 'Atta Noodles', aliases: ['atta noodles', 'atta'] },
 ]

@@ -45,7 +45,7 @@ export function LocationSheet({ open, value, onClose, onSave }: { open: boolean;
       {error && <p className="mt-2 text-center text-[12px] text-accent">{error}</p>}
       <div className="mt-4 space-y-2.5">
         <input className={field} placeholder="Area, e.g. Rajajinagar" value={label} onChange={(e) => setLabel(e.target.value)} />
-        <input className={field} placeholder="Pincode" inputMode="numeric" maxLength={6} value={pincode} onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))} />
+        <input className={field} placeholder="Pincode" inputMode="numeric" maxLength={6} value={pincode} onChange={(e) => { setPincode(e.target.value.replace(/\D/g, '')); setCoords({}) }} />
       </div>
       <button
         disabled={!valid}

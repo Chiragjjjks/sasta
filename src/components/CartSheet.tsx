@@ -146,6 +146,9 @@ export function CartSheet({ open, items, refreshing, onClose, onQty, onPin, onPi
               <div className="mt-1 text-[12.5px] font-semibold text-good">This is the cheapest cart across all apps</div>
             )}
             <p className="mt-2 text-[11.5px] text-faint">Delivery fees, handling charges and minimum order values are not included yet.</p>
+            {items.some((i) => i.offers.some((o) => o.sample)) && (
+              <p className="mt-1 text-[11.5px] text-accent">Some prices here are sample data from the preview. Tap Refresh prices.</p>
+            )}
           </div>
 
           <button onClick={onClear} className="mx-auto mt-3 block py-2 text-[12.5px] font-semibold text-muted">Clear cart</button>

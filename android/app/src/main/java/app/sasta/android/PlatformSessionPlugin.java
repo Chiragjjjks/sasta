@@ -38,6 +38,41 @@ import org.json.JSONException;
 public class PlatformSessionPlugin extends Plugin {
 
     private static final String KEY_ALIAS = "sasta_session_key";
+    private PageRunner runner;
+
+    @Override
+    public void load() {
+        runner = new PageRunner(getContext());
+    }
+
+    /**
+     * Runs a script inside the platform's own page (hidden WebView) and returns its JSON result.
+     * Used by live adapters so requests look like real Chrome and carry the signed-in session.
+     */
+    @PluginMethod
+    public void pageRun(PluginCall call) {
+        String origin = call.getString("origin");
+        String script = call.getString("script");
+        if (origin == null || script == null) {
+            call.reject("origin and script are required");
+            return;
+        }
+        long timeout = call.getLong("timeoutMs", 15000L);
+        runner.run(origin, script, timeout, json -> {
+            try {
+                call.resolve(new JSObject(json));
+            } catch (JSONException e) {
+                call.reject("Bad result from page");
+            }
+        });
+    }
+
+    @PluginMethod
+    public void pageReset(PluginCall call) {
+        String origin = call.getString("origin");
+        if (origin != null) runner.reset(origin);
+        call.resolve();
+    }
     private static final String PREFS = "sasta_secure";
 
     @PluginMethod
@@ -107,6 +142,7 @@ public class PlatformSessionPlugin extends Plugin {
                     }
                 }
                 WebStorage.getInstance().deleteOrigin(uri.getScheme() + "://" + host);
+                runner.reset(uri.getScheme() + "://" + host);
             }
         } catch (JSONException e) {
             call.reject("urls must be an array of strings");

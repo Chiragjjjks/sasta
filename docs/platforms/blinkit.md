@@ -1,6 +1,6 @@
 # blinkit
 
-**Verdict:** ? (A = direct HTTP, B = needs WebView, X = login or blocked)
+**Verdict:** B (needs WebView). Search verified live on 2026-10-24 from real Chrome at Rajajinagar (12.9915, 77.5544): 19 products, logged out. Implemented in `src/adapters/blinkit.ts`.
 
 | Item | Finding |
 |---|---|

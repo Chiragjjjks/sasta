@@ -14,6 +14,9 @@ export interface PlatformSessionPlugin {
   secureSet(opts: { key: string; value: string }): Promise<void>
   secureGet(opts: { key: string }): Promise<{ value: string | null }>
   secureRemove(opts: { key: string }): Promise<void>
+  /** Runs the body of an async JS function inside the platform's own page (hidden WebView). */
+  pageRun(opts: { origin: string; script: string; timeoutMs?: number }): Promise<{ ok: boolean; value?: unknown; error?: string }>
+  pageReset(opts: { origin: string }): Promise<void>
 }
 
 /**
@@ -31,6 +34,8 @@ const web: PlatformSessionPlugin = {
   async secureSet({ key, value }) { localStorage.setItem(`sasta.secure.${key}`, value) },
   async secureGet({ key }) { return { value: localStorage.getItem(`sasta.secure.${key}`) } },
   async secureRemove({ key }) { localStorage.removeItem(`sasta.secure.${key}`) },
+  async pageRun() { return { ok: false, error: 'Live search only works in the Android app.' } },
+  async pageReset() {},
 }
 
 export const PlatformSession: PlatformSessionPlugin = Capacitor.isNativePlatform()

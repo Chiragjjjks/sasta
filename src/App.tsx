@@ -2,7 +2,7 @@ import { App as CapApp } from '@capacitor/app'
 import { Capacitor } from '@capacitor/core'
 import { ChevronDown, PackageSearch } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { adapters, IS_SAMPLE_DATA } from '@/adapters'
+import { adapters, IS_SAMPLE_DATA, LIVE_PLATFORMS } from '@/adapters'
 import { AccountsSheet } from '@/components/AccountsSheet'
 import { BestValueCard } from '@/components/BestValueCard'
 import { CartBar } from '@/components/CartBar'
@@ -226,13 +226,11 @@ export default function App() {
           </>
         )}
 
-        {IS_SAMPLE_DATA && (
-          <p className="pt-4 text-center text-[11.5px] leading-relaxed text-faint">
-            Preview build · sample prices, not live
-            <br />
-            Live search runs on your phone, with no server
-          </p>
-        )}
+        <p className="pt-4 text-center text-[11.5px] leading-relaxed text-faint">
+          {IS_SAMPLE_DATA ? 'Browser preview · sample prices, not live' : `Live prices: ${LIVE_PLATFORMS.map((p) => PLATFORMS.find((x) => x.id === p)!.name).join(', ')} · more apps coming`}
+          <br />
+          Search runs on your phone, with no server
+        </p>
       </main>
 
       <CompareSheet

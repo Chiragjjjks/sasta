@@ -27,6 +27,8 @@ export interface Offer {
   imageUrl?: string
   deepLink: string
   fetchedAt: number
+  /** True for generated preview data, never shown as a real price without saying so. */
+  sample?: boolean
 }
 
 /** One card in the UI: the same pack, compared across platforms. */
@@ -41,7 +43,7 @@ export interface ProductGroup {
   pricePer100g?: number
 }
 
-export type AdapterState = 'searching' | 'done' | 'failed' | 'needs_login' | 'timeout'
+export type AdapterState = 'searching' | 'done' | 'failed' | 'needs_login' | 'timeout' | 'unavailable'
 
 export interface AdapterStatus {
   platform: Platform
@@ -55,6 +57,14 @@ export class NeedsLoginError extends Error {
   constructor(platform: Platform) {
     super(`${platform} needs login`)
     this.name = 'NeedsLoginError'
+  }
+}
+
+/** Thrown by platforms that have no live search yet. */
+export class NotLiveError extends Error {
+  constructor(platform: Platform) {
+    super(`${platform} is not live yet`)
+    this.name = 'NotLiveError'
   }
 }
 
