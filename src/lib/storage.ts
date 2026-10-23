@@ -29,3 +29,7 @@ export function pushRecent(recents: string[], q: string): string[] {
   const clean = q.trim().toLowerCase()
   return [clean, ...recents.filter((r) => r !== clean)].slice(0, 8)
 }
+
+const CART = 'sasta.cart'
+export const loadCart = () => get<import('./cart').CartItem[]>(CART, [])
+export const saveCart = (c: import('./cart').CartItem[]) => set(CART, c)

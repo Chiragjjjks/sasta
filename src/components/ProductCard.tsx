@@ -1,19 +1,25 @@
+import { Check, Plus } from 'lucide-react'
 import { inStockCount } from '@/lib/normalize'
 import { PLATFORM } from '@/lib/platforms'
 import type { ProductGroup } from '@/lib/types'
 import { cn, formatSize, rupee } from '@/lib/utils'
 import { PackIcon } from './PackIcon'
 
-export function ProductCard({ group, total, onOpen, index }: { group: ProductGroup; total: number; onOpen: () => void; index: number }) {
+export function ProductCard({ group, total, onOpen, index, inCart, onAdd }: {
+  group: ProductGroup; total: number; onOpen: () => void; index: number; inCart: number; onAdd: () => void
+}) {
   const { best } = group
   const inStock = group.offers.filter((o) => o.inStock)
   const pills = inStock.slice(0, 4)
   const more = inStock.length - pills.length
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onOpen}
+      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onOpen()}
       style={{ animationDelay: `${Math.min(index, 8) * 35}ms` }}
-      className="rise flex w-full items-center gap-3.5 rounded-card bg-surface p-4 text-left shadow-[0_1px_2px_rgba(20,21,42,.05)] active:scale-[.99]"
+      className="rise flex w-full cursor-pointer items-center gap-3.5 rounded-card bg-surface p-4 text-left shadow-[0_1px_2px_rgba(20,21,42,.05)] active:scale-[.99]"
     >
       <PackIcon variantKey={group.variantKey} imageUrl={best.imageUrl} />
       <div className="min-w-0 flex-1">
@@ -40,8 +46,20 @@ export function ProductCard({ group, total, onOpen, index }: { group: ProductGro
           <span className="font-semibold text-ink">{PLATFORM[best.platform].short}</span>
           {best.etaMinutes ? ` · ${best.etaMinutes}m` : ''}
         </div>
+        {best.inStock && (
+          <button
+            aria-label={inCart ? `Add another, ${inCart} in cart` : 'Add to cart'}
+            onClick={(e) => { e.stopPropagation(); onAdd() }}
+            className={cn(
+              'mt-2 ml-auto flex h-8 items-center justify-center gap-1 rounded-full px-2.5 text-[12px] font-bold transition-colors active:scale-95',
+              inCart ? 'bg-good-bg text-good' : 'bg-ink text-bg',
+            )}
+          >
+            {inCart ? <><Check className="size-3.5" />{inCart}</> : <><Plus className="size-3.5" />Add</>}
+          </button>
+        )}
       </div>
-    </button>
+    </div>
   )
 }
 

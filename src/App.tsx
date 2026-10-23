@@ -3,6 +3,8 @@ import { ChevronDown, PackageSearch } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { adapters, IS_SAMPLE_DATA } from '@/adapters'
 import { BestValueCard } from '@/components/BestValueCard'
+import { CartBar } from '@/components/CartBar'
+import { CartSheet } from '@/components/CartSheet'
 import { CompareSheet } from '@/components/CompareSheet'
 import { LocationSheet } from '@/components/LocationSheet'
 import { PlatformDots, PlatformProgress } from '@/components/PlatformProgress'
@@ -10,10 +12,11 @@ import { ProductCard, ProductCardSkeleton } from '@/components/ProductCard'
 import { SearchHeader } from '@/components/SearchHeader'
 import { Segmented } from '@/components/Segmented'
 import { VariantChips } from '@/components/VariantChips'
+import { addItem, fromGroup, pin, pinAll, refreshCart, setQty, summarize, type CartItem } from '@/lib/cart'
 import { groupOffers, variantFromQuery } from '@/lib/normalize'
 import { PLATFORMS } from '@/lib/platforms'
 import { runSearch } from '@/lib/search'
-import { DEFAULT_LOCATION, DEFAULT_RECENTS, loadLocation, loadRecents, pushRecent, saveLocation, saveRecents } from '@/lib/storage'
+import { DEFAULT_LOCATION, DEFAULT_RECENTS, loadCart, loadLocation, loadRecents, pushRecent, saveCart, saveLocation, saveRecents } from '@/lib/storage'
 import type { AdapterStatus, Location, Offer, Platform, ProductGroup } from '@/lib/types'
 import { formatSize } from '@/lib/utils'
 
@@ -34,11 +37,28 @@ export default function App() {
   const [showStatus, setShowStatus] = useState(false)
   const [elapsed, setElapsed] = useState<number | null>(null)
   const abortRef = useRef<AbortController | null>(null)
+  const [cart, setCart] = useState<CartItem[]>([])
+  const [cartOpen, setCartOpen] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
+  const cartLoaded = useRef(false)
 
   useEffect(() => {
     loadLocation().then(setLocation)
     loadRecents().then(setRecents)
+    loadCart().then((c) => { setCart(c); cartLoaded.current = true })
   }, [])
+
+  useEffect(() => { if (cartLoaded.current) saveCart(cart) }, [cart])
+
+  const cartQty = useMemo(() => new Map(cart.map((i) => [i.key, i.qty])), [cart])
+  const cartSummary = useMemo(() => summarize(cart), [cart])
+  const addToCart = (g: ProductGroup) => setCart((c) => addItem(c, fromGroup(g, submitted)))
+
+  async function refreshPrices() {
+    setRefreshing(true)
+    const ctrl = new AbortController()
+    try { setCart(await refreshCart(cart, adapters, location, ctrl.signal)) } finally { setRefreshing(false) }
+  }
 
   const search = useCallback(async (raw: string, loc: Location = location, force = false) => {
     const q = raw.trim()
@@ -64,12 +84,13 @@ export default function App() {
   }, [location])
 
   // Android hardware back: close sheets first, then go home, then exit.
-  const backState = useRef({ selected, locationOpen, submitted })
-  backState.current = { selected, locationOpen, submitted }
+  const backState = useRef({ selected, locationOpen, submitted, cartOpen })
+  backState.current = { selected, locationOpen, submitted, cartOpen }
   useEffect(() => {
     const sub = CapApp.addListener('backButton', () => {
       const s = backState.current
       if (s.selected) setSelected(null)
+      else if (s.cartOpen) setCartOpen(false)
       else if (s.locationOpen) setLocationOpen(false)
       else if (s.submitted) { abortRef.current?.abort(); setSubmitted(''); setQuery('') }
       else CapApp.exitApp()
@@ -128,7 +149,7 @@ export default function App() {
         recents={recents}
       />
 
-      <main className="space-y-4 px-4 pb-8 pt-2">
+      <main className={`space-y-4 px-4 pt-2 ${cart.length ? 'pb-28' : 'pb-8'}`}>
         {!submitted && <Home />}
 
         {submitted && (
@@ -169,7 +190,7 @@ export default function App() {
                 </div>
                 <div className="space-y-2.5">
                   {visible.map((g, i) => (
-                    <ProductCard key={g.key} group={g} index={i} total={PLATFORMS.length} onOpen={() => setSelected(g)} />
+                    <ProductCard key={g.key} group={g} index={i} total={PLATFORMS.length} onOpen={() => setSelected(g)} inCart={cartQty.get(g.key) ?? 0} onAdd={() => addToCart(g)} />
                   ))}
                 </div>
               </>
@@ -186,7 +207,24 @@ export default function App() {
         )}
       </main>
 
-      <CompareSheet group={selected} onClose={() => setSelected(null)} />
+      <CompareSheet
+        group={selected}
+        onClose={() => setSelected(null)}
+        inCart={selected ? cartQty.get(selected.key) ?? 0 : 0}
+        onAdd={() => selected && addToCart(selected)}
+      />
+      {!selected && !cartOpen && !locationOpen && <CartBar summary={cartSummary} onOpen={() => setCartOpen(true)} />}
+      <CartSheet
+        open={cartOpen}
+        items={cart}
+        refreshing={refreshing}
+        onClose={() => setCartOpen(false)}
+        onQty={(k, q) => setCart((c) => setQty(c, k, q))}
+        onPin={(k, p) => setCart((c) => pin(c, k, p))}
+        onPinAll={(p) => setCart((c) => pinAll(c, p))}
+        onRefresh={refreshPrices}
+        onClear={() => { setCart([]); setCartOpen(false) }}
+      />
       <LocationSheet open={locationOpen} value={location} onClose={() => setLocationOpen(false)} onSave={setAndSaveLocation} />
     </div>
   )

@@ -1,4 +1,4 @@
-import { ArrowUpRight } from 'lucide-react'
+import { ArrowUpRight, ShoppingBag } from 'lucide-react'
 import { PLATFORM } from '@/lib/platforms'
 import type { ProductGroup } from '@/lib/types'
 import { cn, formatSize, rupee } from '@/lib/utils'
@@ -10,7 +10,9 @@ export function openExternal(url: string) {
   window.open(url, '_blank', 'noopener')
 }
 
-export function CompareSheet({ group, onClose }: { group: ProductGroup | null; onClose: () => void }) {
+export function CompareSheet({ group, onClose, inCart, onAdd }: {
+  group: ProductGroup | null; onClose: () => void; inCart: number; onAdd: () => void
+}) {
   const inStock = group?.offers.filter((o) => o.inStock) ?? []
   const save = inStock.length > 1 ? inStock[inStock.length - 1].price - inStock[0].price : 0
   return (
@@ -66,6 +68,15 @@ export function CompareSheet({ group, onClose }: { group: ProductGroup | null; o
             ))}
           </ul>
           <p className="mt-3 text-center text-[11.5px] text-faint">Open takes you to that app's search. Ordering happens there.</p>
+          {group.best.inStock && (
+            <button
+              onClick={onAdd}
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-ink py-3.5 text-[15px] font-semibold text-bg active:scale-[.99]"
+            >
+              <ShoppingBag className="size-4" />
+              {inCart ? `Add another · ${inCart} in cart` : `Add to cart · ${rupee(group.best.price)} on ${PLATFORM[group.best.platform].short}`}
+            </button>
+          )}
         </>
       )}
     </Sheet>
