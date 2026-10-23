@@ -34,6 +34,10 @@ export function pushRecent(recents: string[], q: string): string[] {
   return [clean, ...recents.filter((r) => r !== clean)].slice(0, 8)
 }
 
+const LISTS = 'sasta.lists'
+export const loadLists = () => get<import('./lists').ShoppingList[]>(LISTS, [])
+export const saveLists = (l: import('./lists').ShoppingList[]) => set(LISTS, l)
+
 const CART = 'sasta.cart'
 export const loadCart = () => get<import('./cart').CartItem[]>(CART, [])
 export const saveCart = (c: import('./cart').CartItem[]) => set(CART, c)
