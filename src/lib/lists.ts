@@ -1,4 +1,4 @@
-import { cheapestOffer, fromGroup, type CartItem } from './cart'
+import { fromGroup, type CartItem } from './cart'
 import type { Offer, ProductGroup } from './types'
 
 /** A saved product. Same identity as a cart item, so it can go straight into the cart. */
