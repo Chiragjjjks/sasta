@@ -2,7 +2,33 @@
 
 **Decision.** Sasta signs you in on each platform's own login page, inside the app, and keeps the resulting session on your phone. Sasta never sees or stores your password or OTP. For Swiggy Instamart, use Swiggy's official MCP server first, because it is the only platform with a sanctioned way in. Paying still happens in the platform's own app.
 
-Status: plan only. Nothing here is built yet. Do Phase 1 of `PLAN.md` (logged-out spikes) before starting this.
+## Status (2026-10-24)
+
+| Piece | State |
+|---|---|
+| In-app sign-in screen and Keystore-encrypted token storage (`PlatformSessionPlugin.java`, `SignInActivity.java`) | Built. Compiles in CI. Not yet tried on a phone |
+| Connected apps screen with Connect / Disconnect for all six | Built |
+| Blinkit, Zepto, BigBasket, Flipkart, Amazon sign-in | Built. Marked "not verified yet" until each platform's session cookie names are recorded in `src/lib/accounts.ts` |
+| Swiggy Instamart over the official MCP server | Built: discovery, app registration, PKCE sign-in, token exchange and refresh, `tools/list`. Checked live up to Swiggy's sign-in page. The OTP step needs a real phone |
+| Using a connection for prices, fees or carts | Not started. Next step |
+
+### Verified facts about Swiggy's MCP server
+
+- `https://mcp.swiggy.com/instamart` answers 401 with `resource_metadata` pointing to `/.well-known/oauth-protected-resource`.
+- Auth server `https://mcp.swiggy.com/auth`: authorization code + PKCE (S256), refresh tokens, public clients (`token_endpoint_auth_method: none`), dynamic registration at `/auth/register`.
+- Registration only accepts redirect URIs on `http:`, `https:` or a fixed list of partner app schemes. Sasta uses `http://localhost/sasta/oauth/swiggy`, which the in-app browser captures and never loads.
+- The authorize step rewrites `client_id` to `swiggy-mcp`. Sasta retries the token exchange with that id if its own is refused.
+
+### How to test on a phone
+
+1. Install the APK from the latest `main` build (GitHub Actions → Android APK → artifact `sasta-apk`).
+2. Tap the person icon next to the location pill, then **Connect** on Instamart.
+3. Sign in with your Swiggy number and OTP on Swiggy's page.
+4. The row should turn **connected** and list the actions Swiggy offers. Those tool names are what the Instamart live adapter will call next.
+
+## The idea in one example
+
+You search `lays` and add it to the cart. Logged out, Sasta shows Zepto ₹15 vs Instamart ₹16, so Zepto wins. With Swiggy connected, Sasta asks Swiggy's official server for your Instamart price and fees as a Swiggy One member: ₹14 with free delivery. With Zepto connected, Sasta reads ₹15 plus a ₹25 small-cart fee. The cheapest cart flips to Instamart, and the cart total is what you would really pay. You then tap through and pay in Swiggy's app.
 
 ## Why log in at all
 

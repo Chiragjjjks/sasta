@@ -1,4 +1,5 @@
 import { App as CapApp } from '@capacitor/app'
+import { Capacitor } from '@capacitor/core'
 import { ChevronDown, PackageSearch } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { adapters, IS_SAMPLE_DATA } from '@/adapters'
@@ -14,6 +15,7 @@ import { SearchHeader } from '@/components/SearchHeader'
 import { Segmented } from '@/components/Segmented'
 import { VariantChips } from '@/components/VariantChips'
 import { ACCOUNT_CONFIG, connectWeb, disconnectWeb, loadAccounts, saveAccounts, type Account } from '@/lib/accounts'
+import { connectSwiggy, disconnectSwiggy } from '@/lib/swiggy'
 import { addItem, extraOverCheapest, fromGroup, pin, pinAll, refreshCart, setQty, summarize, type CartItem } from '@/lib/cart'
 import { groupOffers, variantFromQuery } from '@/lib/normalize'
 import { PLATFORMS } from '@/lib/platforms'
@@ -63,12 +65,13 @@ export default function App() {
     setAccounts((prev) => { const next = { ...prev, [a.platform]: a }; saveAccounts(next); return next })
   }
   const connectAccount = async (p: Platform) => {
-    if (ACCOUNT_CONFIG[p].method === 'web') await updateAccount(await connectWeb(p))
+    await updateAccount(ACCOUNT_CONFIG[p].method === 'mcp' ? await connectSwiggy() : await connectWeb(p))
   }
   const disconnectAccount = async (p: Platform) => {
-    if (ACCOUNT_CONFIG[p].method === 'web') await updateAccount(await disconnectWeb(p))
+    await updateAccount(ACCOUNT_CONFIG[p].method === 'mcp' ? await disconnectSwiggy() : await disconnectWeb(p))
   }
-  const canConnect = (p: Platform) => ACCOUNT_CONFIG[p].method === 'web'
+  // Swiggy's OAuth sign-in needs the in-app browser, so it is only offered in the Android app.
+  const canConnect = (p: Platform) => ACCOUNT_CONFIG[p].method === 'web' || Capacitor.isNativePlatform()
   const connectedCount = Object.values(accounts).filter((a) => a?.status === 'connected').length
 
   async function refreshPrices() {
