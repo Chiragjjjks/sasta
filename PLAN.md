@@ -162,7 +162,7 @@ Follow `docs/LISTS_PLAN.md`: multiple named lists of products, tick the ones you
 
 ### After Phase 4: connect accounts
 
-Follow `docs/LOGIN_PLAN.md`. It covers signing in to each platform inside the app, member prices, delivery fees in the cart total, and Swiggy Instamart's official MCP server.
+Follow `docs/LOGIN_PLAN.md`, then `docs/OFFERS_PLAN.md` for member prices, coupons and personalization. The login plan covers signing in to each platform inside the app, member prices, delivery fees in the cart total, and Swiggy Instamart's official MCP server.
 
 ### Phase 5: release
 
