@@ -21,22 +21,27 @@ The user types `lays`.
 
 `lays cream onion` runs the same flow, pre-filtered to Cream & Onion.
 
-## Current status (v0.2.0)
+## Current status (v0.3.0)
 
-| Phase | Status |
+| Area | Status |
 |---|---|
-| 0. Scaffold, UI port, mock data, APK release pipeline | **Done** |
-| 1. Platform spikes (find real endpoints) | Not started. **Do this next.** |
-| 2. Live adapters | Not started |
-| 3. Matching polish on real data | Normalizer exists and is unit-tested on mock titles |
-| 4. Location and polish | Partly done: manual pin + GPS, recents, 10 min cache |
-| 5. Ship | Pipeline done. Every `v*` tag publishes a signed APK to GitHub Releases |
+| UI from the prototype, search, compare sheet | Done |
+| Cart: cheapest cart, one-app options, pins | Done (v0.2.0) |
+| Cheapest cart **after fees** | Done for Blinkit (real bill). Other apps' fees unknown until their adapters exist |
+| Lists: named lists, pick N, add to cart, share, back up | Done (v0.3.0). See `docs/LISTS_PLAN.md` |
+| Live search | **Blinkit live** in the Android app via a hidden WebView. Zepto spiked (signed requests, page capture works, location open). Instamart, BigBasket, Flipkart, Amazon not spiked |
+| Connected apps (beta) | Sign-in screen for all six, Swiggy Instamart over its official MCP server, Blinkit and Zepto session checks. Not yet tried on a real phone |
+| Blinkit checkout hand-off | Done: opens blinkit.com with your cart and location; UPI links open your UPI app |
+| Offers and personalization | Planned in `docs/OFFERS_PLAN.md` |
 
-**What works now:** the full UI from the reference prototype, running on a deterministic mock adapter per platform. Search, streaming per-platform status, grouping of differently spelled titles into one card, best value, flavor chips, pack-size toggle, cheapest/fastest sort, compare sheet with Open links, location sheet, recent searches, dark mode, Android back button.
+**Sample data:** the browser preview (`npm run dev`) uses generated prices for every app and says so. The Android app never mixes them with live prices: apps without a live adapter show "Not live yet".
 
-**Cart (v0.2.0):** add any number of products from different searches. Each item defaults to its cheapest in-stock app, and the cart shows the total, savings vs MRP, and how many apps the order is split across. You can instead put everything on one app ("All on Zepto ₹60, +₹4"), or pin a single item to a specific app. Quantities, refresh prices, and the cart persist on the phone. Logic lives in `src/lib/cart.ts` with tests in `cart.test.ts`. Delivery fees and minimum order values are not modelled yet; they need logged-in data (see `docs/LOGIN_PLAN.md`).
-
-**What is fake:** every price, stock flag and ETA. The app says so in its footer ("Preview build · sample prices, not live"). Remove that line only when `IS_SAMPLE_DATA` in `src/adapters/index.ts` becomes `false`.
+**Next, in order:**
+1. Try Connected apps on a phone: Blinkit and Swiggy sign-in. Record Swiggy's MCP tool names.
+2. Zepto adapter: page-capture search plus a way to set the delivery location (see `docs/platforms/zepto.md`).
+3. Instamart via Swiggy MCP tools.
+4. Spike BigBasket, Flipkart Minutes, Amazon Now.
+5. Offers plan, step 1 onward.
 
 ## Reality check (read before building adapters)
 

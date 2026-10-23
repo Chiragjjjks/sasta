@@ -28,7 +28,7 @@ export function AccountsSheet({ open, accounts, onClose, onConnect, onDisconnect
 
   return (
     <Sheet open={open} onClose={onClose} title="Connected apps">
-      <h3 className="font-display text-[20px] font-bold">Connected apps</h3>
+      <h3 className="flex items-center gap-2 font-display text-[20px] font-bold">Connected apps <span className="rounded-md bg-accent/15 px-1.5 py-0.5 font-sans text-[10.5px] font-extrabold uppercase tracking-wide text-accent">Beta</span></h3>
       <p className="mt-1 text-[13px] leading-relaxed text-muted">
         Sign in once on each app's own page to see your member prices and real delivery fees. {connected} of {PLATFORMS.length} connected.
       </p>
