@@ -156,6 +156,10 @@ Do not write any live adapter before its spike note exists.
 17. Try an Android intent URL first for **Open**, then fall back to the web URL.
 18. Show product images from `imageUrl` (the card already supports it).
 
+### Next release: lists (v0.3.0)
+
+Follow `docs/LISTS_PLAN.md`: multiple named lists of products, tick the ones you need, add them to the cart in one tap.
+
 ### After Phase 4: connect accounts
 
 Follow `docs/LOGIN_PLAN.md`. It covers signing in to each platform inside the app, member prices, delivery fees in the cart total, and Swiggy Instamart's official MCP server.
