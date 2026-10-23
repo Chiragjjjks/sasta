@@ -18,6 +18,8 @@ import { Segmented } from '@/components/Segmented'
 import { VariantChips } from '@/components/VariantChips'
 import { ACCOUNT_CONFIG, connectWeb, disconnectWeb, loadAccounts, recheckWebSessions, saveAccounts, type Account } from '@/lib/accounts'
 import { connectSwiggy, disconnectSwiggy } from '@/lib/swiggy'
+import { fetchBlinkitBill } from '@/adapters/blinkit'
+import { blinkitRuleFromBill, type FeeRules } from '@/lib/fees'
 import { addItem, addItems, extraOverCheapest, fromGroup, pin, pinAll, refreshCart, setQty, summarize, type CartItem } from '@/lib/cart'
 import {
   createList, deleteList, exportLists, importLists, isSaved, listItemFromGroup, markPicked, moveItem, removeFromList,
@@ -27,7 +29,7 @@ import { groupOffers, variantFromQuery } from '@/lib/normalize'
 import { shareFile, shareText } from '@/lib/share'
 import { PLATFORMS } from '@/lib/platforms'
 import { runSearch } from '@/lib/search'
-import { DEFAULT_LOCATION, DEFAULT_RECENTS, loadCart, loadLists, loadLocation, loadRecents, pushRecent, saveCart, saveLists, saveLocation, saveRecents } from '@/lib/storage'
+import { DEFAULT_LOCATION, DEFAULT_RECENTS, loadCart, loadFees, loadLists, saveFees, loadLocation, loadRecents, pushRecent, saveCart, saveLists, saveLocation, saveRecents } from '@/lib/storage'
 import type { AdapterStatus, Location, Offer, Platform, ProductGroup } from '@/lib/types'
 import { formatSize } from '@/lib/utils'
 
@@ -60,12 +62,14 @@ export default function App() {
   const [saveTarget, setSaveTarget] = useState<ProductGroup | null>(null)
   const [toast, setToast] = useState('')
   const listsLoaded = useRef(false)
+  const [fees, setFees] = useState<FeeRules>({})
 
   useEffect(() => {
     loadLocation().then(setLocation)
     loadRecents().then(setRecents)
     loadCart().then((c) => { setCart(c); cartLoaded.current = true })
     loadLists().then((l) => { setLists(l); listsLoaded.current = true })
+    loadFees().then(setFees)
     loadAccounts().then(async (a) => {
       setAccounts(a)
       const checked = await recheckWebSessions(a).catch(() => a)
@@ -129,6 +133,17 @@ export default function App() {
   // Swiggy's OAuth sign-in needs the in-app browser, so it is only offered in the Android app.
   const canConnect = (p: Platform) => ACCOUNT_CONFIG[p].method === 'web' || Capacitor.isNativePlatform()
   const connectedCount = Object.values(accounts).filter((a) => a?.status === 'connected').length
+
+  // Learn Blinkit's real fees from a bill for the Blinkit items in the cart (at most every 30 minutes).
+  useEffect(() => {
+    if (!cartOpen) return
+    const cartItems = cart.flatMap((i) => i.offers.filter((o) => o.platform === 'blinkit' && o.inStock && o.meta?.cartItem).slice(0, 1).map((o) => o.meta!.cartItem))
+    const fresh = fees.blinkit && Date.now() - fees.blinkit.fetchedAt < 30 * 60 * 1000
+    if (!cartItems.length || fresh) return
+    fetchBlinkitBill(cartItems.slice(0, 10), location)
+      .then((bill) => { const rule = blinkitRuleFromBill(bill); if (rule) setFees((f) => { const next = { ...f, blinkit: rule }; saveFees(next); return next }) })
+      .catch(() => {})
+  }, [cartOpen]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function refreshPrices() {
     setRefreshing(true)
@@ -307,6 +322,8 @@ export default function App() {
         onPinAll={(p) => setCart((c) => pinAll(c, p))}
         onRefresh={refreshPrices}
         onClear={() => { setCart([]); setCartOpen(false) }}
+        fees={fees}
+        onPinMap={(pins) => setCart((c) => c.map((i) => ({ ...i, pinned: pins[i.key] })))}
       />
       <SaveToListSheet group={saveTarget} lists={lists} onClose={() => setSaveTarget(null)} onToggle={toggleSaved} onCreate={createAndMaybeSave} />
       <ListsSheet

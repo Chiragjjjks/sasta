@@ -29,6 +29,8 @@ export interface Offer {
   fetchedAt: number
   /** True for generated preview data, never shown as a real price without saying so. */
   sample?: boolean
+  /** Platform-specific payload needed later, e.g. Blinkit's cart_item for pricing a cart. */
+  meta?: Record<string, unknown>
 }
 
 /** One card in the UI: the same pack, compared across platforms. */

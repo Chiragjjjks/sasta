@@ -1,5 +1,6 @@
 import { ArrowUpRight, Minus, Plus, RefreshCw, Trash2 } from 'lucide-react'
 import { chosenOffer, singleAppOptions, summarize, type CartItem } from '@/lib/cart'
+import { billsFor, cheapestAfterFees, grandTotal, type FeeRules } from '@/lib/fees'
 import { PLATFORM } from '@/lib/platforms'
 import type { Platform } from '@/lib/types'
 import { cn, formatSize, rupee } from '@/lib/utils'
@@ -17,6 +18,8 @@ interface Props {
   onPinAll: (platform: Platform | undefined) => void
   onRefresh: () => void
   onClear: () => void
+  fees: FeeRules
+  onPinMap: (pins: Record<string, Platform>) => void
 }
 
 function ago(ts: number): string {
@@ -24,13 +27,22 @@ function ago(ts: number): string {
   return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : `${Math.round(m / 60)} h ago`
 }
 
-export function CartSheet({ open, items, refreshing, onClose, onQty, onPin, onPinAll, onRefresh, onClear }: Props) {
+export function CartSheet({ open, items, refreshing, onClose, onQty, onPin, onPinAll, onRefresh, onClear, fees, onPinMap }: Props) {
   const summary = summarize(items)
   const cheapest = summarize(items.map((i) => ({ ...i, pinned: undefined })))
   const options = singleAppOptions(items)
   const pins = new Set(items.map((i) => i.pinned))
   const mode: 'cheapest' | Platform | 'custom' =
     pins.size === 1 && pins.has(undefined) ? 'cheapest' : pins.size === 1 ? [...pins][0]! : 'custom'
+  const current: Record<string, Platform> = Object.fromEntries(summary.lines.flatMap((l) => (l.offer ? [[l.item.key, l.offer.platform]] : [])))
+  const bills = billsFor(items, current, fees)
+  const billFor = (p: Platform) => bills.find((b) => b.platform === p)
+  const anyFees = bills.some((b) => b.known)
+  const withFees = grandTotal(bills)
+  const afterFees = anyFees ? cheapestAfterFees(items, fees) : null
+  const cheapestMixWithFees = grandTotal(billsFor(items, Object.fromEntries(cheapest.lines.flatMap((l) => (l.offer ? [[l.item.key, l.offer.platform]] : []))), fees))
+  const showAfterFees = !!afterFees && afterFees.total < cheapestMixWithFees
+  const onAfterFees = !!afterFees && items.every((i) => current[i.key] === afterFees.assign[i.key]) && items.some((i) => i.pinned)
   const oldest = items.length ? Math.min(...items.map((i) => i.updatedAt)) : Date.now()
 
   // Lines grouped by the app they'll be bought from.
@@ -59,15 +71,28 @@ export function CartSheet({ open, items, refreshing, onClose, onQty, onPin, onPi
       {items.length > 0 && (
         <>
           <div className="mt-4 overflow-hidden rounded-card bg-surface" role="radiogroup" aria-label="How to buy">
+            {showAfterFees && afterFees && (
+              <Choice
+                active={onAfterFees}
+                onClick={() => onPinMap(afterFees.assign)}
+                title="Cheapest after fees"
+                subtitle="Fewer deliveries, so less in delivery and handling fees"
+                price={afterFees.total}
+                badge="Best total"
+              />
+            )}
             <Choice
-              active={mode === 'cheapest'}
+              active={mode === 'cheapest' && !onAfterFees}
               onClick={() => onPinAll(undefined)}
               title="Cheapest cart"
               subtitle={`Each item from its cheapest app · ${cheapest.platforms.length} ${cheapest.platforms.length === 1 ? 'app' : 'apps'}`}
-              price={cheapest.total}
-              badge="Best price"
+              price={anyFees ? cheapestMixWithFees : cheapest.total}
+              badge={showAfterFees ? undefined : 'Best price'}
             />
-            {options.slice(0, 4).map((o) => (
+            {options.slice(0, 4).map((o) => {
+              const oneApp = anyFees && !o.missing.length ? grandTotal(billsFor(items, Object.fromEntries(items.map((i) => [i.key, o.platform])), fees)) : o.total
+              const ref = anyFees ? Math.min(cheapestMixWithFees, afterFees?.total ?? Infinity) : cheapest.total
+              return (
               <Choice
                 key={o.platform}
                 active={mode === o.platform}
@@ -75,10 +100,11 @@ export function CartSheet({ open, items, refreshing, onClose, onQty, onPin, onPi
                 dot={PLATFORM[o.platform].color}
                 title={`All on ${PLATFORM[o.platform].name}`}
                 subtitle={o.missing.length ? `Has ${o.covered} of ${items.length} · rest from cheapest` : 'One delivery'}
-                price={o.missing.length ? undefined : o.total}
-                delta={o.missing.length ? undefined : o.total - cheapest.total}
+                price={o.missing.length ? undefined : oneApp}
+                delta={o.missing.length ? undefined : oneApp - ref}
               />
-            ))}
+              )
+            })}
           </div>
 
           <div className="mt-4 space-y-3">
@@ -87,8 +113,16 @@ export function CartSheet({ open, items, refreshing, onClose, onQty, onPin, onPi
                 <header className="flex items-center gap-2 border-b border-line px-4 py-2.5">
                   <span className="size-2.5 rounded-full" style={{ background: PLATFORM[platform].color }} />
                   <span className="flex-1 text-[13.5px] font-bold">{PLATFORM[platform].name}</span>
-                  <span className="tabular text-[13px] font-semibold">{rupee(lines.reduce((s, l) => s + l.lineTotal, 0))}</span>
+                  <span className="tabular text-[13px] font-semibold">{rupee(billFor(platform)?.total ?? lines.reduce((s, l) => s + l.lineTotal, 0))}</span>
                 </header>
+                {billFor(platform)?.known && (
+                  <div className="border-b border-line px-4 py-1.5 text-[11.5px] text-muted">
+                    Items {rupee(billFor(platform)!.itemsTotal)}
+                    {' · '}{billFor(platform)!.delivery ? `delivery ${rupee(billFor(platform)!.delivery)}` : 'free delivery'}
+                    {billFor(platform)!.handling ? ` · handling ${rupee(billFor(platform)!.handling)}` : ''}
+                    {billFor(platform)!.other ? ` · small cart ${rupee(billFor(platform)!.other)}` : ''}
+                  </div>
+                )}
                 <ul className="divide-y divide-line">
                   {lines.map(({ item, offer, lineTotal }) => (
                     <li key={item.key} className="flex items-center gap-3 px-4 py-3">
@@ -127,7 +161,7 @@ export function CartSheet({ open, items, refreshing, onClose, onQty, onPin, onPi
           <div className="mt-4 rounded-card bg-surface px-4 py-3.5">
             <div className="flex items-baseline justify-between">
               <span className="text-[14px] font-semibold">Total · {summary.itemCount} {summary.itemCount === 1 ? 'item' : 'items'}</span>
-              <span className="font-display tabular text-[24px] font-extrabold">{rupee(summary.total)}</span>
+              <span className="font-display tabular text-[24px] font-extrabold">{rupee(anyFees ? withFees : summary.total)}</span>
             </div>
             {summary.savingsVsMrp > 0 && (
               <div className="mt-0.5 flex justify-between text-[12.5px]">
@@ -135,7 +169,14 @@ export function CartSheet({ open, items, refreshing, onClose, onQty, onPin, onPi
                 <span className="tabular text-faint line-through">{rupee(summary.mrpTotal)}</span>
               </div>
             )}
-            {summary.total > cheapest.total ? (
+            {anyFees && afterFees && withFees > afterFees.total ? (
+              <button
+                onClick={() => onPinMap(afterFees.assign)}
+                className="mt-2.5 w-full rounded-xl bg-accent/12 py-2.5 text-[13px] font-semibold text-accent active:scale-[.99]"
+              >
+                Switch to cheapest after fees · save {rupee(withFees - afterFees.total)}
+              </button>
+            ) : !anyFees && summary.total > cheapest.total ? (
               <button
                 onClick={() => onPinAll(undefined)}
                 className="mt-2.5 w-full rounded-xl bg-accent/12 py-2.5 text-[13px] font-semibold text-accent active:scale-[.99]"
@@ -145,7 +186,11 @@ export function CartSheet({ open, items, refreshing, onClose, onQty, onPin, onPi
             ) : (
               <div className="mt-1 text-[12.5px] font-semibold text-good">This is the cheapest cart across all apps</div>
             )}
-            <p className="mt-2 text-[11.5px] text-faint">Delivery fees, handling charges and minimum order values are not included yet.</p>
+            <p className="mt-2 text-[11.5px] text-faint">
+              {anyFees
+                ? `Includes delivery and handling fees for ${bills.filter((b) => b.known).map((b) => PLATFORM[b.platform].short).join(', ')}, read from a real bill. Other apps' fees are not included yet.`
+                : 'Delivery fees, handling charges and minimum order values are not included yet.'}
+            </p>
             {items.some((i) => i.offers.some((o) => o.sample)) && (
               <p className="mt-1 text-[11.5px] text-accent">Some prices here are sample data from the preview. Tap Refresh prices.</p>
             )}
