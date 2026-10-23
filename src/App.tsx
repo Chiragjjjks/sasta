@@ -2,6 +2,7 @@ import { App as CapApp } from '@capacitor/app'
 import { ChevronDown, PackageSearch } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { adapters, IS_SAMPLE_DATA } from '@/adapters'
+import { AccountsSheet } from '@/components/AccountsSheet'
 import { BestValueCard } from '@/components/BestValueCard'
 import { CartBar } from '@/components/CartBar'
 import { CartSheet } from '@/components/CartSheet'
@@ -12,6 +13,7 @@ import { ProductCard, ProductCardSkeleton } from '@/components/ProductCard'
 import { SearchHeader } from '@/components/SearchHeader'
 import { Segmented } from '@/components/Segmented'
 import { VariantChips } from '@/components/VariantChips'
+import { ACCOUNT_CONFIG, connectWeb, disconnectWeb, loadAccounts, saveAccounts, type Account } from '@/lib/accounts'
 import { addItem, extraOverCheapest, fromGroup, pin, pinAll, refreshCart, setQty, summarize, type CartItem } from '@/lib/cart'
 import { groupOffers, variantFromQuery } from '@/lib/normalize'
 import { PLATFORMS } from '@/lib/platforms'
@@ -41,11 +43,14 @@ export default function App() {
   const [cartOpen, setCartOpen] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const cartLoaded = useRef(false)
+  const [accounts, setAccounts] = useState<Partial<Record<Platform, Account>>>({})
+  const [accountsOpen, setAccountsOpen] = useState(false)
 
   useEffect(() => {
     loadLocation().then(setLocation)
     loadRecents().then(setRecents)
     loadCart().then((c) => { setCart(c); cartLoaded.current = true })
+    loadAccounts().then(setAccounts)
   }, [])
 
   useEffect(() => { if (cartLoaded.current) saveCart(cart) }, [cart])
@@ -53,6 +58,18 @@ export default function App() {
   const cartQty = useMemo(() => new Map(cart.map((i) => [i.key, i.qty])), [cart])
   const cartSummary = useMemo(() => summarize(cart), [cart])
   const addToCart = (g: ProductGroup) => setCart((c) => addItem(c, fromGroup(g, submitted)))
+
+  async function updateAccount(a: Account) {
+    setAccounts((prev) => { const next = { ...prev, [a.platform]: a }; saveAccounts(next); return next })
+  }
+  const connectAccount = async (p: Platform) => {
+    if (ACCOUNT_CONFIG[p].method === 'web') await updateAccount(await connectWeb(p))
+  }
+  const disconnectAccount = async (p: Platform) => {
+    if (ACCOUNT_CONFIG[p].method === 'web') await updateAccount(await disconnectWeb(p))
+  }
+  const canConnect = (p: Platform) => ACCOUNT_CONFIG[p].method === 'web'
+  const connectedCount = Object.values(accounts).filter((a) => a?.status === 'connected').length
 
   async function refreshPrices() {
     setRefreshing(true)
@@ -84,13 +101,14 @@ export default function App() {
   }, [location])
 
   // Android hardware back: close sheets first, then go home, then exit.
-  const backState = useRef({ selected, locationOpen, submitted, cartOpen })
-  backState.current = { selected, locationOpen, submitted, cartOpen }
+  const backState = useRef({ selected, locationOpen, submitted, cartOpen, accountsOpen })
+  backState.current = { selected, locationOpen, submitted, cartOpen, accountsOpen }
   useEffect(() => {
     const sub = CapApp.addListener('backButton', () => {
       const s = backState.current
       if (s.selected) setSelected(null)
       else if (s.cartOpen) setCartOpen(false)
+      else if (s.accountsOpen) setAccountsOpen(false)
       else if (s.locationOpen) setLocationOpen(false)
       else if (s.submitted) { abortRef.current?.abort(); setSubmitted(''); setQuery('') }
       else CapApp.exitApp()
@@ -147,6 +165,8 @@ export default function App() {
         location={location}
         onLocation={() => setLocationOpen(true)}
         recents={recents}
+        connectedCount={connectedCount}
+        onAccounts={() => setAccountsOpen(true)}
       />
 
       <main className={`space-y-4 px-4 pt-2 ${cart.length ? 'pb-28' : 'pb-8'}`}>
@@ -202,7 +222,7 @@ export default function App() {
           <p className="pt-4 text-center text-[11.5px] leading-relaxed text-faint">
             Preview build · sample prices, not live
             <br />
-            Live search runs on your phone, no account needed
+            Live search runs on your phone, with no server
           </p>
         )}
       </main>
@@ -213,7 +233,7 @@ export default function App() {
         inCart={selected ? cartQty.get(selected.key) ?? 0 : 0}
         onAdd={() => selected && addToCart(selected)}
       />
-      {!selected && !cartOpen && !locationOpen && <CartBar summary={cartSummary} extra={extraOverCheapest(cart)} onOpen={() => setCartOpen(true)} />}
+      {!selected && !cartOpen && !locationOpen && !accountsOpen && <CartBar summary={cartSummary} extra={extraOverCheapest(cart)} onOpen={() => setCartOpen(true)} />}
       <CartSheet
         open={cartOpen}
         items={cart}
@@ -224,6 +244,14 @@ export default function App() {
         onPinAll={(p) => setCart((c) => pinAll(c, p))}
         onRefresh={refreshPrices}
         onClear={() => { setCart([]); setCartOpen(false) }}
+      />
+      <AccountsSheet
+        open={accountsOpen}
+        accounts={accounts}
+        onClose={() => setAccountsOpen(false)}
+        onConnect={connectAccount}
+        onDisconnect={disconnectAccount}
+        canConnect={canConnect}
       />
       <LocationSheet open={locationOpen} value={location} onClose={() => setLocationOpen(false)} onSave={setAndSaveLocation} />
     </div>

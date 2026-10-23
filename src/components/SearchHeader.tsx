@@ -1,4 +1,4 @@
-import { MapPin, Search, X } from 'lucide-react'
+import { MapPin, Search, UserRound, X } from 'lucide-react'
 import { useRef } from 'react'
 import type { Location } from '@/lib/types'
 
@@ -9,9 +9,11 @@ interface Props {
   location: Location
   onLocation: () => void
   recents: string[]
+  connectedCount: number
+  onAccounts: () => void
 }
 
-export function SearchHeader({ query, onQuery, onSubmit, location, onLocation, recents }: Props) {
+export function SearchHeader({ query, onQuery, onSubmit, location, onLocation, recents, connectedCount, onAccounts }: Props) {
   const input = useRef<HTMLInputElement>(null)
   return (
     <header className="pt-safe sticky top-0 z-20 bg-bg/85 px-4 pb-3 backdrop-blur-xl">
@@ -19,13 +21,25 @@ export function SearchHeader({ query, onQuery, onSubmit, location, onLocation, r
         <span className="font-display text-[26px] font-extrabold tracking-[-0.04em]">
           sasta<span className="text-accent">.</span>
         </span>
+        <div className="flex min-w-0 items-center gap-2">
+        <button
+          onClick={onAccounts}
+          aria-label={`Connected apps, ${connectedCount} connected`}
+          className="relative grid size-9 shrink-0 place-items-center rounded-full bg-surface text-muted shadow-[0_1px_2px_rgba(20,21,42,.06)] active:scale-95"
+        >
+          <UserRound className="size-4" />
+          {connectedCount > 0 && (
+            <span className="absolute -right-0.5 -top-0.5 grid size-4 place-items-center rounded-full bg-good text-[9.5px] font-bold text-white">{connectedCount}</span>
+          )}
+        </button>
         <button
           onClick={onLocation}
-          className="flex max-w-[60%] items-center gap-1.5 rounded-full bg-surface px-3 py-2 text-[13px] font-medium text-muted shadow-[0_1px_2px_rgba(20,21,42,.06)] active:scale-[.97]"
+          className="flex min-w-0 items-center gap-1.5 rounded-full bg-surface px-3 py-2 text-[13px] font-medium text-muted shadow-[0_1px_2px_rgba(20,21,42,.06)] active:scale-[.97]"
         >
           <MapPin className="size-3.5 shrink-0" />
           <span className="truncate">{location.label} · {location.pincode}</span>
         </button>
+        </div>
       </div>
 
       <form
