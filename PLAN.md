@@ -34,7 +34,7 @@ The user types `lays`.
 
 **What works now:** the full UI from the reference prototype, running on a deterministic mock adapter per platform. Search, streaming per-platform status, grouping of differently spelled titles into one card, best value, flavor chips, pack-size toggle, cheapest/fastest sort, compare sheet with Open links, location sheet, recent searches, dark mode, Android back button.
 
-**Cart (v0.2.0):** add any number of products from different searches. Each item defaults to its cheapest in-stock app, and the cart shows the total, savings vs MRP, and how many apps the order is split across. You can instead put everything on one app ("All on Zepto ₹60, +₹4"), or pin a single item to a specific app. Quantities, refresh prices, and the cart persist on the phone. Logic lives in `src/lib/cart.ts` with tests in `cart.test.ts`. Delivery fees and minimum order values are not modelled yet; they need logged-in data (see `docs/LOGIN_PLAN.md`).
+**Cart (on main, not yet released):** add any number of products from different searches. Each item defaults to its cheapest in-stock app, and the cart shows the total, savings vs MRP, and how many apps the order is split across. You can instead put everything on one app ("All on Zepto ₹60, +₹4"), or pin a single item to a specific app. Quantities, refresh prices, and the cart persist on the phone. Logic lives in `src/lib/cart.ts` with tests in `cart.test.ts`. Delivery fees and minimum order values are not modelled yet; they need logged-in data (see `docs/LOGIN_PLAN.md`).
 
 **What is fake:** every price, stock flag and ETA. The app says so in its footer ("Preview build · sample prices, not live"). Remove that line only when `IS_SAMPLE_DATA` in `src/adapters/index.ts` becomes `false`.
 
@@ -156,6 +156,10 @@ Do not write any live adapter before its spike note exists.
 17. Try an Android intent URL first for **Open**, then fall back to the web URL.
 18. Show product images from `imageUrl` (the card already supports it).
 
+### After Phase 4: connect accounts
+
+Follow `docs/LOGIN_PLAN.md`. It covers signing in to each platform inside the app, member prices, delivery fees in the cart total, and Swiggy Instamart's official MCP server.
+
 ### Phase 5: release
 
 19. Bump `version` in `package.json`, write `docs/releases/vX.Y.Z.md`, commit, then `git tag vX.Y.Z && git push origin main vX.Y.Z`. CI does the rest.
@@ -177,8 +181,8 @@ cd android && ./gradlew assembleRelease   # needs JDK 21 and Android SDK 36
 
 ## Non-goals for v1
 
-- Ordering or adding to cart inside Sasta
-- Logging in to any platform
+- Placing orders or paying inside Sasta. Sasta's cart is for comparing; you pay in the platform's app
+- Logging in to any platform in v1. The plan for accounts is in `docs/LOGIN_PLAN.md` and starts after Phase 1
 - Any backend server
 - Price history and alerts (good v2)
 - iOS
