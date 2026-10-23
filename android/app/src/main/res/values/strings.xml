@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Sasta</string>
+    <string name="title_activity_main">Sasta</string>
+    <string name="package_name">app.sasta.android</string>
+    <string name="custom_url_scheme">app.sasta.android</string>
+</resources>

@@ -1,0 +1,67 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/bricolage-grotesque';
+@import '@fontsource-variable/figtree';
+@import '@fontsource-variable/jetbrains-mono';
+
+@custom-variant dark (@media (prefers-color-scheme: dark));
+
+@theme {
+  --font-sans: 'Figtree Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque Variable', 'Figtree Variable', ui-sans-serif, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+  --color-bg: #f0f1f6;
+  --color-surface: #ffffff;
+  --color-ink: #14152a;
+  --color-muted: #6b6d80;
+  --color-faint: #a3a5b5;
+  --color-line: #e3e5ee;
+  --color-chip: #eceef4;
+  --color-accent: #f08a24;
+  --color-good: #1f9d55;
+  --color-good-bg: #e3f5ea;
+  --radius-card: 1.25rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0d0e1a;
+    --color-surface: #171829;
+    --color-ink: #eef0fa;
+    --color-muted: #9a9cb2;
+    --color-faint: #5f6178;
+    --color-line: #262840;
+    --color-chip: #212338;
+    --color-good: #45c47c;
+    --color-good-bg: #15301f;
+  }
+}
+
+html, body, #root { min-height: 100%; }
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+button { -webkit-user-select: none; user-select: none; }
+
+.pt-safe { padding-top: max(env(safe-area-inset-top), var(--safe-area-inset-top, 0px)); }
+.pb-safe { padding-bottom: max(env(safe-area-inset-bottom), var(--safe-area-inset-bottom, 0px)); }
+
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+.tabular { font-variant-numeric: tabular-nums; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.rise { animation: rise 320ms cubic-bezier(.2,.8,.2,1) both; }
+
+@keyframes shimmer { 0% { background-position: -200px 0; } 100% { background-position: 200px 0; } }
+.skeleton {
+  background: linear-gradient(90deg, var(--color-chip) 0px, var(--color-line) 80px, var(--color-chip) 160px);
+  background-size: 400px 100%;
+  animation: shimmer 1.2s linear infinite;
+}
