@@ -21,7 +21,7 @@ The user types `lays`.
 
 `lays cream onion` runs the same flow, pre-filtered to Cream & Onion.
 
-## Current status (v0.1.0)
+## Current status (v0.2.0)
 
 | Phase | Status |
 |---|---|
@@ -34,7 +34,7 @@ The user types `lays`.
 
 **What works now:** the full UI from the reference prototype, running on a deterministic mock adapter per platform. Search, streaming per-platform status, grouping of differently spelled titles into one card, best value, flavor chips, pack-size toggle, cheapest/fastest sort, compare sheet with Open links, location sheet, recent searches, dark mode, Android back button.
 
-**Cart (on main, not yet released):** add any number of products from different searches. Each item defaults to its cheapest in-stock app, and the cart shows the total, savings vs MRP, and how many apps the order is split across. You can instead put everything on one app ("All on Zepto ₹60, +₹4"), or pin a single item to a specific app. Quantities, refresh prices, and the cart persist on the phone. Logic lives in `src/lib/cart.ts` with tests in `cart.test.ts`. Delivery fees and minimum order values are not modelled yet; they need logged-in data (see `docs/LOGIN_PLAN.md`).
+**Cart (v0.2.0):** add any number of products from different searches. Each item defaults to its cheapest in-stock app, and the cart shows the total, savings vs MRP, and how many apps the order is split across. You can instead put everything on one app ("All on Zepto ₹60, +₹4"), or pin a single item to a specific app. Quantities, refresh prices, and the cart persist on the phone. Logic lives in `src/lib/cart.ts` with tests in `cart.test.ts`. Delivery fees and minimum order values are not modelled yet; they need logged-in data (see `docs/LOGIN_PLAN.md`).
 
 **What is fake:** every price, stock flag and ETA. The app says so in its footer ("Preview build · sample prices, not live"). Remove that line only when `IS_SAMPLE_DATA` in `src/adapters/index.ts` becomes `false`.
 
