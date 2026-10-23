@@ -195,7 +195,7 @@ cd android && ./gradlew assembleRelease   # needs JDK 21 and Android SDK 36
 
 1. Start with Phase 1. Do not write live adapters before the spike notes exist.
 2. The reference prototype (`sasta.html` artifact) is the design spec, and this app already matches it. Do not redesign.
-3. Commit after each numbered step with a short summary of what works.
+3. Commit every time a feature or fix works, with a short message saying what now works. Never batch several features into one commit. Run `npm run typecheck && npm test` before each commit, and push to `main` after committing.
 4. If a platform needs login or is blocked, record verdict X and move on. Do not fight it.
 5. Report the Phase 1 verdict table to the user before starting Phase 2.
 6. Keep `npm run typecheck` and `npm test` green. CI runs both.
