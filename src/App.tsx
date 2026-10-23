@@ -12,7 +12,7 @@ import { ProductCard, ProductCardSkeleton } from '@/components/ProductCard'
 import { SearchHeader } from '@/components/SearchHeader'
 import { Segmented } from '@/components/Segmented'
 import { VariantChips } from '@/components/VariantChips'
-import { addItem, fromGroup, pin, pinAll, refreshCart, setQty, summarize, type CartItem } from '@/lib/cart'
+import { addItem, extraOverCheapest, fromGroup, pin, pinAll, refreshCart, setQty, summarize, type CartItem } from '@/lib/cart'
 import { groupOffers, variantFromQuery } from '@/lib/normalize'
 import { PLATFORMS } from '@/lib/platforms'
 import { runSearch } from '@/lib/search'
@@ -213,7 +213,7 @@ export default function App() {
         inCart={selected ? cartQty.get(selected.key) ?? 0 : 0}
         onAdd={() => selected && addToCart(selected)}
       />
-      {!selected && !cartOpen && !locationOpen && <CartBar summary={cartSummary} onOpen={() => setCartOpen(true)} />}
+      {!selected && !cartOpen && !locationOpen && <CartBar summary={cartSummary} extra={extraOverCheapest(cart)} onOpen={() => setCartOpen(true)} />}
       <CartSheet
         open={cartOpen}
         items={cart}

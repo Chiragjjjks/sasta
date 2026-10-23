@@ -2,7 +2,7 @@ import { ShoppingBag } from 'lucide-react'
 import type { CartSummary } from '@/lib/cart'
 import { rupee } from '@/lib/utils'
 
-export function CartBar({ summary, onOpen }: { summary: CartSummary; onOpen: () => void }) {
+export function CartBar({ summary, extra, onOpen }: { summary: CartSummary; extra: number; onOpen: () => void }) {
   if (!summary.itemCount) return null
   return (
     <div className="pb-safe pointer-events-none fixed inset-x-0 bottom-0 z-30 mx-auto max-w-lg px-4 pb-4">
@@ -18,7 +18,7 @@ export function CartBar({ summary, onOpen }: { summary: CartSummary; onOpen: () 
         </span>
         <span className="ml-1 flex-1">
           <span className="block text-[14px] font-semibold">
-            {summary.itemCount} {summary.itemCount === 1 ? 'item' : 'items'}
+            {summary.itemCount} {summary.itemCount === 1 ? 'item' : 'items'} · {extra > 0 ? `${rupee(extra)} over cheapest` : 'cheapest cart'}
           </span>
           <span className="block text-[12px] text-white/60">
             from {summary.platforms.length} {summary.platforms.length === 1 ? 'app' : 'apps'}

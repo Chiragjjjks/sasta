@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addItem, chosenOffer, pin, pinAll, setQty, singleAppOptions, summarize, type CartItem } from './cart'
+import { addItem, cheapestCart, chosenOffer, extraOverCheapest, pin, pinAll, setQty, singleAppOptions, summarize, type CartItem } from './cart'
 import type { Offer, Platform } from './types'
 
 const o = (platform: Platform, price: number, inStock = true, mrp = 20): Offer => ({
@@ -47,5 +47,16 @@ describe('cart', () => {
   it('reports items no app has in stock', () => {
     const gone = item('gone', [o('zepto', 10, false)])
     expect(summarize([gone]).unavailable).toHaveLength(1)
+  })
+})
+
+describe('cheapest cart', () => {
+  it('is the default selection and costs nothing extra', () => {
+    expect(extraOverCheapest([chips, noodles])).toBe(0)
+  })
+  it('reports the extra cost of a pinned selection and resets with cheapestCart', () => {
+    const pinned = pinAll([chips, noodles], 'blinkit')
+    expect(extraOverCheapest(pinned)).toBe(17 + 26 - (15 + 26))
+    expect(extraOverCheapest(cheapestCart(pinned))).toBe(0)
   })
 })

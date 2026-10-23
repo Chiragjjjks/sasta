@@ -62,7 +62,7 @@ export function CartSheet({ open, items, refreshing, onClose, onQty, onPin, onPi
             <Choice
               active={mode === 'cheapest'}
               onClick={() => onPinAll(undefined)}
-              title="Cheapest mix"
+              title="Cheapest cart"
               subtitle={`Each item from its cheapest app · ${cheapest.platforms.length} ${cheapest.platforms.length === 1 ? 'app' : 'apps'}`}
               price={cheapest.total}
               badge="Best price"
@@ -135,8 +135,15 @@ export function CartSheet({ open, items, refreshing, onClose, onQty, onPin, onPi
                 <span className="tabular text-faint line-through">{rupee(summary.mrpTotal)}</span>
               </div>
             )}
-            {mode !== 'cheapest' && summary.total > cheapest.total && (
-              <div className="mt-1 text-[12.5px] text-accent">{rupee(summary.total - cheapest.total)} more than the cheapest mix</div>
+            {summary.total > cheapest.total ? (
+              <button
+                onClick={() => onPinAll(undefined)}
+                className="mt-2.5 w-full rounded-xl bg-accent/12 py-2.5 text-[13px] font-semibold text-accent active:scale-[.99]"
+              >
+                Switch to cheapest cart · save {rupee(summary.total - cheapest.total)}
+              </button>
+            ) : (
+              <div className="mt-1 text-[12.5px] font-semibold text-good">This is the cheapest cart across all apps</div>
             )}
             <p className="mt-2 text-[11.5px] text-faint">Delivery fees, handling charges and minimum order values are not included yet.</p>
           </div>

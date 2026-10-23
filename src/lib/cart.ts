@@ -143,3 +143,13 @@ export async function refreshCart(items: CartItem[], adapters: Adapter[], loc: L
     return g ? { ...i, offers: g.offers, updatedAt: Date.now() } : i
   })
 }
+
+/** The cart with every pin cleared, so each item comes from its cheapest in-stock app. */
+export function cheapestCart(items: CartItem[]): CartItem[] {
+  return pinAll(items, undefined)
+}
+
+/** How much more the current selection costs than the cheapest cart (0 when it is the cheapest). */
+export function extraOverCheapest(items: CartItem[]): number {
+  return summarize(items).total - summarize(cheapestCart(items)).total
+}
