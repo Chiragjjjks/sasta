@@ -1,4 +1,4 @@
-import { ArrowUpRight, ShoppingBag } from 'lucide-react'
+import { ArrowUpRight, Bookmark, ShoppingBag } from 'lucide-react'
 import { PLATFORM } from '@/lib/platforms'
 import type { ProductGroup } from '@/lib/types'
 import { cn, formatSize, rupee } from '@/lib/utils'
@@ -10,8 +10,8 @@ export function openExternal(url: string) {
   window.open(url, '_blank', 'noopener')
 }
 
-export function CompareSheet({ group, onClose, inCart, onAdd }: {
-  group: ProductGroup | null; onClose: () => void; inCart: number; onAdd: () => void
+export function CompareSheet({ group, onClose, inCart, onAdd, saved, onSave }: {
+  group: ProductGroup | null; onClose: () => void; inCart: number; onAdd: () => void; saved: boolean; onSave: () => void
 }) {
   const inStock = group?.offers.filter((o) => o.inStock) ?? []
   const save = inStock.length > 1 ? inStock[inStock.length - 1].price - inStock[0].price : 0
@@ -68,15 +68,24 @@ export function CompareSheet({ group, onClose, inCart, onAdd }: {
             ))}
           </ul>
           <p className="mt-3 text-center text-[11.5px] text-faint">Open takes you to that app's search. Ordering happens there.</p>
+          <div className="mt-4 flex gap-2">
+          <button
+            onClick={onSave}
+            aria-label={saved ? 'Saved to a list' : 'Save to list'}
+            className={cn('flex items-center justify-center gap-1.5 rounded-2xl px-4 text-[14px] font-semibold', saved ? 'bg-ink text-bg' : 'bg-surface text-ink')}
+          >
+            <Bookmark className={cn('size-4', saved && 'fill-current')} /> {saved ? 'Saved' : 'Save'}
+          </button>
           {group.best.inStock && (
             <button
               onClick={onAdd}
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-ink py-3.5 text-[15px] font-semibold text-bg active:scale-[.99]"
+              className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-ink py-3.5 text-[15px] font-semibold text-bg active:scale-[.99]"
             >
               <ShoppingBag className="size-4" />
               {inCart ? `Add another · ${inCart} in cart` : `Add to cart · ${rupee(group.best.price)} on ${PLATFORM[group.best.platform].short}`}
             </button>
           )}
+          </div>
         </>
       )}
     </Sheet>

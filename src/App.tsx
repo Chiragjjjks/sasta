@@ -7,6 +7,8 @@ import { AccountsSheet } from '@/components/AccountsSheet'
 import { BestValueCard } from '@/components/BestValueCard'
 import { CartBar } from '@/components/CartBar'
 import { CartSheet } from '@/components/CartSheet'
+import { ListsSheet } from '@/components/ListsSheet'
+import { SaveToListSheet } from '@/components/SaveToListSheet'
 import { CompareSheet } from '@/components/CompareSheet'
 import { LocationSheet } from '@/components/LocationSheet'
 import { PlatformDots, PlatformProgress } from '@/components/PlatformProgress'
@@ -16,11 +18,16 @@ import { Segmented } from '@/components/Segmented'
 import { VariantChips } from '@/components/VariantChips'
 import { ACCOUNT_CONFIG, connectWeb, disconnectWeb, loadAccounts, recheckWebSessions, saveAccounts, type Account } from '@/lib/accounts'
 import { connectSwiggy, disconnectSwiggy } from '@/lib/swiggy'
-import { addItem, extraOverCheapest, fromGroup, pin, pinAll, refreshCart, setQty, summarize, type CartItem } from '@/lib/cart'
+import { addItem, addItems, extraOverCheapest, fromGroup, pin, pinAll, refreshCart, setQty, summarize, type CartItem } from '@/lib/cart'
+import {
+  createList, deleteList, exportLists, importLists, isSaved, listItemFromGroup, markPicked, moveItem, removeFromList,
+  renameList, saveToList, setItemQty, shareText as listText, toCartItems, updatePrices, type ShoppingList,
+} from '@/lib/lists'
 import { groupOffers, variantFromQuery } from '@/lib/normalize'
+import { shareFile, shareText } from '@/lib/share'
 import { PLATFORMS } from '@/lib/platforms'
 import { runSearch } from '@/lib/search'
-import { DEFAULT_LOCATION, DEFAULT_RECENTS, loadCart, loadLocation, loadRecents, pushRecent, saveCart, saveLocation, saveRecents } from '@/lib/storage'
+import { DEFAULT_LOCATION, DEFAULT_RECENTS, loadCart, loadLists, loadLocation, loadRecents, pushRecent, saveCart, saveLists, saveLocation, saveRecents } from '@/lib/storage'
 import type { AdapterStatus, Location, Offer, Platform, ProductGroup } from '@/lib/types'
 import { formatSize } from '@/lib/utils'
 
@@ -47,11 +54,18 @@ export default function App() {
   const cartLoaded = useRef(false)
   const [accounts, setAccounts] = useState<Partial<Record<Platform, Account>>>({})
   const [accountsOpen, setAccountsOpen] = useState(false)
+  const [lists, setLists] = useState<ShoppingList[]>([])
+  const [listsOpen, setListsOpen] = useState(false)
+  const [openListId, setOpenListId] = useState<string | null>(null)
+  const [saveTarget, setSaveTarget] = useState<ProductGroup | null>(null)
+  const [toast, setToast] = useState('')
+  const listsLoaded = useRef(false)
 
   useEffect(() => {
     loadLocation().then(setLocation)
     loadRecents().then(setRecents)
     loadCart().then((c) => { setCart(c); cartLoaded.current = true })
+    loadLists().then((l) => { setLists(l); listsLoaded.current = true })
     loadAccounts().then(async (a) => {
       setAccounts(a)
       const checked = await recheckWebSessions(a).catch(() => a)
@@ -61,6 +75,43 @@ export default function App() {
   }, [])
 
   useEffect(() => { if (cartLoaded.current) saveCart(cart) }, [cart])
+  useEffect(() => { if (listsLoaded.current) saveLists(lists) }, [lists])
+  useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(''), 2600); return () => clearTimeout(t) }, [toast])
+
+  const toggleSaved = (listId: string, saved: boolean) => {
+    if (!saveTarget) return
+    setLists((ls) => saved ? removeFromList(ls, listId, saveTarget.key) : saveToList(ls, listId, listItemFromGroup(saveTarget, submitted)))
+  }
+  const createAndMaybeSave = (name: string, emoji: string) => {
+    setLists((ls) => {
+      const [next, list] = createList(ls, name, emoji)
+      return saveTarget ? saveToList(next, list.id, listItemFromGroup(saveTarget, submitted)) : next
+    })
+  }
+  async function addListToCart(listId: string, keys: string[]) {
+    const list = lists.find((l) => l.id === listId)
+    if (!list || !keys.length) return
+    const picked = toCartItems(list, keys)
+    const fresh = await refreshCart(picked, adapters, location, new AbortController().signal).catch(() => picked)
+    setCart((c) => addItems(c, fresh))
+    setLists((ls) => markPicked(updatePrices(ls, listId, fresh, Date.now() - 1), listId, keys))
+    setListsOpen(false)
+    setOpenListId(null)
+    setToast(`${keys.length} added from ${list.name}`)
+    setCartOpen(true)
+  }
+  async function shareList(listId: string, keys: string[]) {
+    const list = lists.find((l) => l.id === listId)
+    if (!list) return
+    const how = await shareText(list.name, listText(list, keys)).catch(() => null)
+    if (how === 'copied') setToast('List copied')
+  }
+  async function exportAllLists() {
+    await shareFile(`sasta-lists-${new Date().toISOString().slice(0, 10)}.json`, exportLists(lists)).catch(() => setToast('Could not export'))
+  }
+  function importAllLists(text: string) {
+    try { setLists((ls) => importLists(ls, text)); setToast('Lists restored') } catch (e) { setToast((e as Error).message) }
+  }
 
   const cartQty = useMemo(() => new Map(cart.map((i) => [i.key, i.qty])), [cart])
   const cartSummary = useMemo(() => summarize(cart), [cart])
@@ -109,12 +160,15 @@ export default function App() {
   }, [location])
 
   // Android hardware back: close sheets first, then go home, then exit.
-  const backState = useRef({ selected, locationOpen, submitted, cartOpen, accountsOpen })
-  backState.current = { selected, locationOpen, submitted, cartOpen, accountsOpen }
+  const backState = useRef({ selected, locationOpen, submitted, cartOpen, accountsOpen, listsOpen, openListId, saveTarget })
+  backState.current = { selected, locationOpen, submitted, cartOpen, accountsOpen, listsOpen, openListId, saveTarget }
   useEffect(() => {
     const sub = CapApp.addListener('backButton', () => {
       const s = backState.current
-      if (s.selected) setSelected(null)
+      if (s.saveTarget) setSaveTarget(null)
+      else if (s.selected) setSelected(null)
+      else if (s.listsOpen && s.openListId) setOpenListId(null)
+      else if (s.listsOpen) setListsOpen(false)
       else if (s.cartOpen) setCartOpen(false)
       else if (s.accountsOpen) setAccountsOpen(false)
       else if (s.locationOpen) setLocationOpen(false)
@@ -175,6 +229,7 @@ export default function App() {
         recents={recents}
         connectedCount={connectedCount}
         onAccounts={() => setAccountsOpen(true)}
+        onLists={() => setListsOpen(true)}
       />
 
       <main className={`space-y-4 px-4 pt-2 ${cart.length ? 'pb-28' : 'pb-8'}`}>
@@ -218,7 +273,7 @@ export default function App() {
                 </div>
                 <div className="space-y-2.5">
                   {visible.map((g, i) => (
-                    <ProductCard key={g.key} group={g} index={i} total={PLATFORMS.length} onOpen={() => setSelected(g)} inCart={cartQty.get(g.key) ?? 0} onAdd={() => addToCart(g)} />
+                    <ProductCard key={g.key} group={g} index={i} total={PLATFORMS.length} onOpen={() => setSelected(g)} inCart={cartQty.get(g.key) ?? 0} onAdd={() => addToCart(g)} saved={isSaved(lists, g.key)} onSave={() => setSaveTarget(g)} />
                   ))}
                 </div>
               </>
@@ -238,8 +293,10 @@ export default function App() {
         onClose={() => setSelected(null)}
         inCart={selected ? cartQty.get(selected.key) ?? 0 : 0}
         onAdd={() => selected && addToCart(selected)}
+        saved={!!selected && isSaved(lists, selected.key)}
+        onSave={() => selected && setSaveTarget(selected)}
       />
-      {!selected && !cartOpen && !locationOpen && !accountsOpen && <CartBar summary={cartSummary} extra={extraOverCheapest(cart)} onOpen={() => setCartOpen(true)} />}
+      {!selected && !cartOpen && !locationOpen && !accountsOpen && !listsOpen && !saveTarget && <CartBar summary={cartSummary} extra={extraOverCheapest(cart)} onOpen={() => setCartOpen(true)} />}
       <CartSheet
         open={cartOpen}
         items={cart}
@@ -251,6 +308,29 @@ export default function App() {
         onRefresh={refreshPrices}
         onClear={() => { setCart([]); setCartOpen(false) }}
       />
+      <SaveToListSheet group={saveTarget} lists={lists} onClose={() => setSaveTarget(null)} onToggle={toggleSaved} onCreate={createAndMaybeSave} />
+      <ListsSheet
+        open={listsOpen}
+        lists={lists}
+        openListId={openListId}
+        onOpenList={setOpenListId}
+        onClose={() => { setListsOpen(false); setOpenListId(null) }}
+        onCreate={(n, e) => setLists((ls) => createList(ls, n, e)[0])}
+        onRename={(id, n, e) => setLists((ls) => renameList(ls, id, n, e))}
+        onDelete={(id) => { setLists((ls) => deleteList(ls, id)); setOpenListId(null) }}
+        onQty={(l, k, q) => setLists((ls) => setItemQty(ls, l, k, q))}
+        onRemove={(l, k) => setLists((ls) => removeFromList(ls, l, k))}
+        onMove={(f, t, k, c) => setLists((ls) => moveItem(ls, f, t, k, c))}
+        onAddToCart={addListToCart}
+        onShare={shareList}
+        onExport={exportAllLists}
+        onImport={importAllLists}
+      />
+      {toast && (
+        <div className="pointer-events-none fixed inset-x-0 top-0 z-[60] flex justify-center pt-safe">
+          <div className="rise mt-3 rounded-full bg-ink px-4 py-2 text-[13px] font-semibold text-bg shadow-lg">{toast}</div>
+        </div>
+      )}
       <AccountsSheet
         open={accountsOpen}
         accounts={accounts}

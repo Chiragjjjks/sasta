@@ -1,4 +1,4 @@
-import { MapPin, Search, UserRound, X } from 'lucide-react'
+import { Bookmark, MapPin, Search, UserRound, X } from 'lucide-react'
 import { useRef } from 'react'
 import type { Location } from '@/lib/types'
 
@@ -11,9 +11,10 @@ interface Props {
   recents: string[]
   connectedCount: number
   onAccounts: () => void
+  onLists: () => void
 }
 
-export function SearchHeader({ query, onQuery, onSubmit, location, onLocation, recents, connectedCount, onAccounts }: Props) {
+export function SearchHeader({ query, onQuery, onSubmit, location, onLocation, recents, connectedCount, onAccounts, onLists }: Props) {
   const input = useRef<HTMLInputElement>(null)
   return (
     <header className="pt-safe sticky top-0 z-20 bg-bg/85 px-4 pb-3 backdrop-blur-xl">
@@ -22,6 +23,13 @@ export function SearchHeader({ query, onQuery, onSubmit, location, onLocation, r
           sasta<span className="text-accent">.</span>
         </span>
         <div className="flex min-w-0 items-center gap-2">
+        <button
+          onClick={onLists}
+          aria-label="Your lists"
+          className="grid size-9 shrink-0 place-items-center rounded-full bg-surface text-muted shadow-[0_1px_2px_rgba(20,21,42,.06)] active:scale-95"
+        >
+          <Bookmark className="size-4" />
+        </button>
         <button
           onClick={onAccounts}
           aria-label={`Connected apps, ${connectedCount} connected`}

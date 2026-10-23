@@ -1,12 +1,13 @@
-import { Check, Plus } from 'lucide-react'
+import { Bookmark, Check, Plus } from 'lucide-react'
 import { inStockCount } from '@/lib/normalize'
 import { PLATFORM } from '@/lib/platforms'
 import type { ProductGroup } from '@/lib/types'
 import { cn, formatSize, rupee } from '@/lib/utils'
 import { PackIcon } from './PackIcon'
 
-export function ProductCard({ group, total, onOpen, index, inCart, onAdd }: {
+export function ProductCard({ group, total, onOpen, index, inCart, onAdd, saved, onSave }: {
   group: ProductGroup; total: number; onOpen: () => void; index: number; inCart: number; onAdd: () => void
+  saved: boolean; onSave: () => void
 }) {
   const { best } = group
   const inStock = group.offers.filter((o) => o.inStock)
@@ -46,18 +47,27 @@ export function ProductCard({ group, total, onOpen, index, inCart, onAdd }: {
           <span className="font-semibold text-ink">{PLATFORM[best.platform].short}</span>
           {best.etaMinutes ? ` · ${best.etaMinutes}m` : ''}
         </div>
+        <div className="mt-2 flex items-center justify-end gap-1.5">
+        <button
+          aria-label={saved ? 'Saved to a list' : 'Save to list'}
+          onClick={(e) => { e.stopPropagation(); onSave() }}
+          className={cn('grid size-8 place-items-center rounded-full active:scale-95', saved ? 'bg-ink text-bg' : 'bg-chip text-muted')}
+        >
+          <Bookmark className={cn('size-3.5', saved && 'fill-current')} />
+        </button>
         {best.inStock && (
           <button
             aria-label={inCart ? `Add another, ${inCart} in cart` : 'Add to cart'}
             onClick={(e) => { e.stopPropagation(); onAdd() }}
             className={cn(
-              'mt-2 ml-auto flex h-8 items-center justify-center gap-1 rounded-full px-2.5 text-[12px] font-bold transition-colors active:scale-95',
+              'flex h-8 items-center justify-center gap-1 rounded-full px-2.5 text-[12px] font-bold transition-colors active:scale-95',
               inCart ? 'bg-good-bg text-good' : 'bg-ink text-bg',
             )}
           >
             {inCart ? <><Check className="size-3.5" />{inCart}</> : <><Plus className="size-3.5" />Add</>}
           </button>
         )}
+        </div>
       </div>
     </div>
   )

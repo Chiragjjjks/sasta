@@ -132,11 +132,12 @@ export function pinAll(items: CartItem[], platform: Platform | undefined): CartI
 export async function refreshCart(items: CartItem[], adapters: Adapter[], loc: Location, signal: AbortSignal): Promise<CartItem[]> {
   const queries = [...new Set(items.map((i) => i.query))]
   const fresh = new Map<string, ProductGroup>()
-  for (const q of queries) {
+  // All queries at once: refresh time is the slowest search, not the sum.
+  await Promise.all(queries.map(async (q) => {
     const offers: Offer[] = []
     await runSearch(adapters, q, loc, signal, { onStatus: () => {}, onOffers: (_, o) => offers.push(...o) }, { force: true })
     for (const g of groupOffers(offers)) fresh.set(g.key, g)
-  }
+  }))
   if (signal.aborted) return items
   return items.map((i) => {
     const g = fresh.get(i.key)
@@ -152,4 +153,16 @@ export function cheapestCart(items: CartItem[]): CartItem[] {
 /** How much more the current selection costs than the cheapest cart (0 when it is the cheapest). */
 export function extraOverCheapest(items: CartItem[]): number {
   return summarize(items).total - summarize(cheapestCart(items)).total
+}
+
+/** Adds several items, increasing quantity for packs already in the cart. Never empties the cart. */
+export function addItems(items: CartItem[], next: CartItem[]): CartItem[] {
+  let out = items
+  for (const n of next) {
+    const existing = out.find((i) => i.key === n.key)
+    out = existing
+      ? out.map((i) => (i.key === n.key ? { ...i, qty: i.qty + n.qty, offers: n.offers, updatedAt: Math.max(i.updatedAt, n.updatedAt) } : i))
+      : [...out, n]
+  }
+  return out
 }

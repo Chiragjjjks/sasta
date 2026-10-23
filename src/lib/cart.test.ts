@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addItem, cheapestCart, chosenOffer, extraOverCheapest, pin, pinAll, setQty, singleAppOptions, summarize, type CartItem } from './cart'
+import { addItem, addItems, cheapestCart, chosenOffer, extraOverCheapest, pin, pinAll, setQty, singleAppOptions, summarize, type CartItem } from './cart'
 import type { Offer, Platform } from './types'
 
 const o = (platform: Platform, price: number, inStock = true, mrp = 20): Offer => ({
@@ -58,5 +58,12 @@ describe('cheapest cart', () => {
     const pinned = pinAll([chips, noodles], 'blinkit')
     expect(extraOverCheapest(pinned)).toBe(17 + 26 - (15 + 26))
     expect(extraOverCheapest(cheapestCart(pinned))).toBe(0)
+  })
+})
+
+describe('addItems', () => {
+  it('adds list quantities on top of what is already in the cart', () => {
+    const out = addItems([{ ...chips, qty: 1 }], [{ ...chips, qty: 2 }, { ...milk, qty: 3 }])
+    expect(out.map((i) => [i.key, i.qty])).toEqual([['chips', 3], ['milk', 3]])
   })
 })
