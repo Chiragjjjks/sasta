@@ -13,4 +13,5 @@ android/captures/
 *.jks
 *.keystore
 !android/app/sasta-public-debug.keystore
+!mobile/credentials/sasta-public-debug.keystore
 *.tsbuildinfo

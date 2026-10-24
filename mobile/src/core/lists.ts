@@ -1,0 +1,169 @@
+import { fromGroup, type CartItem } from './cart'
+import type { Offer, ProductGroup } from './types'
+
+/** A saved product. Same identity as a cart item, so it can go straight into the cart. */
+export interface ListItem {
+  key: string
+  brand: string
+  variant: string
+  variantKey: string
+  sizeGrams?: number
+  query: string
+  /** Usual quantity, pre-filled when ticked. */
+  qty: number
+  lastOffers: Offer[]
+  lastSeenAt: number
+  /** Cheapest in-stock price when first saved, for "price dropped". */
+  savedPrice?: number
+  addedAt: number
+  lastPickedAt?: number
+  timesPicked: number
+  note?: string
+}
+
+export interface ShoppingList {
+  id: string
+  name: string
+  emoji: string
+  items: ListItem[]
+  createdAt: number
+  updatedAt: number
+}
+
+export const STARTER_LISTS: { name: string; emoji: string }[] = [
+  { name: 'Monthly groceries', emoji: '🛒' },
+  { name: 'Office snacks', emoji: '🏢' },
+  { name: 'Party', emoji: '🎉' },
+]
+
+const touch = (l: ShoppingList, now = Date.now()): ShoppingList => ({ ...l, updatedAt: now })
+
+export function createList(lists: ShoppingList[], name: string, emoji = '🛍️', now = Date.now()): [ShoppingList[], ShoppingList] {
+  const list: ShoppingList = { id: `l${now.toString(36)}${Math.random().toString(36).slice(2, 6)}`, name: name.trim() || 'My list', emoji, items: [], createdAt: now, updatedAt: now }
+  return [[...lists, list], list]
+}
+
+export function renameList(lists: ShoppingList[], id: string, name: string, emoji?: string): ShoppingList[] {
+  return lists.map((l) => (l.id === id ? touch({ ...l, name: name.trim() || l.name, emoji: emoji ?? l.emoji }) : l))
+}
+
+export function deleteList(lists: ShoppingList[], id: string): ShoppingList[] {
+  return lists.filter((l) => l.id !== id)
+}
+
+export function listItemFromGroup(g: ProductGroup, query: string, now = Date.now()): ListItem {
+  const cheapest = g.offers.find((o) => o.inStock)
+  return {
+    key: g.key, brand: g.brand, variant: g.variant, variantKey: g.variantKey, sizeGrams: g.sizeGrams, query,
+    qty: 1, lastOffers: g.offers, lastSeenAt: now, savedPrice: cheapest?.price, addedAt: now, timesPicked: 0,
+  }
+}
+
+export function isSaved(lists: ShoppingList[], key: string): boolean {
+  return lists.some((l) => l.items.some((i) => i.key === key))
+}
+
+export function listsContaining(lists: ShoppingList[], key: string): string[] {
+  return lists.filter((l) => l.items.some((i) => i.key === key)).map((l) => l.id)
+}
+
+/** Adds the product to the list, or refreshes its prices if it is already there. */
+export function saveToList(lists: ShoppingList[], listId: string, item: ListItem): ShoppingList[] {
+  return lists.map((l) => {
+    if (l.id !== listId) return l
+    const existing = l.items.find((i) => i.key === item.key)
+    const items = existing
+      ? l.items.map((i) => (i.key === item.key ? { ...i, lastOffers: item.lastOffers, lastSeenAt: item.lastSeenAt } : i))
+      : [...l.items, item]
+    return touch({ ...l, items })
+  })
+}
+
+export function removeFromList(lists: ShoppingList[], listId: string, key: string): ShoppingList[] {
+  return lists.map((l) => (l.id === listId ? touch({ ...l, items: l.items.filter((i) => i.key !== key) }) : l))
+}
+
+export function setItemQty(lists: ShoppingList[], listId: string, key: string, qty: number): ShoppingList[] {
+  return lists.map((l) => (l.id === listId ? { ...l, items: l.items.map((i) => (i.key === key ? { ...i, qty: Math.max(1, qty) } : i)) } : l))
+}
+
+export function moveItem(lists: ShoppingList[], fromId: string, toId: string, key: string, copy = false): ShoppingList[] {
+  const item = lists.find((l) => l.id === fromId)?.items.find((i) => i.key === key)
+  if (!item || fromId === toId) return lists
+  const added = saveToList(lists, toId, item)
+  return copy ? added : removeFromList(added, fromId, key)
+}
+
+export function currentPrice(item: ListItem): number | undefined {
+  return item.lastOffers.filter((o) => o.inStock).sort((a, b) => a.price - b.price)[0]?.price
+}
+
+/** Rupees the cheapest price fell since the product was saved (0 if it did not). */
+export function priceDrop(item: ListItem): number {
+  const now = currentPrice(item)
+  return item.savedPrice !== undefined && now !== undefined && now < item.savedPrice ? item.savedPrice - now : 0
+}
+
+export function estimateTotal(items: ListItem[]): number {
+  return items.reduce((s, i) => s + (currentPrice(i) ?? 0) * i.qty, 0)
+}
+
+/** Keys picked on the most recent "Add to cart" from this list. */
+export function sameAsLastTime(list: ShoppingList): string[] {
+  const last = Math.max(0, ...list.items.map((i) => i.lastPickedAt ?? 0))
+  return last ? list.items.filter((i) => i.lastPickedAt === last).map((i) => i.key) : []
+}
+
+export type ListSort = 'saved' | 'often' | 'cheapest' | 'az'
+
+export function sortItems(items: ListItem[], sort: ListSort): ListItem[] {
+  const s = [...items]
+  if (sort === 'often') s.sort((a, b) => b.timesPicked - a.timesPicked || (b.lastPickedAt ?? 0) - (a.lastPickedAt ?? 0))
+  if (sort === 'cheapest') s.sort((a, b) => (currentPrice(a) ?? Infinity) - (currentPrice(b) ?? Infinity))
+  if (sort === 'az') s.sort((a, b) => `${a.brand} ${a.variant}`.localeCompare(`${b.brand} ${b.variant}`))
+  return s
+}
+
+/** Cart items for the picked products, using each one's list quantity. */
+export function toCartItems(list: ShoppingList, keys: string[], now = Date.now()): CartItem[] {
+  return list.items.filter((i) => keys.includes(i.key)).map((i) => ({
+    ...fromGroup({ key: i.key, brand: i.brand, variant: i.variant, variantKey: i.variantKey, sizeGrams: i.sizeGrams, offers: i.lastOffers, best: i.lastOffers[0] }, i.query),
+    qty: i.qty,
+    updatedAt: i.lastSeenAt ?? now,
+  }))
+}
+
+/** Records the pick so "Same as last time" and "Often bought" work next time. */
+export function markPicked(lists: ShoppingList[], listId: string, keys: string[], now = Date.now()): ShoppingList[] {
+  return lists.map((l) => (l.id !== listId ? l : touch({
+    ...l,
+    items: l.items.map((i) => (keys.includes(i.key) ? { ...i, lastPickedAt: now, timesPicked: i.timesPicked + 1 } : i)),
+  }, now)))
+}
+
+/** Updates saved prices from freshly fetched cart items (after a refresh). */
+export function updatePrices(lists: ShoppingList[], listId: string, fresh: CartItem[], now = Date.now()): ShoppingList[] {
+  const byKey = new Map(fresh.map((c) => [c.key, c]))
+  return lists.map((l) => (l.id !== listId ? l : {
+    ...l,
+    items: l.items.map((i) => { const c = byKey.get(i.key); return c && c.updatedAt >= now ? { ...i, lastOffers: c.offers, lastSeenAt: c.updatedAt } : i }),
+  }))
+}
+
+export function shareText(list: ShoppingList, keys?: string[]): string {
+  const items = keys ? list.items.filter((i) => keys.includes(i.key)) : list.items
+  const lines = items.map((i) => `• ${i.brand === 'Other' ? '' : `${i.brand} `}${i.variant}${i.sizeGrams ? ` ${i.sizeGrams} g` : ''} × ${i.qty}`)
+  return `${list.emoji} ${list.name}\n${lines.join('\n')}`
+}
+
+export function exportLists(lists: ShoppingList[]): string {
+  return JSON.stringify({ app: 'sasta', kind: 'lists', version: 1, exportedAt: new Date().toISOString(), lists }, null, 2)
+}
+
+/** Merges an export into the current lists. Lists with the same id are replaced. */
+export function importLists(current: ShoppingList[], text: string): ShoppingList[] {
+  const data = JSON.parse(text) as { app?: string; kind?: string; lists?: ShoppingList[] }
+  if (data.app !== 'sasta' || data.kind !== 'lists' || !Array.isArray(data.lists)) throw new Error('This file is not a Sasta lists export.')
+  const incoming = new Map(data.lists.map((l) => [l.id, l]))
+  return [...current.filter((l) => !incoming.has(l.id)), ...data.lists]
+}

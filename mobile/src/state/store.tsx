@@ -1,0 +1,324 @@
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { adapters, IS_NATIVE } from '@/core/adapters'
+import { blinkitIdentity, fetchBlinkitBill, openBlinkitWithCart, prepareBlinkitSignIn } from '@/core/adapters/blinkit'
+import {
+  ACCOUNT_CONFIG, connectSwiggyWebsite, connectWeb, disconnectWeb, loadAccounts, recheckWebSessions, saveAccounts,
+  testWebConnection, type Account,
+} from '@/core/accounts'
+import { addItem, addItems, fromGroup, mergeRefreshedCart, pin, pinAll, refreshCart, setQty, summarize, type CartItem } from '@/core/cart'
+import { blinkitRuleFromBill, type FeeRules } from '@/core/fees'
+import {
+  createList, deleteList, exportLists, importLists, listItemFromGroup, markPicked, moveItem, removeFromList, renameList,
+  saveToList, setItemQty, shareText as listText, toCartItems, updatePrices, type ShoppingList,
+} from '@/core/lists'
+import { groupOffers } from '@/core/normalize'
+import { PLATFORM, PLATFORMS } from '@/core/platforms'
+import { clearSearchCache, runSearch } from '@/core/search'
+import { shareFile, shareText } from '@/core/share'
+import {
+  DEFAULT_LOCATION, DEFAULT_RECENTS, loadCart, loadFees, loadLists, loadLocation, loadRecents, pushRecent, saveCart,
+  saveFees, saveLists, saveLocation, saveRecents,
+} from '@/core/storage'
+import { connectSwiggy, disconnectSwiggy, swiggyClient } from '@/core/swiggy'
+import type { AdapterStatus, Location, Offer, Platform, ProductGroup } from '@/core/types'
+import { isReasonableQuery } from '@/core/utils'
+
+interface Store {
+  // search
+  query: string; setQuery: (q: string) => void
+  submitted: string
+  search: (q: string, opts?: { loc?: Location; force?: boolean }) => Promise<void>
+  clearSearch: () => void
+  statuses: Partial<Record<Platform, AdapterStatus>>
+  offers: Partial<Record<Platform, Offer[]>>
+  groups: ProductGroup[]
+  elapsed: number | null
+  recents: string[]
+  groupByKey: (key: string) => ProductGroup | undefined
+  // location
+  location: Location; setLocation: (l: Location) => void
+  // cart
+  cart: CartItem[]
+  addToCart: (g: ProductGroup) => void
+  setCartQty: (key: string, qty: number) => void
+  pinItem: (key: string, p: Platform | undefined) => void
+  pinAllTo: (p: Platform | undefined) => void
+  pinMap: (pins: Record<string, Platform>) => void
+  clearCart: () => void
+  refreshing: boolean
+  refreshPrices: () => Promise<void>
+  fees: FeeRules
+  learnFees: () => void
+  checkout: (p: Platform) => Promise<void>
+  // lists
+  lists: ShoppingList[]
+  isSaved: (key: string) => boolean
+  toggleSaved: (listId: string, g: ProductGroup) => void
+  createList: (name: string, emoji: string, save?: ProductGroup) => string
+  renameList: (id: string, name: string, emoji: string) => void
+  deleteList: (id: string) => void
+  setListQty: (listId: string, key: string, qty: number) => void
+  removeFromList: (listId: string, key: string) => void
+  moveListItem: (from: string, to: string, key: string, copy: boolean) => void
+  addListToCart: (listId: string, keys: string[]) => Promise<number>
+  shareList: (listId: string, keys: string[]) => Promise<void>
+  exportLists: () => Promise<void>
+  importLists: (text: string) => void
+  // accounts
+  accounts: Partial<Record<Platform, Account>>
+  connect: (p: Platform, opts?: { website?: boolean }) => Promise<Account>
+  disconnect: (p: Platform) => Promise<void>
+  testConnection: (p: Platform) => Promise<void>
+  // feedback
+  toast: string; showToast: (t: string) => void
+}
+
+const Ctx = createContext<Store | null>(null)
+
+export function useStore(): Store {
+  const s = useContext(Ctx)
+  if (!s) throw new Error('useStore outside StoreProvider')
+  return s
+}
+
+export function StoreProvider({ children }: { children: ReactNode }) {
+  const [query, setQuery] = useState('')
+  const [submitted, setSubmitted] = useState('')
+  const [statuses, setStatuses] = useState<Partial<Record<Platform, AdapterStatus>>>({})
+  const [offers, setOffers] = useState<Partial<Record<Platform, Offer[]>>>({})
+  const [elapsed, setElapsed] = useState<number | null>(null)
+  const [recents, setRecents] = useState<string[]>(DEFAULT_RECENTS)
+  const [location, setLocationState] = useState<Location>(DEFAULT_LOCATION)
+  const [cart, setCart] = useState<CartItem[]>([])
+  const [refreshing, setRefreshing] = useState(false)
+  const [fees, setFees] = useState<FeeRules>({})
+  const [lists, setLists] = useState<ShoppingList[]>([])
+  const [accounts, setAccounts] = useState<Partial<Record<Platform, Account>>>({})
+  const [toast, setToast] = useState('')
+  const loadedCart = useRef(false)
+  const loadedLists = useRef(false)
+  const abortRef = useRef<AbortController | null>(null)
+  const locationRef = useRef(location)
+  useEffect(() => { locationRef.current = location }, [location])
+  const lastCartGroups = useRef(new Map<string, ProductGroup>())
+
+  useEffect(() => {
+    loadLocation().then(setLocationState)
+    loadRecents().then((r) => setRecents(r.filter(isReasonableQuery)))
+    loadCart().then((c) => { setCart(c); loadedCart.current = true })
+    loadLists().then((l) => { setLists(l); loadedLists.current = true })
+    loadFees().then(setFees)
+    loadAccounts().then(async (a) => {
+      setAccounts(a)
+      if (!IS_NATIVE) return
+      const checked = await recheckWebSessions(a).catch(() => a)
+      // Merge per app, so a connection made while this check ran is not overwritten.
+      setAccounts((cur) => {
+        const next = { ...cur }
+        for (const p of Object.keys(checked) as Platform[]) if (cur[p]?.connectedAt === a[p]?.connectedAt) next[p] = checked[p]
+        saveAccounts(next)
+        return next
+      })
+    })
+  }, [])
+
+  useEffect(() => { if (loadedCart.current) saveCart(cart) }, [cart])
+  useEffect(() => { if (loadedLists.current) saveLists(lists) }, [lists])
+  useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(''), 2800); return () => clearTimeout(t) }, [toast])
+
+  /* ---------------------------------------------------------------- search */
+
+  const search = useCallback(async (raw: string, opts: { loc?: Location; force?: boolean } = {}) => {
+    const q = raw.trim()
+    if (!q) return
+    abortRef.current?.abort()
+    const ctrl = new AbortController()
+    abortRef.current = ctrl
+    setQuery(q)
+    setSubmitted(q)
+    setOffers({})
+    setStatuses({})
+    setElapsed(null)
+    if (isReasonableQuery(q)) setRecents((r) => { const next = pushRecent(r, q); saveRecents(next); return next })
+    const t0 = Date.now()
+    await runSearch(adapters, q, opts.loc ?? locationRef.current, ctrl.signal, {
+      onStatus: (s) => { if (!ctrl.signal.aborted) setStatuses((prev) => ({ ...prev, [s.platform]: s })) },
+      onOffers: (p, o) => { if (!ctrl.signal.aborted) setOffers((prev) => ({ ...prev, [p]: o })) },
+    }, { force: opts.force })
+    if (!ctrl.signal.aborted) setElapsed(Date.now() - t0)
+  }, [])
+
+  const clearSearch = useCallback(() => {
+    abortRef.current?.abort()
+    setSubmitted(''); setQuery(''); setOffers({}); setStatuses({})
+  }, [])
+
+  const allOffers = useMemo(() => Object.values(offers).flat() as Offer[], [offers])
+  const groups = useMemo(() => groupOffers(allOffers), [allOffers])
+  const groupByKey = useCallback((key: string) => groups.find((g) => g.key === key) ?? lastCartGroups.current.get(key), [groups])
+
+  /* ---------------------------------------------------------------- location */
+
+  const setLocation = useCallback((l: Location) => {
+    locationRef.current = l
+    setLocationState(l)
+    saveLocation(l)
+    if (submitted) search(submitted, { loc: l, force: true })
+  }, [submitted, search])
+
+  /* ---------------------------------------------------------------- cart */
+
+  const addToCart = useCallback((g: ProductGroup) => {
+    lastCartGroups.current.set(g.key, g)
+    setCart((c) => addItem(c, fromGroup(g, submitted || g.variant)))
+  }, [submitted])
+
+  const refreshPrices = useCallback(async () => {
+    setRefreshing(true)
+    try {
+      const fresh = await refreshCart(cart, adapters, locationRef.current, new AbortController().signal)
+      setCart((current) => mergeRefreshedCart(current, fresh))
+    }
+    catch { setToast('Could not refresh prices. Check your connection.') }
+    finally { setRefreshing(false) }
+  }, [cart])
+
+  const learnFees = useCallback(() => {
+    const items = cart.flatMap((i) => i.offers.filter((o) => o.platform === 'blinkit' && o.inStock && o.meta?.cartItem).slice(0, 1).map((o) => o.meta!.cartItem))
+    const fresh = fees.blinkit && Date.now() - fees.blinkit.fetchedAt < 30 * 60 * 1000
+    if (!items.length || fresh) return
+    fetchBlinkitBill(items.slice(0, 10), locationRef.current)
+      .then((bill) => { const rule = blinkitRuleFromBill(bill); if (rule) setFees((f) => { const next = { ...f, blinkit: rule }; saveFees(next); return next }) })
+      .catch(() => {})
+  }, [cart, fees])
+
+  const checkout = useCallback(async (p: Platform) => {
+    if (p !== 'blinkit') return
+    const lines = summarize(cart).lines.flatMap((l) => (l.offer?.platform === 'blinkit' && l.offer.meta?.cartItem
+      ? [{ cartItem: l.offer.meta.cartItem as Record<string, unknown>, qty: l.item.qty }] : []))
+    await openBlinkitWithCart(lines, locationRef.current)
+  }, [cart])
+
+  /* ---------------------------------------------------------------- lists */
+
+  const isSaved = useCallback((key: string) => lists.some((l) => l.items.some((i) => i.key === key)), [lists])
+
+  const toggleSaved = useCallback((listId: string, g: ProductGroup) => {
+    setLists((ls) => {
+      const saved = ls.find((l) => l.id === listId)?.items.some((i) => i.key === g.key)
+      return saved ? removeFromList(ls, listId, g.key) : saveToList(ls, listId, listItemFromGroup(g, submitted || g.variant))
+    })
+  }, [submitted])
+
+  const createListFn = useCallback((name: string, emoji: string, save?: ProductGroup) => {
+    const [next, list] = createList(lists, name, emoji)
+    setLists(save ? saveToList(next, list.id, listItemFromGroup(save, submitted || save.variant)) : next)
+    return list.id
+  }, [lists, submitted])
+
+  const addListToCart = useCallback(async (listId: string, keys: string[]) => {
+    const list = lists.find((l) => l.id === listId)
+    if (!list || !keys.length) return 0
+    const picked = toCartItems(list, keys)
+    const fresh = await refreshCart(picked, adapters, locationRef.current, new AbortController().signal).catch(() => picked)
+    setCart((c) => addItems(c, fresh))
+    setLists((ls) => markPicked(updatePrices(ls, listId, fresh, Date.now() - 1), listId, keys))
+    setToast(`${keys.length} added from ${list.name}`)
+    return keys.length
+  }, [lists])
+
+  const importListsFn = useCallback((text: string) => {
+    // Validate first: a bad file must show a message, never crash the app.
+    let next: ShoppingList[]
+    try { next = importLists(lists, text) } catch (e) { setToast((e as Error).message || 'That file is not a Sasta lists backup.'); return }
+    setLists(next)
+    setToast('Lists restored')
+  }, [lists])
+
+  /* ---------------------------------------------------------------- accounts */
+
+  const updateAccount = useCallback((a: Account) => {
+    clearSearchCache()
+    setAccounts((prev) => { const next = { ...prev, [a.platform]: a }; saveAccounts(next); return next })
+  }, [])
+
+  const testAccount = useCallback(async (p: Platform, acc: Account): Promise<{ ok: boolean; detail: string }> => {
+    if (p === 'instamart' && acc.via !== 'web') {
+      try { const tools = await swiggyClient().listTools(); return { ok: true, detail: `Swiggy answered with ${tools.length} actions` } }
+      catch (e) { return { ok: false, detail: `Swiggy didn't answer: ${(e as Error).message}` } }
+    }
+    if (p === 'blinkit') {
+      const who = await blinkitIdentity().catch(() => null)
+      if (who?.signedIn) return { ok: true, detail: `Blinkit says you are signed in${who.phone ? ` as ${who.phone}` : ''}` }
+    }
+    return testWebConnection(p, acc).catch((e) => ({ ok: false, detail: (e as Error).message }))
+  }, [])
+
+  const runTest = useCallback(async (p: Platform, acc: Account, announce = true) => {
+    const t = await testAccount(p, acc)
+    const tested: Account = { ...acc, lastTest: { ...t, at: Date.now() }, verified: t.ok ? true : acc.verified }
+    updateAccount(tested)
+    if (announce) setToast(t.ok ? `${PLATFORM[p].name} connected · test passed` : `${PLATFORM[p].name}: ${t.detail}`)
+    return tested
+  }, [testAccount, updateAccount])
+
+  const connect = useCallback(async (p: Platform, opts: { website?: boolean } = {}): Promise<Account> => {
+    let acc: Account
+    if (p === 'instamart' && !opts.website) {
+      try { acc = await connectSwiggy() }
+      catch (e) { throw new Error(`Swiggy's official sign-in didn't finish (${(e as Error).message}). Try "Sign in on Swiggy's website".`) }
+    } else if (p === 'instamart') acc = await connectSwiggyWebsite()
+    else {
+      if (p === 'blinkit' && IS_NATIVE) await prepareBlinkitSignIn(locationRef.current).catch(() => {})
+      acc = await connectWeb(p)
+    }
+    if (p === 'blinkit' && IS_NATIVE && acc.status === 'connected') {
+      const who = await blinkitIdentity().catch(() => null)
+      if (who?.signedIn) acc = { ...acc, verified: true, label: who.phone || acc.label }
+    }
+    updateAccount(acc)
+    if (acc.status === 'connected') acc = await runTest(p, acc)
+    return acc
+  }, [runTest, updateAccount])
+
+  const disconnect = useCallback(async (p: Platform) => {
+    const acc = accounts[p]
+    updateAccount(p === 'instamart' && acc?.via !== 'web' ? await disconnectSwiggy() : await disconnectWeb(p))
+  }, [accounts, updateAccount])
+
+  const testConnection = useCallback(async (p: Platform) => {
+    const a = accounts[p]
+    if (a) await runTest(p, a)
+  }, [accounts, runTest])
+
+  const value: Store = {
+    query, setQuery, submitted, search, clearSearch, statuses, offers, groups, elapsed, recents, groupByKey,
+    location, setLocation,
+    cart, addToCart,
+    setCartQty: (k, q) => setCart((c) => setQty(c, k, q)),
+    pinItem: (k, p) => setCart((c) => pin(c, k, p)),
+    pinAllTo: (p) => setCart((c) => pinAll(c, p)),
+    pinMap: (pins) => setCart((c) => c.map((i) => ({ ...i, pinned: pins[i.key] }))),
+    clearCart: () => setCart([]),
+    refreshing, refreshPrices, fees, learnFees, checkout,
+    lists, isSaved, toggleSaved, createList: createListFn,
+    renameList: (id, n, e) => setLists((ls) => renameList(ls, id, n, e)),
+    deleteList: (id) => setLists((ls) => deleteList(ls, id)),
+    setListQty: (l, k, q) => setLists((ls) => setItemQty(ls, l, k, q)),
+    removeFromList: (l, k) => setLists((ls) => removeFromList(ls, l, k)),
+    moveListItem: (f, t, k, c) => setLists((ls) => moveItem(ls, f, t, k, c)),
+    addListToCart,
+    shareList: async (listId, keys) => {
+      const list = lists.find((l) => l.id === listId)
+      if (list) await shareText(list.name, listText(list, keys)).catch(() => {})
+    },
+    exportLists: async () => { await shareFile(`sasta-lists-${new Date().toISOString().slice(0, 10)}.json`, exportLists(lists)).catch(() => setToast('Could not export')) },
+    importLists: importListsFn,
+    accounts, connect, disconnect, testConnection,
+    toast, showToast: setToast,
+  }
+
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>
+}
+
+export { ACCOUNT_CONFIG, PLATFORMS }

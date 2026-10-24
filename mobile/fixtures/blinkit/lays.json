@@ -1,0 +1,392 @@
+{
+ "captured": "2026-10-24",
+ "query": "lays",
+ "lat": "12.9915",
+ "lon": "77.5544",
+ "note": "Real logged-out response from POST /v1/layout/search, trimmed to the cart_item objects nested in response.snippets (full response ~300 KB of UI widgets). No cookies or personal data.",
+ "is_success": true,
+ "response": {
+  "snippets": [
+   {
+    "cart_item": {
+     "product_id": 659682,
+     "merchant_id": 31277,
+     "product_name": "Bikano Crunchy Munchy Sweet Chilli Namkeen",
+     "quantity": 1,
+     "unavailable_quantity": 0,
+     "price": 26,
+     "mrp": 50,
+     "unit": "90 g",
+     "inventory": 1,
+     "meta": null,
+     "image_url": "https://cdn.grofers.com/da/cms-assets/cms/product/2fed1a5c-ceb5-4874-9cf4-3e3e90085ea5.png",
+     "group_id": 2059582,
+     "merchant_type": "express",
+     "eta_identifier": "express",
+     "brand": "Bikano",
+     "display_name": "Bikano Crunchy Munchy Sweet Chilli Namkeen"
+    }
+   },
+   {
+    "cart_item": {
+     "product_id": 289152,
+     "merchant_id": 31277,
+     "product_name": "Lay's West Indies Hot n Sweet Chilli Flavour Potato Chips",
+     "quantity": 1,
+     "unavailable_quantity": 0,
+     "price": 25,
+     "mrp": 25,
+     "unit": "58 g",
+     "inventory": 50,
+     "meta": null,
+     "image_url": "https://cdn.grofers.com/da/cms-assets/cms/product/rc-upload-1776240040304-421.png",
+     "group_id": 782262,
+     "merchant_type": "express",
+     "eta_identifier": "express",
+     "brand": "Lay's",
+     "display_name": "Lay's West Indies Hot n Sweet Chilli Flavour Potato Chips"
+    }
+   },
+   {
+    "cart_item": {
+     "product_id": 518852,
+     "merchant_id": 31277,
+     "product_name": "Lay's India's Magic Masala Potato Chips",
+     "quantity": 1,
+     "unavailable_quantity": 0,
+     "price": 80,
+     "mrp": 144,
+     "unit": "3 x 80 g",
+     "inventory": 8,
+     "meta": null,
+     "image_url": "https://cdn.grofers.com/da/cms-assets/cms/product/rc-upload-1778243110777-1092.png",
+     "group_id": 2593130,
+     "merchant_type": "express",
+     "eta_identifier": "express",
+     "brand": "Lay's",
+     "display_name": "Lay's India's Magic Masala Potato Chips"
+    }
+   },
+   {
+    "cart_item": {
+     "product_id": 432779,
+     "merchant_id": 31277,
+     "product_name": "Lay's India's Magic Masala Potato Chips",
+     "quantity": 1,
+     "unavailable_quantity": 0,
+     "price": 39,
+     "mrp": 48,
+     "unit": "80 g",
+     "inventory": 34,
+     "meta": null,
+     "image_url": "https://cdn.grofers.com/da/cms-assets/cms/product/rc-upload-1776693405497-36.png",
+     "group_id": 2593130,
+     "merchant_type": "express",
+     "eta_identifier": "express",
+     "brand": "Lay's",
+     "display_name": "Lay's India's Magic Masala Potato Chips"
+    }
+   },
+   {
+    "cart_item": {
+     "product_id": 439144,
+     "merchant_id": 31277,
+     "product_name": "Lay's India's Magic Masala Potato Chips",
+     "quantity": 1,
+     "unavailable_quantity": 0,
+     "price": 72,
+     "mrp": 96,
+     "unit": "2 x 80 g",
+     "inventory": 17,
+     "meta": null,
+     "image_url": "https://cdn.grofers.com/da/cms-assets/cms/product/rc-upload-1777953701494-14948.png",
+     "group_id": 2593130,
+     "merchant_type": "express",
+     "eta_identifier": "express",
+     "brand": "Lay's",
+     "display_name": "Lay's India's Magic Masala Potato Chips"
+    }
+   },
+   {
+    "cart_item": {
+     "product_id": 240092,
+     "merchant_id": 31277,
+     "product_name": "Lay's India's Magic Masala Potato Chips",
+     "quantity": 1,
+     "unavailable_quantity": 0,
+     "price": 25,
+     "mrp": 25,
+     "unit": "58 g",
+     "inventory": 3,
+     "meta": null,
+     "image_url": "https://cdn.grofers.com/da/cms-assets/cms/product/rc-upload-1776398906000-172.png",
+     "group_id": 438085,
+     "merchant_type": "express",
+     "eta_identifier": "express",
+     "brand": "Lay's",
+     "display_name": "Lay's India's Magic Masala Potato Chips"
+    }
+   },
+   {
+    "cart_item": {
+     "product_id": 432775,
+     "merchant_id": 31277,
+     "product_name": "Lay's India's Magic Masala Potato Chips",
+     "quantity": 1,
+     "unavailable_quantity": 0,
+     "price": 35,
+     "mrp": 35,
+     "unit": "75 g",
+     "inventory": 43,
+     "meta": null,
+     "image_url": "https://cdn.grofers.com/da/cms-assets/cms/product/rc-upload-1776240040304-466.png",
+     "group_id": 438085,
+     "merchant_type": "express",
+     "eta_identifier": "express",
+     "brand": "Lay's",
+     "display_name": "Lay's India's Magic Masala Potato Chips"
+    }
+   },
+   {
+    "cart_item": {
+     "product_id": 518851,
+     "merchant_id": 31277,
+     "product_name": "Lay's American Style Cream & Onion Flavour Potato Chips",
+     "quantity": 1,
+     "unavailable_quantity": 0,
+     "price": 80,
+     "mrp": 144,
+     "unit": "3 x 80 g",
+     "inventory": 4,
+     "meta": null,
+     "image_url": "https://cdn.grofers.com/da/cms-assets/cms/product/rc-upload-1778243110777-1081.png",
+     "group_id": 438084,
+     "merchant_type": "express",
+     "eta_identifier": "express",
+     "brand": "Lay's",
+     "display_name": "Lay's American Style Cream & Onion Flavour Potato Chips"
+    }
+   },
+   {
+    "cart_item": {
+     "product_id": 432778,
+     "merchant_id": 31277,
+     "product_name": "Lay's American Style Cream & Onion Flavour Potato Chips",
+     "quantity": 1,
+     "unavailable_quantity": 0,
+     "price": 39,
+     "mrp": 48,
+     "unit": "80 g",
+     "inventory": 12,
+     "meta": null,
+     "image_url": "https://cdn.grofers.com/da/cms-assets/cms/product/rc-upload-1776693405497-24.png",
+     "group_id": 438084,
+     "merchant_type": "express",
+     "eta_identifier": "express",
+     "brand": "Lay's",
+     "display_name": "Lay's American Style Cream & Onion Flavour Potato Chips"
+    }
+   },
+   {
+    "cart_item": {
+     "product_id": 439142,
+     "merchant_id": 31277,
+     "product_name": "Lay's American Style Cream & Onion Flavour Potato Chips",
+     "quantity": 1,
+     "unavailable_quantity": 0,
+     "price": 72,
+     "mrp": 96,
+     "unit": "2 x 80 g",
+     "inventory": 6,
+     "meta": null,
+     "image_url": "https://cdn.grofers.com/da/cms-assets/cms/product/rc-upload-1778220054761-1768.png",
+     "group_id": 438084,
+     "merchant_type": "express",
+     "eta_identifier": "express",
+     "brand": "Lay's",
+     "display_name": "Lay's American Style Cream & Onion Flavour Potato Chips"
+    }
+   },
+   {
+    "cart_item": {
+     "product_id": 578,
+     "merchant_id": 31277,
+     "product_name": "Lay's American Style Cream & Onion Potato Chips",
+     "quantity": 1,
+     "unavailable_quantity": 0,
+     "price": 25,
+     "mrp": 25,
+     "unit": "58 g",
+     "inventory": 7,
+     "meta": null,
+     "image_url": "https://cdn.grofers.com/da/cms-assets/cms/product/rc-upload-1776398906000-171.png",
+     "group_id": 561608,
+     "merchant_type": "express",
+     "eta_identifier": "express",
+     "brand": "Lay's",
+     "display_name": "Lay's American Style Cream & Onion Potato Chips"
+    }
+   },
+   {
+    "cart_item": {
+     "product_id": 432774,
+     "merchant_id": 31277,
+     "product_name": "Lay's American Style Cream & Onion Potato Chips",
+     "quantity": 1,
+     "unavailable_quantity": 0,
+     "price": 35,
+     "mrp": 35,
+     "unit": "75 g",
+     "inventory": 18,
+     "meta": null,
+     "image_url": "https://cdn.grofers.com/da/cms-assets/cms/product/rc-upload-1776398906000-173.png",
+     "group_id": 561608,
+     "merchant_type": "express",
+     "eta_identifier": "express",
+     "brand": "Lay's",
+     "display_name": "Lay's American Style Cream & Onion Potato Chips"
+    }
+   },
+   {
+    "cart_item": {
+     "product_id": 802428,
+     "merchant_id": 31277,
+     "product_name": "Pringles Cheese Burst Potato Crisps",
+     "quantity": 1,
+     "unavailable_quantity": 0,
+     "price": 51,
+     "mrp": 55,
+     "unit": "40 g",
+     "inventory": 11,
+     "meta": null,
+     "image_url": "https://cdn.grofers.com/da/cms-assets/cms/product/rc-upload-1784691628504-457.png",
+     "group_id": 2997412,
+     "merchant_type": "express",
+     "eta_identifier": "express",
+     "brand": "Pringles",
+     "display_name": "Pringles Cheese Burst Potato Crisps"
+    }
+   },
+   {
+    "cart_item": {
+     "product_id": 57435,
+     "merchant_id": 31277,
+     "product_name": "Lay's Classic Salted Potato Chips",
+     "quantity": 1,
+     "unavailable_quantity": 0,
+     "price": 20,
+     "mrp": 20,
+     "unit": "51 g",
+     "inventory": 33,
+     "meta": null,
+     "image_url": "https://cdn.grofers.com/da/cms-assets/cms/product/rc-upload-1776375127483-57.png",
+     "group_id": 561720,
+     "merchant_type": "express",
+     "eta_identifier": "express",
+     "brand": "Lay's",
+     "display_name": "Lay's Classic Salted Potato Chips"
+    }
+   },
+   {
+    "cart_item": {
+     "product_id": 432776,
+     "merchant_id": 31277,
+     "product_name": "Lay's Classic Salted Potato Chips",
+     "quantity": 1,
+     "unavailable_quantity": 0,
+     "price": 35,
+     "mrp": 35,
+     "unit": "75 g",
+     "inventory": 9,
+     "meta": null,
+     "image_url": "https://cdn.grofers.com/da/cms-assets/cms/product/rc-upload-1776240040304-479.png",
+     "group_id": 561720,
+     "merchant_type": "express",
+     "eta_identifier": "express",
+     "brand": "Lay's",
+     "display_name": "Lay's Classic Salted Potato Chips"
+    }
+   },
+   {
+    "cart_item": {
+     "product_id": 798178,
+     "merchant_id": 31277,
+     "product_name": "Pringles Cheese Burst Potato Chips",
+     "quantity": 1,
+     "unavailable_quantity": 0,
+     "price": 101,
+     "mrp": 110,
+     "unit": "102 g",
+     "inventory": 1,
+     "meta": null,
+     "image_url": "https://cdn.grofers.com/da/cms-assets/cms/product/rc-upload-1784691628504-446.png",
+     "group_id": 2969396,
+     "merchant_type": "express",
+     "eta_identifier": "express",
+     "brand": "Pringles",
+     "display_name": "Pringles Cheese Burst Potato Chips"
+    }
+   },
+   {
+    "cart_item": {
+     "product_id": 574,
+     "merchant_id": 31277,
+     "product_name": "Lay's Chile Limon Flavour Potato Chips",
+     "quantity": 1,
+     "unavailable_quantity": 0,
+     "price": 25,
+     "mrp": 25,
+     "unit": "58 g",
+     "inventory": 14,
+     "meta": null,
+     "image_url": "https://cdn.grofers.com/da/cms-assets/cms/product/rc-upload-1776398906000-170.png",
+     "group_id": 682288,
+     "merchant_type": "express",
+     "eta_identifier": "express",
+     "brand": "Lay's",
+     "display_name": "Lay's Chile Limon Flavour Potato Chips"
+    }
+   },
+   {
+    "cart_item": {
+     "product_id": 774232,
+     "merchant_id": 31277,
+     "product_name": "Bingo Masala Massacre Potato Chips",
+     "quantity": 1,
+     "unavailable_quantity": 0,
+     "price": 35,
+     "mrp": 50,
+     "unit": "87.5 g",
+     "inventory": 17,
+     "meta": null,
+     "image_url": "https://cdn.grofers.com/da/cms-assets/cms/product/rc-upload-1776151095852-140.png",
+     "group_id": 2803154,
+     "merchant_type": "express",
+     "eta_identifier": "express",
+     "brand": "Bingo",
+     "display_name": "Bingo Masala Massacre Potato Chips"
+    }
+   },
+   {
+    "cart_item": {
+     "product_id": 480925,
+     "merchant_id": 31277,
+     "product_name": "Lay's Sizzling Hot Potato Chips",
+     "quantity": 1,
+     "unavailable_quantity": 0,
+     "price": 20,
+     "mrp": 20,
+     "unit": "52.9 g",
+     "inventory": 33,
+     "meta": null,
+     "image_url": "https://cdn.grofers.com/da/cms-assets/cms/product/rc-upload-1776928455745-34.png",
+     "group_id": 537930,
+     "merchant_type": "express",
+     "eta_identifier": "express",
+     "brand": "Lay's",
+     "display_name": "Lay's Sizzling Hot Potato Chips"
+    }
+   }
+  ]
+ }
+}

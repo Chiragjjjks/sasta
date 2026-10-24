@@ -1,0 +1,56 @@
+{
+  "expo": {
+    "name": "Sasta",
+    "slug": "sasta",
+    "version": "0.4.1",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "sasta",
+    "userInterfaceStyle": "automatic",
+    "android": {
+      "package": "app.sasta.android",
+      "adaptiveIcon": {
+        "backgroundColor": "#14152a",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ],
+      "softwareKeyboardLayoutMode": "resize",
+      "predictiveBackGestureEnabled": false,
+      "versionCode": 401
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-status-bar",
+      "expo-secure-store",
+      "expo-sharing",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 120,
+          "backgroundColor": "#f0f1f6",
+          "dark": {
+            "backgroundColor": "#0d0e1a"
+          }
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Sasta uses your location to find the stores that deliver to you."
+        }
+      ],
+      "./plugins/withSastaAndroid"
+    ]
+  }
+}

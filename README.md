@@ -1,37 +1,41 @@
 # Sasta
 
-**One search, every quick-commerce app.** Type a product once and Sasta compares it across Blinkit, Zepto, Instamart, BigBasket, Flipkart Minutes and Amazon Now, then shows the cheapest pack. Android app, no login, no server.
+An Android app for comparing quick-commerce prices and keeping reusable shopping lists. Built with React Native and Expo, with native inputs, navigation, scrolling and Android sharing.
 
-> **Status: preview.** The app and release pipeline are complete. Prices are sample data until live platform search lands. See [PLAN.md](PLAN.md).
+**Live search currently supports Blinkit.** The other five platforms are shown as coming soon. Connecting an account does not enable a missing search adapter. Confirm prices, stock, offers and final fees in the shopping app before payment.
 
 ## Install
 
-Download the latest `Sasta-vX.Y.Z-android.apk` from [Releases](https://github.com/Chiragjjjks/sasta/releases/latest) on your phone and open it. Android 7.0 or newer.
+Download `Sasta-vX.Y.Z-android.apk` from [Releases](https://github.com/Chiragjjjks/sasta/releases/latest) and open it on your Android phone (Android 7 or newer; ARM64 or x86_64). Install over the previous release to keep your lists, cart and location. The rebuild migrates data from v0.3.2 on first launch.
 
 ## Develop
 
+The current app lives in `mobile/`. Root `src/` and `android/` retain the previous Capacitor implementation for reference.
+
 ```bash
-npm install
-npm run dev            # mobile web preview at the printed LAN URL
-npm test               # unit tests
-npm run android:sync   # build and copy into android/
-npm run android:open   # open in Android Studio
+cd mobile
+npm ci
+npm start              # Expo development server
+npm run android        # generate and run a native development build
+npm run lint
+npm run typecheck
+npm test
+npm run export:web     # browser preview with labelled sample prices
 ```
 
-Building the APK locally needs JDK 21 and Android SDK 36. CI builds it for you on every push.
+Sign-in and live search need a native Android build, not Expo Go or the browser preview. The local Android module shares WebView cookies with sign-in, migrates older preferences, and keeps OAuth secrets in encrypted on-device storage.
 
 ## Release
 
-Bump `version` in `package.json`, add `docs/releases/vX.Y.Z.md`, then:
+Set the same version in root and mobile `package.json` / lockfiles and `mobile/app.json`, then add `docs/releases/vX.Y.Z.md`. Push to `main` first: GitHub Actions checks lint, types and regressions, builds a signed APK, and runs it on an Android emulator. The emulator checks an in-place update from v0.3.2, migrated data, persistence, native inputs, navigation, sign-in cancellation and offline recovery. Screenshots and logs are retained as workflow artifacts.
+
+After the main build passes:
 
 ```bash
-git tag vX.Y.Z && git push origin main vX.Y.Z
+git tag vX.Y.Z
+git push origin vX.Y.Z
 ```
 
-GitHub Actions builds, signs and publishes the APK with checksums.
+The tag workflow repeats these checks and publishes the APK and SHA-256 checksums only after the emulator passes. Private signing secrets are supported; otherwise the existing public sideload key keeps signatures consistent. The public key does not establish publisher identity.
 
-## Stack
-
-React 19, Vite, Tailwind CSS v4, shadcn-style components with vaul sheets, Capacitor 8 for Android.
-
-Personal tool. Not affiliated with any of the platforms it compares.
+Personal project at [Chiragjjjks/sasta](https://github.com/Chiragjjjks/sasta). Not affiliated with the shopping platforms.
