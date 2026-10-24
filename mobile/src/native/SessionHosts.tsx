@@ -22,7 +22,7 @@ function setUA(ua: string) {
 /* ------------------------------------------------------------------ hidden pages */
 
 interface Page { origin: string; path: string; key: number }
-interface Pending { resolve: (r: PageResult) => void; timer: ReturnType<typeof setTimeout> }
+interface Pending { origin: string; resolve: (r: PageResult) => void; timer: ReturnType<typeof setTimeout> }
 
 /**
  * One invisible WebView per shopping site. Scripts run inside the site's own page, so requests
@@ -33,6 +33,9 @@ export function HiddenPages() {
   const [pages, setPages] = useState<Page[]>([])
   const refs = useRef(new Map<string, WebViewHandle | null>())
   const loaded = useRef(new Map<string, boolean>())
+  const failed = useRef(new Set<string>())
+  const pageKeys = useRef(new Map<string, number>())
+  const nextPageKey = useRef(0)
   const queues = useRef(new Map<string, (() => void)[]>())
   const pending = useRef(new Map<string, Pending>())
   const [ua, setUa] = useState(browserUA)
@@ -46,15 +49,31 @@ export function HiddenPages() {
   }
 
   const ensure = useCallback((origin: string, path: string) => {
-    setPages((ps) => (ps.some((p) => p.origin === origin) ? ps : [...ps, { origin, path, key: Date.now() }]))
+    const retry = failed.current.delete(origin)
+    if (pageKeys.current.has(origin) && !retry) return
+    const key = ++nextPageKey.current
+    pageKeys.current.set(origin, key)
+    setPages((ps) => [...ps.filter((p) => p.origin !== origin), { origin, path, key }])
   }, [])
+
+  const failPage = (origin: string, error: string) => {
+    loaded.current.delete(origin)
+    failed.current.add(origin)
+    queues.current.delete(origin)
+    for (const [id, job] of pending.current) {
+      if (job.origin !== origin) continue
+      clearTimeout(job.timer)
+      pending.current.delete(id)
+      job.resolve({ ok: false, error })
+    }
+  }
 
   useEffect(() => {
     registerHosts({ pageRun: ({ origin, script, timeoutMs = 12000, path = '/robots.txt' }) =>
       new Promise<PageResult>((resolve) => {
         const id = `${Date.now()}_${Math.random().toString(36).slice(2)}`
         const timer = setTimeout(() => { pending.current.delete(id); resolve({ ok: false, error: 'Timed out' }) }, timeoutMs)
-        pending.current.set(id, { resolve, timer })
+        pending.current.set(id, { origin, resolve, timer })
         const job = () => {
           if (!pending.current.has(id)) return
           const js = `(async()=>{try{const v=await (async()=>{${script}})();window.ReactNativeWebView.postMessage(JSON.stringify({id:${JSON.stringify(id)},ok:true,value:v}))}catch(e){window.ReactNativeWebView.postMessage(JSON.stringify({id:${JSON.stringify(id)},ok:false,error:String((e&&e.message)||e)}))}})();true;`
@@ -67,8 +86,8 @@ export function HiddenPages() {
         }
       }),
     pageReset: (origin) => {
-      loaded.current.delete(origin)
-      queues.current.delete(origin)
+      failPage(origin, 'Page reset')
+      pageKeys.current.delete(origin)
       setPages((ps) => ps.filter((p) => p.origin !== origin))
     } })
     markHostsReady()
@@ -101,7 +120,9 @@ export function HiddenPages() {
           ref={(r: WebViewHandle) => { refs.current.set(p.origin, r) }}
           source={{ uri: p.origin + p.path }}
           userAgent={ua}
-          onLoadEnd={() => { loaded.current.set(p.origin, true); flush(p.origin) }}
+          onLoadEnd={() => { if (pageKeys.current.get(p.origin) === p.key && !failed.current.has(p.origin)) { loaded.current.set(p.origin, true); flush(p.origin) } }}
+          onError={(e) => { if (pageKeys.current.get(p.origin) === p.key) failPage(p.origin, e.nativeEvent.description || 'Could not load shopping site') }}
+          onHttpError={(e) => { if (pageKeys.current.get(p.origin) === p.key) failPage(p.origin, `Shopping site returned HTTP ${e.nativeEvent.statusCode}`) }}
           onMessage={onMessage}
           thirdPartyCookiesEnabled
           domStorageEnabled

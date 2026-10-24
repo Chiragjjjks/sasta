@@ -38,7 +38,7 @@ jobs:
           java-version: '21'
       - uses: android-actions/setup-android@v3
         with:
-          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          packages: 'platform-tools platforms;android-37.0 build-tools;37.0.0'
       - uses: gradle/actions/setup-gradle@v4
       - name: Install native app dependencies
         run: npm ci --include=dev
@@ -74,7 +74,7 @@ jobs:
           mkdir -p out
           VERSION="$(node -p "require('./package.json').version")"
           cp android/app/build/outputs/apk/release/app-release.apk "out/Sasta-v${VERSION}-android.apk"
-          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs out/*.apk
+          "$ANDROID_HOME/build-tools/37.0.0/apksigner" verify --verbose --print-certs out/*.apk
           (cd out && sha256sum *.apk > SHA256SUMS.txt)
       - uses: actions/upload-artifact@v4
         with:

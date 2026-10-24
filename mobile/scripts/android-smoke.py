@@ -112,7 +112,7 @@ try:
 
     tap('Lists', contains=True)
     find('Your lists')
-    tap('Upgrade test list')
+    tap('Upgrade test list', contains=True)
     find('This list is empty.', contains=True)
     back()
     tap('New list name')
@@ -120,13 +120,13 @@ try:
     tap('Create')
     find('Smoke-list', contains=True)
     back()
-    find('Smoke-list')
+    find('Smoke-list', contains=True)
     time.sleep(1)
     restart()
     find('Search any product')
     tap('Lists', contains=True)
-    find('Upgrade test list')
-    find('Smoke-list')
+    find('Upgrade test list', contains=True)
+    find('Smoke-list', contains=True)
     shot('02-persisted-lists')
 
     tap('Cart', contains=True)
@@ -165,6 +165,23 @@ try:
     tap('Clear search')
     find('One search.')
     assert not any('Browser preview' in n.get('text', '') for n in tree())
+    adb('shell', 'svc', 'wifi', 'enable')
+    adb('shell', 'svc', 'data', 'enable')
+    tap('Search any product')
+    adb('shell', 'input', 'text', 'lays')
+    tap('Compare prices')
+    deadline = time.monotonic() + 50
+    online_status = ''
+    while time.monotonic() < deadline:
+        labels = ' '.join(n.get('text', '') + ' ' + n.get('content-desc', '') for n in tree())
+        match = re.search(r'\b\d+ products? from \d+ apps?', labels)
+        if match:
+            online_status = match.group()
+            break
+        time.sleep(1)
+    assert online_status, 'Search remained stuck after restoring the network'
+    (OUT / 'online-search.txt').write_text(online_status + '\nProvider availability is external; zero results are retained in the screenshot.\n')
+    shot('06-network-restored')
     logs = adb('logcat', '-d')
     (OUT / 'logcat.txt').write_text(logs)
     assert 'FATAL EXCEPTION' not in logs and 'JavascriptException' not in logs, 'Native or JavaScript crash; see logcat'
