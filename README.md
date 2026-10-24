@@ -36,6 +36,6 @@ git tag vX.Y.Z
 git push origin vX.Y.Z
 ```
 
-The tag workflow repeats these checks and publishes the APK and SHA-256 checksums only after the emulator passes. Private signing secrets are supported; otherwise the existing public sideload key keeps signatures consistent. The public key does not establish publisher identity.
+The tag workflow requires a successful main build for the exact tagged commit, verifies its SHA-256 checksums, and publishes that same tested APK. Private signing secrets are supported; otherwise the existing public sideload key keeps signatures consistent. The public key does not establish publisher identity.
 
 Personal project at [Chiragjjjks/sasta](https://github.com/Chiragjjjks/sasta). Not affiliated with the shopping platforms.

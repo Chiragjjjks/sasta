@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
 concurrency:
   group: android-${{ github.ref }}
@@ -20,6 +21,7 @@ defaults:
 
 jobs:
   build:
+    if: ${{ !startsWith(github.ref, 'refs/tags/') }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
@@ -104,10 +106,30 @@ jobs:
           path: mobile/test-results/
           if-no-files-found: ignore
           retention-days: 14
-      - name: Publish tested GitHub release
-        if: startsWith(github.ref, 'refs/tags/v')
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish the exact APK tested on main
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          test "$GITHUB_REF_NAME" = "v$VERSION"
+          RUN_ID="$(gh api --method GET "repos/$GITHUB_REPOSITORY/actions/workflows/android.yml/runs" \
+            -f head_sha="$GITHUB_SHA" -f branch=main -f status=success -f per_page=20 \
+            --jq '[.workflow_runs[] | select(.event == "push" and .head_sha == env.GITHUB_SHA)] | first | .id // empty')"
+          if [ -z "$RUN_ID" ]; then
+            echo '::error::This exact commit must pass the main Android build and emulator tests before release.'
+            exit 1
+          fi
+          gh run download "$RUN_ID" --repo "$GITHUB_REPOSITORY" --name sasta-apk --dir out
+          (cd out && sha256sum --check SHA256SUMS.txt)
+          test -f "out/Sasta-v${VERSION}-android.apk"
           gh release create "$GITHUB_REF_NAME" out/Sasta-*.apk out/SHA256SUMS.txt \
-            --title "Sasta ${GITHUB_REF_NAME}" --notes-file "../docs/releases/${GITHUB_REF_NAME}.md" --verify-tag
+            --title "Sasta ${GITHUB_REF_NAME}" --notes-file "docs/releases/${GITHUB_REF_NAME}.md" --verify-tag
