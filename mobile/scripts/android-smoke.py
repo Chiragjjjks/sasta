@@ -46,6 +46,21 @@ def tap(label, contains=False):
     adb('shell', 'input', 'tap', str((x1 + x2) // 2), str((y1 + y2) // 2))
 
 
+def tap_tab(name):
+    deadline = time.monotonic() + 20
+    while time.monotonic() < deadline:
+        for node in tree():
+            desc = node.get('content-desc', '')
+            text = node.get('text', '')
+            bounds = node.get('bounds', '')
+            coords = list(map(int, re.findall(r'\d+', bounds)))
+            if len(coords) == 4 and coords[1] >= 1500 and (name == desc or name == text or (name in desc and node.get('clickable') == 'true')):
+                adb('shell', 'input', 'tap', str((coords[0] + coords[2]) // 2), str((coords[1] + coords[3]) // 2))
+                return
+        time.sleep(0.5)
+    tap(name, contains=True)
+
+
 def shot(name):
     adb('shell', 'screencap', '-p', f'/sdcard/{name}.png')
     adb('pull', f'/sdcard/{name}.png', str(OUT / f'{name}.png'))
@@ -112,7 +127,7 @@ try:
     assert any(n.get('class') == 'android.widget.EditText' for n in tree()), 'Search is not a native text input'
     shot('01-native-home')
 
-    tap('Lists', contains=True)
+    tap_tab('Lists')
     find('Your lists')
     tap('Upgrade test list', contains=True)
     find('This list is empty.', contains=True)
@@ -126,12 +141,12 @@ try:
     time.sleep(1)
     restart()
     find('Search any product')
-    tap('Lists', contains=True)
+    tap_tab('Lists')
     find('Upgrade test list', contains=True)
     find('Smoke-list', contains=True)
     shot('02-persisted-lists')
 
-    tap('Cart', contains=True)
+    tap_tab('Cart')
     find('Your cart')
     find('Upgrade snack', contains=True)
     tap('More')
@@ -140,10 +155,10 @@ try:
     time.sleep(1)
     restart()
     find('Search any product')
-    tap('Cart', contains=True)
+    tap_tab('Cart')
     find('2 items', contains=True)
 
-    tap('Account', contains=True)
+    tap_tab('Account')
     find('Connected apps')
     tap('Delivery location', contains=True) if False else tap('Upgrade area', contains=True)
     find('Save location')
@@ -161,7 +176,8 @@ try:
     find('Connected apps')
     shot('04-account')
 
-    tap('Search', contains=True)
+    tap_tab('Search')
+    find('Search any product')
     adb('shell', 'svc', 'wifi', 'disable')
     adb('shell', 'svc', 'data', 'disable')
     tap('Search any product')
