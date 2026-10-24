@@ -125,6 +125,7 @@ export function SignInHost() {
   const web = useRef<WebViewHandle>(null)
   const canGoBack = useRef(false)
   const finished = useRef(false)
+  const returnTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     registerHosts({ signIn: (opts) => new Promise<SignInResult>((resolve) => {
@@ -138,6 +139,7 @@ export function SignInHost() {
   const finish = useCallback((r: SignInResult) => {
     if (finished.current || !req) return
     finished.current = true
+    if (returnTimer.current) clearTimeout(returnTimer.current)
     SastaNative.flushCookies().catch(() => {})
     req.resolve(r)
     setReq(null)
@@ -147,7 +149,7 @@ export function SignInHost() {
     if (signedIn || finished.current) return
     setSignedIn(true)
     if (Platform.OS === 'android') ToastAndroid.show('Signed in · returning to Sasta', ToastAndroid.SHORT)
-    setTimeout(() => finish({ kind: 'done' }), 1200)
+    returnTimer.current = setTimeout(() => finish({ kind: 'done' }), 1200)
   }, [finish, signedIn])
 
   // Watch for sign-in: the site's own storage (doneScript) and its session cookies.

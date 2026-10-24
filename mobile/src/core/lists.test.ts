@@ -55,4 +55,14 @@ describe('lists', () => {
     expect(importLists([], exportLists(lists))).toEqual(lists)
     expect(() => importLists([], '{"foo":1}')).toThrow()
   })
+  it('rejects malformed nested backups before they can corrupt existing lists', () => {
+    for (const entries of [[null], [{ ...office, items: null }], [{ ...office, items: [{ ...masala, lastOffers: [null] }] }]]) {
+      expect(() => importLists(lists, JSON.stringify({ app: 'sasta', kind: 'lists', lists: entries }))).toThrow('Your lists have not changed')
+    }
+    expect(lists[0].name).toBe('Office snacks')
+    expect(lists[0].items).toHaveLength(2)
+  })
+  it('rejects duplicate list IDs in a backup', () => {
+    expect(() => importLists(lists, exportLists([office, office]))).toThrow('duplicate list IDs')
+  })
 })

@@ -1,4 +1,5 @@
 import { fromGroup, type CartItem } from './cart'
+import { PLATFORMS } from './platforms'
 import type { Offer, ProductGroup } from './types'
 
 /** A saved product. Same identity as a cart item, so it can go straight into the cart. */
@@ -162,8 +163,25 @@ export function exportLists(lists: ShoppingList[]): string {
 
 /** Merges an export into the current lists. Lists with the same id are replaced. */
 export function importLists(current: ShoppingList[], text: string): ShoppingList[] {
-  const data = JSON.parse(text) as { app?: string; kind?: string; lists?: ShoppingList[] }
-  if (data.app !== 'sasta' || data.kind !== 'lists' || !Array.isArray(data.lists)) throw new Error('This file is not a Sasta lists export.')
+  const data = JSON.parse(text) as { app?: string; kind?: string; lists?: ShoppingList[] } | null
+  if (!data || data.app !== 'sasta' || data.kind !== 'lists' || !Array.isArray(data.lists) || !data.lists.every(isShoppingList)) {
+    throw new Error('This file is not a valid Sasta lists export. Your lists have not changed.')
+  }
   const incoming = new Map(data.lists.map((l) => [l.id, l]))
+  if (incoming.size !== data.lists.length) throw new Error('This backup has duplicate list IDs. Your lists have not changed.')
   return [...current.filter((l) => !incoming.has(l.id)), ...data.lists]
+}
+
+/** Check nested data before a backup reaches native screens or cart calculations. */
+export function isShoppingList(value: unknown): value is ShoppingList {
+  if (!value || typeof value !== 'object') return false
+  const l = value as ShoppingList
+  return typeof l.id === 'string' && !!l.id && typeof l.name === 'string' && typeof l.emoji === 'string'
+    && Number.isFinite(l.createdAt) && Number.isFinite(l.updatedAt) && Array.isArray(l.items)
+    && l.items.every((i) => i && ['key', 'brand', 'variant', 'variantKey', 'query'].every((k) => typeof i[k as keyof ListItem] === 'string')
+      && Number.isInteger(i.qty) && i.qty > 0 && Number.isFinite(i.lastSeenAt) && Number.isFinite(i.addedAt)
+      && Number.isFinite(i.timesPicked) && Array.isArray(i.lastOffers)
+      && i.lastOffers.every((o) => o && PLATFORMS.some((p) => p.id === o.platform)
+        && typeof o.title === 'string' && typeof o.deepLink === 'string' && typeof o.inStock === 'boolean'
+        && Number.isFinite(o.price) && o.price >= 0 && Number.isFinite(o.fetchedAt)))
 }
