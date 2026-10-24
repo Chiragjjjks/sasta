@@ -3,7 +3,8 @@ import { CheckCircle2, ChevronRight, MapPin, ShieldCheck } from 'lucide-react-na
 import { useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { IS_NATIVE } from '@/core/adapters'
+import { canSearch, IS_NATIVE } from '@/core/adapters'
+import { searchLabel } from '@/core/capabilities'
 import { ACCOUNT_CONFIG } from '@/core/accounts'
 import { PLATFORM, PLATFORMS } from '@/core/platforms'
 import type { Platform } from '@/core/types'
@@ -55,7 +56,7 @@ export default function AccountScreen() {
           <Badge label="Beta" tone="warn" />
         </View>
         <T kind="small" style={{ marginTop: -6 }}>
-          Sign in once on each app&apos;s own page for your member prices and real fees. {connected} of {PLATFORMS.length} connected.
+          {connected} of {PLATFORMS.length} sessions connected. Test search checks real products separately from login. Choose the same delivery area in every app.
         </T>
         {IS_NATIVE && connected < PLATFORMS.length && (
           <Button label={all ? 'Connecting one by one…' : connected ? `Connect the other ${PLATFORMS.length - connected}` : 'Connect all apps'} loading={all} disabled={busy !== null && !all} onPress={connectAll} />
@@ -84,19 +85,25 @@ export default function AccountScreen() {
                           ? acc?.label ? `Connected as ${acc.label}` : `${cfg.account} account · connected${acc?.via === 'web' && cfg.method === 'mcp' ? ' via website' : ''}`
                           : status === 'expired' ? 'Session expired · sign in again' : `${cfg.account} account`}
                       </T>
+                      <T kind="caption">Search: {searchLabel(id, acc, s.statuses[id])}</T>
                     </View>
                     {status === 'connected' ? (
                       <View style={{ flexDirection: 'row', gap: 6 }}>
-                        <Button small variant="secondary" label="Test" loading={isBusy} onPress={() => run(id, () => s.testConnection(id))} />
-                        <Button small variant="secondary" label="Disconnect" disabled={isBusy} icon={<CheckCircle2 size={13} color={t.good} />} onPress={() => run(id, () => s.disconnect(id))} />
+                        <Button small variant="secondary" label="Disconnect" disabled={busy !== null} icon={<CheckCircle2 size={13} color={t.good} />} onPress={() => run(id, () => s.disconnect(id))} />
                       </View>
                     ) : (
                       <Button small label={status === 'expired' ? 'Reconnect' : 'Connect'} loading={isBusy} disabled={!IS_NATIVE || (busy !== null && !isBusy)} onPress={() => run(id, () => s.connect(id))} />
                     )}
                   </View>
-                  {status === 'connected' && acc?.lastTest && (
+                  {IS_NATIVE && (canSearch(id) || status === 'connected') && (
+                    <View style={{ marginTop: 10, marginLeft: 20, flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                      <Button small variant="secondary" label={canSearch(id) ? 'Test search' : 'Check login'} loading={isBusy} disabled={busy !== null && !isBusy} onPress={() => run(id, () => s.testConnection(id))} />
+                      {canSearch(id) && <Button small variant="secondary" label="Delivery area" disabled={busy !== null} onPress={() => run(id, () => s.setupProvider(id))} />}
+                    </View>
+                  )}
+                  {acc?.lastTest && (
                     <Text style={{ marginTop: 6, marginLeft: 20, color: acc.lastTest.ok ? t.good : t.accent, fontFamily: t.fonts.body, fontSize: 12 }}>
-                      {acc.lastTest.ok ? '✓ ' : '! '}{acc.lastTest.detail}
+                      {acc.lastTest.search ? (acc.lastTest.ok ? '✓ ' : '! ') + acc.lastTest.detail : canSearch(id) ? 'Previous check verified login only. Tap Test search to check prices.' : acc.lastTest.detail}
                     </Text>
                   )}
                   {status !== 'connected' && cfg.note && <T kind="caption" style={{ marginTop: 6, marginLeft: 20 }}>{cfg.note}</T>}

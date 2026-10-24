@@ -60,4 +60,13 @@ describe('search recovery and cache', () => {
     await run(location, true)
     expect(search).toHaveBeenCalledTimes(3)
   })
+  it('serializes page-backed providers without counting queue time as request time', async () => {
+    const adapter: Adapter = { platform:'zepto',serial:true,timeoutMs:30,attempts:1,setLocation:async()=>{},
+      search:async q=>{await new Promise(r=>setTimeout(r,25));return [{platform:'zepto',productId:q,title:q,price:20,inStock:true,deepLink:'https://www.zepto.com',fetchedAt:1}]} }
+    const cb=[callbacks(),callbacks(),callbacks()]
+    const work=Promise.all(['milk','butter','bread'].map((q,i)=>runSearch([adapter],q,location,new AbortController().signal,cb[i])))
+    await vi.advanceTimersByTimeAsync(100)
+    await work
+    cb.forEach(c=>expect(c.onStatus).toHaveBeenLastCalledWith(expect.objectContaining({state:'done',count:1})))
+  })
 })

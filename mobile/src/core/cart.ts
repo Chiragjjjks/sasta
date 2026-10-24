@@ -10,6 +10,7 @@ export interface CartItem {
   variant: string
   variantKey: string
   sizeGrams?: number
+  packLabel?: string
   query: string
   qty: number
   offers: Offer[]
@@ -49,6 +50,7 @@ export function fromGroup(group: ProductGroup, query: string): CartItem {
     variant: group.variant,
     variantKey: group.variantKey,
     sizeGrams: group.sizeGrams,
+    packLabel: group.packLabel,
     query,
     qty: 1,
     offers: group.offers,

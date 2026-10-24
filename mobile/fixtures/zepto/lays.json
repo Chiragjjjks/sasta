@@ -1,0 +1,303 @@
+{
+  "kind": "products",
+  "location": {
+    "lat": 12.9981732,
+    "lng": 77.55304459999999
+  },
+  "products": [
+    {
+      "id": "1e28f2c0-fbc5-4366-9efb-a65bd12428cb",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1470-1470,pr-true,f-auto,q-40,dpr-2/cms/product_variant/d2374604-376f-45aa-a16f-f60aa009a001/Lay-s-American-Cream-Onion-Flavour-Potato-Chips.jpg",
+      "inStock": true,
+      "mrp": 25,
+      "packLabel": "1 pack (48 g or 58 g)",
+      "price": 24,
+      "title": "Lay's American Cream & Onion Flavour | Potato Chips",
+      "url": "https://www.zepto.com/pn/lays-american-cream-onion-flavour-potato-chips/pvid/1e28f2c0-fbc5-4366-9efb-a65bd12428cb"
+    },
+    {
+      "id": "82839eb6-92a7-49ff-9f9e-a31a1a46a2c6",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1000-1000,pr-true,f-auto,q-40,dpr-2/cms/product_variant/5ccd01eb-af93-4e64-82c3-7007a9ee0ac9/Crax-Curls-Chatpata-Masala-Puff-Snacks-Crispy-Tasty.png",
+      "inStock": true,
+      "mrp": 60,
+      "packLabel": "1 pack (82 g or 88 g)",
+      "price": 29,
+      "title": "Crax Curls Chatpata Masala Puff Snacks | Crispy & Tasty",
+      "url": "https://www.zepto.com/pn/crax-curls-chatpata-masala-puff-snacks-crispy-tasty/pvid/82839eb6-92a7-49ff-9f9e-a31a1a46a2c6"
+    },
+    {
+      "id": "70bda37d-7f15-4189-b90c-e16dc170d950",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1500-1500,pr-true,f-auto,q-40,dpr-2/cms/product_variant/d97b3d3f-9d39-491f-baf7-d763043a7e52/Lay-s-West-Indies-Hot-n-Sweet-Chilli-Potato-Chips.jpg",
+      "inStock": true,
+      "mrp": 25,
+      "packLabel": "1 pack (48 g or 58 g)",
+      "price": 21,
+      "title": "Lay's West Indies Hot 'n' Sweet Chilli | Potato Chips",
+      "url": "https://www.zepto.com/pn/lays-west-indies-hot-n-sweet-chilli-potato-chips/pvid/70bda37d-7f15-4189-b90c-e16dc170d950"
+    },
+    {
+      "id": "d6aebca5-958a-40d7-8ae2-e8d434a231ec",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1770-1770,pr-true,f-auto,q-40,dpr-2/cms/product_variant/8d39a226-2b6b-42d0-b698-8b7a4a38d34b/Crax-Cheese-Balls-Puff-Snacks-Crispy-Cheesy.jpeg",
+      "inStock": true,
+      "mrp": 60,
+      "packLabel": "1 pack (65 g or 70 g)",
+      "price": 33,
+      "title": "Crax Cheese Balls Puff Snacks | Crispy & Cheesy",
+      "url": "https://www.zepto.com/pn/crax-cheese-balls-puff-snacks-crispy-cheesy/pvid/d6aebca5-958a-40d7-8ae2-e8d434a231ec"
+    },
+    {
+      "id": "64cfe3fd-d3f1-431f-9655-d57c3a38e1d4",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1500-1500,pr-true,f-auto,q-40,dpr-2/cms/product_variant/43ee72aa-ec6f-4e57-b2aa-eb6fa3f53d65/Lay-s-Spanish-Tomato-Tango-Flavour-Potato-Chips.jpg",
+      "inStock": true,
+      "packLabel": "1 pack (48 g or 58 g)",
+      "price": 25,
+      "title": "Lay's Spanish Tomato Tango Flavour | Potato Chips",
+      "url": "https://www.zepto.com/pn/lays-spanish-tomato-tango-flavour-potato-chips/pvid/64cfe3fd-d3f1-431f-9655-d57c3a38e1d4"
+    },
+    {
+      "id": "49068ed1-a0a5-477a-8c1e-6534c737e117",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1502-1503,pr-true,f-auto,q-40,dpr-2/cms/product_variant/70c2760e-bcfd-4ae4-8a04-880ab4f7d57f/Crax-Biggies-Chilli-Cheese-Puff-Snacks.jpeg",
+      "inStock": true,
+      "mrp": 60,
+      "packLabel": "1 pack (65 g)",
+      "price": 30,
+      "title": "Crax Biggies Chilli Cheese Puff Snacks",
+      "url": "https://www.zepto.com/pn/crax-biggies-chilli-cheese-puff-snacks/pvid/49068ed1-a0a5-477a-8c1e-6534c737e117"
+    },
+    {
+      "id": "b4647c14-688d-4152-a11d-9bffd2ebcf0d",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-3000-3000,pr-true,f-auto,q-40,dpr-2/cms/product_variant/52d841c9-6d41-422b-babe-9ac8827821b3/Crax-Natkhat-Classic-Wheat-Puffs-Snacks-Light-Crunchy.jpeg",
+      "inStock": true,
+      "mrp": 60,
+      "packLabel": "1 pack (82 g)",
+      "price": 30,
+      "title": "Crax Natkhat Classic Wheat Puffs Snacks | Light & Crunchy",
+      "url": "https://www.zepto.com/pn/crax-natkhat-classic-wheat-puffs-snacks-light-crunchy/pvid/b4647c14-688d-4152-a11d-9bffd2ebcf0d"
+    },
+    {
+      "id": "7ffb904c-6169-46a2-9c9f-bdfc287572c7",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1470-1470,pr-true,f-auto,q-40,dpr-2/cms/product_variant/8f4b6138-f749-4185-990f-83bd97e3ff6f/Lay-s-Chile-Lemon-Flavour-Crunchy-Potato-Chips.jpg",
+      "inStock": true,
+      "packLabel": "1 pack (48 g or 58 g)",
+      "price": 25,
+      "title": "Lay's Chile Lemon Flavour | Crunchy Potato Chips",
+      "url": "https://www.zepto.com/pn/lays-chile-lemon-flavour-crunchy-potato-chips/pvid/7ffb904c-6169-46a2-9c9f-bdfc287572c7"
+    },
+    {
+      "id": "cff91b9e-62d9-46a4-bd36-974c1e8df51c",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-2250-2250,pr-true,f-auto,q-40,dpr-2/cms/product_variant/eb2e7f94-8357-4507-b1ea-f664cce86fcc/Bingo-Original-Style-Chilli-Sprinkled-Flat-Cut-Spicy-Potato-Chips-Pack-for-Snacks.jpeg",
+      "inStock": true,
+      "mrp": 50,
+      "packLabel": "1 pc (78 g)",
+      "price": 36,
+      "title": "Bingo! Original Style Chilli Sprinkled | Flat Cut Spicy Potato Chips Pack for Snacks",
+      "url": "https://www.zepto.com/pn/bingo-original-style-chilli-sprinkled-flat-cut-spicy-potato-chips-pack-for-snacks/pvid/cff91b9e-62d9-46a4-bd36-974c1e8df51c"
+    },
+    {
+      "id": "c93f510e-0ae9-4912-b4df-41603bef01da",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1500-1500,pr-true,f-auto,q-40,dpr-2/cms/product_variant/eee0a9a9-1dec-4704-81e7-4eaa59bd0cf7/Lay-s-American-Cream-Onion-Flavour-Potato-Chips.jpg",
+      "inStock": true,
+      "mrp": 48,
+      "packLabel": "1 pack (80 g)",
+      "price": 38,
+      "title": "Lay's American Cream & Onion Flavour | Potato Chips",
+      "url": "https://www.zepto.com/pn/lays-american-cream-onion-flavour-potato-chips/pvid/c93f510e-0ae9-4912-b4df-41603bef01da"
+    },
+    {
+      "id": "349050d0-8943-4223-b18e-5c1c4553c811",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1500-1500,pr-true,f-auto,q-40,dpr-2/cms/product_variant/cd1e67bc-9aa1-4613-8063-d79d824f73b3/Bingo-Potato-Chips-Cream-Onion-Chips-Crispy-Crunchy-Chips-Pack-for-Snacks.jpg",
+      "inStock": true,
+      "mrp": 20,
+      "packLabel": "1 pack (45 g)",
+      "price": 15,
+      "title": "Bingo! Potato Chips | Cream & Onion Chips | Crispy & Crunchy Chips Pack for Snacks",
+      "url": "https://www.zepto.com/pn/bingo-potato-chips-cream-onion-chips-crispy-crunchy-chips-pack-for-snacks/pvid/349050d0-8943-4223-b18e-5c1c4553c811"
+    },
+    {
+      "id": "918d66a3-516f-4650-ba60-661c9f91bbb0",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1500-1500,pr-true,f-auto,q-40,dpr-2/cms/product_variant/16b5d1bd-6a40-4823-9595-3c877299123d/Lay-s-Sizzling-Hot-Spicy-Potato-Chips.jpg",
+      "inStock": true,
+      "packLabel": "1 pack (48 g or 52.9 g)",
+      "price": 20,
+      "title": "Lay's Sizzling Hot | Spicy Potato Chips",
+      "url": "https://www.zepto.com/pn/lays-sizzling-hot-spicy-potato-chips/pvid/918d66a3-516f-4650-ba60-661c9f91bbb0"
+    },
+    {
+      "id": "9468186f-3b4f-401e-821c-94683949453c",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-5619-5609,pr-true,f-auto,q-40,dpr-2/cms/product_variant/88a998d0-e984-47cc-8c72-c06968a0d25a/Bingo-Mad-Angles-Tomato-Madness-Tangy-Crunchy.jpeg",
+      "inStock": true,
+      "mrp": 20,
+      "packLabel": "1 pc (58 g)",
+      "price": 18,
+      "title": "Bingo! Mad Angles Tomato Madness | Tangy & Crunchy",
+      "url": "https://www.zepto.com/pn/bingo-mad-angles-tomato-madness-tangy-crunchy/pvid/9468186f-3b4f-401e-821c-94683949453c"
+    },
+    {
+      "id": "f320f879-7942-4ddd-8d08-e7a91915d213",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1500-1500,pr-true,f-auto,q-40,dpr-2/cms/product_variant/8f469b7f-2d2c-41f8-9a77-93caf9434d3b/Lay-s-India-s-Magic-Masala-Crunchy-Potato-Chips.jpg",
+      "inStock": true,
+      "mrp": 48,
+      "packLabel": "1 pack (82 g or 80 g)",
+      "price": 38,
+      "title": "Lay's India's Magic Masala | Crunchy Potato Chips",
+      "url": "https://www.zepto.com/pn/lays-indias-magic-masala-crunchy-potato-chips/pvid/f320f879-7942-4ddd-8d08-e7a91915d213"
+    },
+    {
+      "id": "4f1e8eb5-eed1-4697-a4d2-5fa59f7f6f15",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1423-1423,pr-true,f-auto,q-40,dpr-2/cms/product_variant/87f08dcd-fdc0-48b5-b942-82f6afe65c12/Crax-Biggies-Swiss-Cheese-Puff-Snacks-Cheesy-Crispy.jpeg",
+      "inStock": true,
+      "mrp": 60,
+      "packLabel": "1 pack (65 g or 70 g)",
+      "price": 29,
+      "title": "Crax Biggies Swiss Cheese Puff Snacks | Cheesy & Crispy",
+      "url": "https://www.zepto.com/pn/crax-biggies-swiss-cheese-puff-snacks-cheesy-crispy/pvid/4f1e8eb5-eed1-4697-a4d2-5fa59f7f6f15"
+    },
+    {
+      "id": "a221968b-7cf1-4af7-adfd-40b8b19360ce",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1500-1500,pr-true,f-auto,q-40,dpr-2/cms/product_variant/bdcdc231-9b56-422a-9801-47fc26167273/Lay-s-American-Cream-Onion-Flavour-Potato-Chips.jpg",
+      "inStock": true,
+      "packLabel": "1 pack (75g)",
+      "price": 35,
+      "title": "Lay's American Cream & Onion Flavour | Potato Chips",
+      "url": "https://www.zepto.com/pn/lays-american-cream-onion-flavour-potato-chips/pvid/a221968b-7cf1-4af7-adfd-40b8b19360ce"
+    },
+    {
+      "id": "2222c208-4980-466f-9ac8-ad004a03eb88",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1000-1000,pr-true,f-auto,q-40,dpr-2/cms/product_variant/2a8ec9f2-b12b-43c4-b71e-6ef82af9b667/Crax-Crunchy-Noodle-Puffs-Chips-Snacks.jpg",
+      "inStock": true,
+      "mrp": 60,
+      "packLabel": "1 pack (70 g)",
+      "price": 30,
+      "title": "Crax Crunchy Noodle Puffs Chips Snacks",
+      "url": "https://www.zepto.com/pn/crax-crunchy-noodle-puffs-chips-snacks/pvid/2222c208-4980-466f-9ac8-ad004a03eb88"
+    },
+    {
+      "id": "4699dfae-81c2-428a-84e2-ac784d463616",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1500-1500,pr-true,f-auto,q-40,dpr-2/cms/product_variant/7242bf30-1678-47e6-a19e-4b31dde5aaee/Lay-s-India-s-Magic-Masala-Crunchy-Potato-Chips.jpg",
+      "inStock": true,
+      "packLabel": "1 pack (75 g)",
+      "price": 35,
+      "title": "Lay's India's Magic Masala | Crunchy Potato Chips",
+      "url": "https://www.zepto.com/pn/lays-indias-magic-masala-crunchy-potato-chips/pvid/4699dfae-81c2-428a-84e2-ac784d463616"
+    },
+    {
+      "id": "9a4a4230-2655-4cca-9d48-3b80c6c31ca2",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-2000-2000,pr-true,f-auto,q-40,dpr-2/cms/product_variant/dd50fab6-fe1b-4133-a3be-783adba72aea/Bingo-XXX-Hot-Spicy-Korean-Style-Puff-Snack.jpg",
+      "inStock": true,
+      "mrp": 50,
+      "packLabel": "1 pc (73 g or 80 g)",
+      "price": 30,
+      "title": "Bingo! XXX Hot & Spicy Korean Style Puff Snack",
+      "url": "https://www.zepto.com/pn/bingo-xxx-hot-spicy-korean-style-puff-snack/pvid/9a4a4230-2655-4cca-9d48-3b80c6c31ca2"
+    },
+    {
+      "id": "c25191e7-afd9-443b-983d-6e70808e183c",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1500-1500,pr-true,f-auto,q-40,dpr-2/cms/product_variant/ee5667d9-7e89-4b2e-9c54-2df03a240b83/Lay-s-Spanish-Tomato-Tango-Flavour-Potato-Chips.jpg",
+      "inStock": true,
+      "mrp": 48,
+      "packLabel": "1 pack (80 g)",
+      "price": 38,
+      "title": "Lay's Spanish Tomato Tango Flavour | Potato Chips",
+      "url": "https://www.zepto.com/pn/lays-spanish-tomato-tango-flavour-potato-chips/pvid/c25191e7-afd9-443b-983d-6e70808e183c"
+    },
+    {
+      "id": "5aa99987-1f9f-4ec8-8cff-921253f102dd",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-2250-2250,pr-true,f-auto,q-40,dpr-2/cms/product_variant/2f204e32-40a3-47ca-a4f5-200dbdaa465c/Bingo-Original-Style-Chilli-Sprinkled-Crispy-Enjoyable.jpeg",
+      "inStock": true,
+      "mrp": 100,
+      "packLabel": "1 pack (130 g)",
+      "price": 71,
+      "title": "Bingo! Original Style Chilli Sprinkled | Crispy & Enjoyable",
+      "url": "https://www.zepto.com/pn/bingo-original-style-chilli-sprinkled-crispy-enjoyable/pvid/5aa99987-1f9f-4ec8-8cff-921253f102dd"
+    },
+    {
+      "id": "6daad06f-a509-40a4-b6eb-4c684abf3183",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1500-1500,pr-true,f-auto,q-40,dpr-2/cms/product_variant/794a6e0f-82ac-48ff-bd03-5cf999b8fd79/Lay-s-Spanish-Tomato-Tango-Flavour-Potato-Chips.jpg",
+      "inStock": true,
+      "packLabel": "1 pack (75 g)",
+      "price": 35,
+      "title": "Lay's Spanish Tomato Tango Flavour | Potato Chips",
+      "url": "https://www.zepto.com/pn/lays-spanish-tomato-tango-flavour-potato-chips/pvid/6daad06f-a509-40a4-b6eb-4c684abf3183"
+    },
+    {
+      "id": "9d65d1fe-086f-4a66-80f5-47fcc64943d8",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1879-1879,pr-true,f-auto,q-40,dpr-2/cms/product_variant/0562e4f3-c70c-4d2d-b067-ca6b921845cc/Yellow-Diamond-Sizzling-Cheese-Chips.jpg",
+      "inStock": true,
+      "mrp": 50,
+      "packLabel": "1 pack (75 g)",
+      "price": 27,
+      "title": "Yellow Diamond Sizzling Cheese Chips",
+      "url": "https://www.zepto.com/pn/yellow-diamond-sizzling-cheese-chips/pvid/9d65d1fe-086f-4a66-80f5-47fcc64943d8"
+    },
+    {
+      "id": "c4cfb628-36be-42bf-a1a3-11e1f3cf0971",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1500-1500,pr-true,f-auto,q-40,dpr-2/cms/product_variant/108f5a87-ec95-4918-ac88-a7ae16b8ebbd/Lay-s-American-Cream-Onion-Flavour-Potato-Chips.jpg",
+      "inStock": true,
+      "mrp": 81,
+      "packLabel": "1 pack (143 g)",
+      "price": 69,
+      "title": "Lay's American Cream & Onion Flavour | Potato Chips",
+      "url": "https://www.zepto.com/pn/lays-american-cream-onion-flavour-potato-chips/pvid/c4cfb628-36be-42bf-a1a3-11e1f3cf0971"
+    },
+    {
+      "id": "11eda568-fc40-4507-98ab-30ef862afe30",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1500-1500,pr-true,f-auto,q-40,dpr-2/cms/product_variant/c6fd84e1-bd2b-4017-b5d5-05a84c6d0aa3/Bingo-Popped-Chips-Indian-Spice-Mix-Light-Flavourful.jpeg",
+      "inStock": true,
+      "mrp": 20,
+      "packLabel": "1 pc (23 g)",
+      "price": 19,
+      "title": "Bingo! Popped Chips Indian Spice Mix | Light & Flavourful",
+      "url": "https://www.zepto.com/pn/bingo-popped-chips-indian-spice-mix-light-flavourful/pvid/11eda568-fc40-4507-98ab-30ef862afe30"
+    },
+    {
+      "id": "9595b7b2-21fb-43c2-b195-87805ea25057",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-3000-3000,pr-true,f-auto,q-40,dpr-2/cms/product_variant/b715f8a0-ad10-4d68-9466-093d24c1a928/Lay-s-Classic-Salted-Crunchy-Potato-Chips.jpg",
+      "inStock": true,
+      "mrp": 48,
+      "packLabel": "1 pack (80 g)",
+      "price": 38,
+      "title": "Lay's Classic Salted | Crunchy Potato Chips",
+      "url": "https://www.zepto.com/pn/lays-classic-salted-crunchy-potato-chips/pvid/9595b7b2-21fb-43c2-b195-87805ea25057"
+    },
+    {
+      "id": "bed2228f-3919-4857-b149-7e453997f09e",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1240-1240,pr-true,f-auto,q-40,dpr-2/cms/product_variant/1ebe992c-94fd-4218-bd68-b45b31599298/Crax-Korean-Ramen-Noodles-Puff-Chips-Snacks.jpeg",
+      "inStock": true,
+      "mrp": 60,
+      "packLabel": "1 pack (70 g)",
+      "price": 30,
+      "title": "Crax Korean Ramen Noodles Puff Chips Snacks",
+      "url": "https://www.zepto.com/pn/crax-korean-ramen-noodles-puff-chips-snacks/pvid/bed2228f-3919-4857-b149-7e453997f09e"
+    },
+    {
+      "id": "a1846726-c186-42a6-b55f-851bd58a95ec",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1500-1500,pr-true,f-auto,q-40,dpr-2/cms/product_variant/368e0edf-3e07-4c0c-b062-1155ee1a6d06/Lay-s-India-s-Magic-Masala-Crunchy-Potato-Chips.jpg",
+      "inStock": true,
+      "mrp": 81,
+      "packLabel": "1 pack (143 g)",
+      "price": 69,
+      "title": "Lay's India's Magic Masala | Crunchy Potato Chips",
+      "url": "https://www.zepto.com/pn/lays-indias-magic-masala-crunchy-potato-chips/pvid/a1846726-c186-42a6-b55f-851bd58a95ec"
+    },
+    {
+      "id": "a0128f12-113d-4c03-9e4e-16a887c1eed5",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1500-1500,pr-true,f-auto,q-40,dpr-2/cms/product_variant/42f5cd3a-4dbd-4e3f-81cb-1e991bc7904d/Bingo-Potato-Chips-Thrilling-Tomato.jpg",
+      "inStock": true,
+      "mrp": 20,
+      "packLabel": "1 pack (45 g)",
+      "price": 19,
+      "title": "Bingo! Potato Chips Thrilling Tomato",
+      "url": "https://www.zepto.com/pn/bingo-potato-chips-thrilling-tomato/pvid/a0128f12-113d-4c03-9e4e-16a887c1eed5"
+    },
+    {
+      "id": "4b0a3db9-bb0f-49d4-bdf3-2c39db3b1e05",
+      "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1500-1500,pr-true,f-auto,q-40,dpr-2/cms/product_variant/0c89fe86-9fe2-4940-ad76-e6dd69dc630f/Bingo-Tedhe-Medhe-Masala-Tadka.jpeg",
+      "inStock": true,
+      "mrp": 20,
+      "packLabel": "1 pc (70 g)",
+      "price": 14,
+      "title": "Bingo! Tedhe Medhe | Masala Tadka",
+      "url": "https://www.zepto.com/pn/bingo-tedhe-medhe-masala-tadka/pvid/4b0a3db9-bb0f-49d4-bdf3-2c39db3b1e05"
+    }
+  ]
+}

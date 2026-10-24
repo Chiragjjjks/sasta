@@ -9,6 +9,7 @@ export interface ListItem {
   variant: string
   variantKey: string
   sizeGrams?: number
+  packLabel?: string
   query: string
   /** Usual quantity, pre-filled when ticked. */
   qty: number
@@ -55,7 +56,7 @@ export function deleteList(lists: ShoppingList[], id: string): ShoppingList[] {
 export function listItemFromGroup(g: ProductGroup, query: string, now = Date.now()): ListItem {
   const cheapest = g.offers.find((o) => o.inStock)
   return {
-    key: g.key, brand: g.brand, variant: g.variant, variantKey: g.variantKey, sizeGrams: g.sizeGrams, query,
+    key: g.key, brand: g.brand, variant: g.variant, variantKey: g.variantKey, sizeGrams: g.sizeGrams, packLabel: g.packLabel, query,
     qty: 1, lastOffers: g.offers, lastSeenAt: now, savedPrice: cheapest?.price, addedAt: now, timesPicked: 0,
   }
 }
@@ -128,7 +129,7 @@ export function sortItems(items: ListItem[], sort: ListSort): ListItem[] {
 /** Cart items for the picked products, using each one's list quantity. */
 export function toCartItems(list: ShoppingList, keys: string[], now = Date.now()): CartItem[] {
   return list.items.filter((i) => keys.includes(i.key)).map((i) => ({
-    ...fromGroup({ key: i.key, brand: i.brand, variant: i.variant, variantKey: i.variantKey, sizeGrams: i.sizeGrams, offers: i.lastOffers, best: i.lastOffers[0] }, i.query),
+    ...fromGroup({ key: i.key, brand: i.brand, variant: i.variant, variantKey: i.variantKey, sizeGrams: i.sizeGrams, packLabel: i.packLabel, offers: i.lastOffers, best: i.lastOffers[0] }, i.query),
     qty: i.qty,
     updatedAt: i.lastSeenAt ?? now,
   }))
@@ -153,7 +154,7 @@ export function updatePrices(lists: ShoppingList[], listId: string, fresh: CartI
 
 export function shareText(list: ShoppingList, keys?: string[]): string {
   const items = keys ? list.items.filter((i) => keys.includes(i.key)) : list.items
-  const lines = items.map((i) => `• ${i.brand === 'Other' ? '' : `${i.brand} `}${i.variant}${i.sizeGrams ? ` ${i.sizeGrams} g` : ''} × ${i.qty}`)
+  const lines = items.map((i) => `• ${i.brand === 'Other' ? '' : `${i.brand} `}${i.variant}${i.packLabel ? ` ${i.packLabel}` : i.sizeGrams ? ` ${i.sizeGrams} g` : ''} × ${i.qty}`)
   return `${list.emoji} ${list.name}\n${lines.join('\n')}`
 }
 

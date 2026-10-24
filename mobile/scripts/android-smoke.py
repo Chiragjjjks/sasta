@@ -105,8 +105,10 @@ try:
     adb('logcat', '-c')
     launch()
     find('Search any product', timeout=45)
-    find('Live now: Blinkit')
+    find('Quick-delivery prices', contains=True)
     find('Upgrade area', contains=True)
+    zepto = find('Zepto:', contains=True)
+    assert 'Soon' not in zepto.get('content-desc', '') and 'soon' not in zepto.get('content-desc', '')
     assert any(n.get('class') == 'android.widget.EditText' for n in tree()), 'Search is not a native text input'
     shot('01-native-home')
 
@@ -149,6 +151,11 @@ try:
     find('Connected apps')
     # Website sign-in must be cancellable even without completing an OTP.
     tap('Connect')
+    find('Cancel sign-in')
+    tap('Cancel sign-in')
+    find('Connected apps')
+    tap('Delivery area')
+    find('Use this area')
     find('Cancel sign-in')
     tap('Cancel sign-in')
     find('Connected apps')

@@ -1,5 +1,6 @@
 import { Preferences } from '@/native/kv'
 import type { Location } from './types'
+import { migrateCart, migrateLists } from './identity'
 
 const RECENTS = 'sasta.recents'
 const LOCATION = 'sasta.location'
@@ -35,7 +36,7 @@ export function pushRecent(recents: string[], q: string): string[] {
 }
 
 const LISTS = 'sasta.lists'
-export const loadLists = () => get<import('./lists').ShoppingList[]>(LISTS, [])
+export const loadLists = async () => migrateLists(await get<import('./lists').ShoppingList[]>(LISTS, []))
 export const saveLists = (l: import('./lists').ShoppingList[]) => set(LISTS, l)
 
 const FEES = 'sasta.fees'
@@ -43,5 +44,5 @@ export const loadFees = () => get<import('./fees').FeeRules>(FEES, {})
 export const saveFees = (f: import('./fees').FeeRules) => set(FEES, f)
 
 const CART = 'sasta.cart'
-export const loadCart = () => get<import('./cart').CartItem[]>(CART, [])
+export const loadCart = async () => migrateCart(await get<import('./cart').CartItem[]>(CART, []))
 export const saveCart = (c: import('./cart').CartItem[]) => set(CART, c)

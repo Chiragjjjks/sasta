@@ -122,7 +122,7 @@ export default function ListDetail() {
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <T kind="bodyStrong" numberOfLines={2}>{i.brand !== 'Other' && !i.variant.startsWith(i.brand) ? `${i.brand} ` : ''}{i.variant}</T>
                   <T kind="small" numberOfLines={1}>
-                    {formatSize(i.sizeGrams)}{best ? ` · ${rupee(best.price)} on ${PLATFORM[best.platform].short}` : ' · no app has it now'}
+                    {(i.packLabel ?? formatSize(i.sizeGrams))}{best ? ` · ${rupee(best.price)} on ${PLATFORM[best.platform].short}` : ' · no app has it now'}
                   </T>
                   {(last.has(i.key) || drop > 0 || price === undefined) && (
                     <View style={{ flexDirection: 'row', gap: 5, marginTop: 4 }}>

@@ -2,7 +2,7 @@
 
 An Android app for comparing quick-commerce prices and keeping reusable shopping lists. Built with React Native and Expo, with native inputs, navigation, scrolling and Android sharing.
 
-**Live search currently supports Blinkit.** The other five platforms are shown as coming soon. Connecting an account does not enable a missing search adapter. Confirm prices, stock, offers and final fees in the shopping app before payment.
+**Search adapters: Blinkit, Zepto and Flipkart Minutes, plus guarded Amazon Now discovery.** Zepto was checked against a live product page. Minutes needs an exact provider delivery address and its positive catalogue remains unverified on a signed-in account. Amazon Now is available only if the account exposes a verified Now web storefront; Fresh and regular marketplace listings are excluded. Instamart and BigBasket currently support sign-in only. Account **Test search** reports a real product count or failure reason separately from login verification. Confirm prices, stock, offers and final fees in the shopping app before payment.
 
 ## Install
 
@@ -22,6 +22,8 @@ npm run typecheck
 npm test
 npm run export:web     # browser preview with labelled sample prices
 ```
+
+Choose the same delivery area in Sasta and every shopping service using **Account → Delivery area**. Each service keeps its own account session on the phone.
 
 Sign-in and live search need a native Android build, not Expo Go or the browser preview. The local Android module shares WebView cookies with sign-in, migrates older preferences, and keeps OAuth secrets in encrypted on-device storage.
 

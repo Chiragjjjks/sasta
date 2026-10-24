@@ -2,6 +2,9 @@ import { Platform as RNPlatform } from 'react-native'
 import { PLATFORMS } from '@/core/platforms'
 import { NotLiveError, type Adapter, type Platform } from '@/core/types'
 import { createBlinkitAdapter } from './blinkit'
+import { createZeptoAdapter } from './zepto'
+import { createFlipkartAdapter } from './flipkart'
+import { createAmazonNowAdapter } from './amazon-now'
 import { mockAdapters } from './mock'
 
 /**
@@ -11,6 +14,9 @@ import { mockAdapters } from './mock'
  */
 const LIVE: Partial<Record<Platform, () => Adapter>> = {
   blinkit: createBlinkitAdapter,
+  zepto: createZeptoAdapter,
+  flipkart_minutes: createFlipkartAdapter,
+  amazon_now: createAmazonNowAdapter,
 }
 
 function notLive(platform: Platform): Adapter {
@@ -29,3 +35,5 @@ export const adapters: Adapter[] = IS_NATIVE
 
 export const LIVE_PLATFORMS = IS_NATIVE ? (Object.keys(LIVE) as Platform[]) : []
 export const IS_SAMPLE_DATA = !IS_NATIVE
+
+export const canSearch = (platform: Platform) => !!LIVE[platform]

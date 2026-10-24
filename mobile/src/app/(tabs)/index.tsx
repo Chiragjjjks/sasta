@@ -3,8 +3,9 @@ import { CircleAlert, Clock, MapPin, Search as SearchIcon, X } from 'lucide-reac
 import { useMemo, useRef, useState, type ComponentRef } from 'react'
 import { ActivityIndicator, FlatList, Keyboard, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { IS_SAMPLE_DATA, LIVE_PLATFORMS } from '@/core/adapters'
-import { variantFromQuery } from '@/core/normalize'
+import { IS_SAMPLE_DATA } from '@/core/adapters'
+import { searchLabel } from '@/core/capabilities'
+import { relevance, variantFromQuery } from '@/core/normalize'
 import { PLATFORM, PLATFORMS } from '@/core/platforms'
 import type { AdapterStatus, ProductGroup } from '@/core/types'
 import { formatSize, plural, rupee } from '@/core/utils'
@@ -27,7 +28,7 @@ export default function SearchScreen() {
   const statuses = PLATFORMS.map((p) => s.statuses[p.id]).filter(Boolean) as AdapterStatus[]
   const searching = !!s.submitted && (statuses.length < PLATFORMS.length || statuses.some((x) => x.state === 'searching'))
   const active = PLATFORMS.filter((p) => s.statuses[p.id]?.state !== 'unavailable')
-  const problems = statuses.filter((x) => x.state === 'failed' || x.state === 'timeout' || x.state === 'needs_login')
+  const problems = statuses.filter((x) => ['failed','timeout','needs_login','needs_location','blocked'].includes(x.state) || (x.state === 'unavailable' && x.error))
   const appsWithResults = PLATFORMS.filter((p) => (s.offers[p.id]?.length ?? 0) > 0).length
 
   const variantOptions = useMemo(() => {
@@ -35,16 +36,16 @@ export default function SearchScreen() {
     for (const g of s.groups) if (!g.variantKey.startsWith('raw:')) seen.set(g.variantKey, g.variant.replace(/^American Style |^Spanish /, ''))
     return [...seen].map(([key, label]) => ({ key, label }))
   }, [s.groups])
-  const byVariant = useMemo(() => s.groups.filter((g) => !variant || g.variantKey === variant), [s.groups, variant])
+  const byVariant = useMemo(() => s.groups.filter((g) => !variant || g.variantKey === variant || g.variantKey.startsWith(`${variant}:`)), [s.groups, variant])
   const sizes = useMemo(() => [...new Set(byVariant.map((g) => g.sizeGrams).filter((x): x is number => !!x))].sort((a, b) => a - b), [byVariant])
   const activeSize = size !== null && sizes.includes(size) ? size : null
   const visible = useMemo(() => {
     const list = byVariant.filter((g) => activeSize === null || g.sizeGrams === activeSize)
     return [...list].sort((a, b) => {
       if (a.best.inStock !== b.best.inStock) return a.best.inStock ? -1 : 1
-      return a.best.price - b.best.price || (a.best.etaMinutes ?? 99) - (b.best.etaMinutes ?? 99)
+      return relevance(b.best, s.submitted) - relevance(a.best, s.submitted) || a.best.price - b.best.price || (a.best.etaMinutes ?? 99) - (b.best.etaMinutes ?? 99)
     })
-  }, [byVariant, activeSize])
+  }, [byVariant, activeSize, s.submitted])
   const bestValue = useMemo(() => byVariant.filter((g) => g.best.inStock && g.pricePer100g).sort((a, b) => a.pricePer100g! - b.pricePer100g!)[0], [byVariant])
   const cartQty = useMemo(() => new Map(s.cart.map((i) => [i.key, i.qty])), [s.cart])
 
@@ -111,18 +112,17 @@ export default function SearchScreen() {
             </T>
             <View style={styles.appGrid}>
               {PLATFORMS.map((p) => {
-                const live = IS_SAMPLE_DATA || LIVE_PLATFORMS.includes(p.id)
                 return (
-                  <View key={p.id} style={[styles.appTile, { backgroundColor: t.surface }]}>
+                  <Pressable key={p.id} onPress={() => router.navigate('/account')} style={[styles.appTile, { backgroundColor: t.surface }]} accessibilityLabel={`${p.name}: ${searchLabel(p.id,s.accounts[p.id],s.statuses[p.id])}`}>
                     <View style={[styles.dot, { backgroundColor: p.color }]} />
-                    <T kind="smallStrong" style={{ flex: 1 }} numberOfLines={1}>{p.name}</T>
-                    {!live && <T kind="caption">soon</T>}
-                  </View>
+                    <T kind="smallStrong" style={{ flex: 1 }} numberOfLines={1}>{p.short}</T>
+                    <T kind="caption" numberOfLines={1}>{IS_SAMPLE_DATA ? 'Sample' : searchLabel(p.id,s.accounts[p.id],s.statuses[p.id])}</T>
+                  </Pressable>
                 )
               })}
             </View>
             <T kind="caption" style={{ textAlign: 'center', marginTop: 18 }}>
-              {IS_SAMPLE_DATA ? 'Browser preview · sample prices' : `Live now: ${LIVE_PLATFORMS.map((p) => PLATFORM[p].name).join(', ')}`}
+              {IS_SAMPLE_DATA ? 'Browser preview · sample prices' : 'Quick-delivery prices · choose the same area in each app'}
             </T>
           </View>
         </ScrollView>
@@ -158,9 +158,14 @@ export default function SearchScreen() {
                   <Text style={{ fontFamily: t.fonts.bodyBold }}>{PLATFORM[p.platform].name}: </Text>
                   {p.state === 'timeout' ? 'took too long. Check your connection and search again.'
                     : p.state === 'needs_login' ? 'needs you to sign in (Account tab).'
+                    : ['needs_location','blocked','unavailable'].includes(p.state) ? p.error
                     : p.error?.includes('location') ? 'needs your exact location.' : `couldn't search${p.error ? ` (${p.error})` : ''}.`}
                 </T>
               </View>
+            ))}
+            {problems.filter(p => ['needs_location','blocked','needs_login'].includes(p.state)).map(p => (
+              <Button key={p.platform} small variant="secondary" label={`${p.state === 'needs_login' ? 'Connect' : p.state === 'needs_location' ? 'Set area in' : 'Open'} ${PLATFORM[p.platform].name}`}
+                onPress={() => { if (p.state === 'needs_login') router.navigate('/account'); else s.setupProvider(p.platform).catch(e => s.showToast((e as Error).message)) }} />
             ))}
             {problems.some((p) => p.error?.includes('location')) && (
               <Button small label="Set my location" onPress={() => router.push('/location')} style={{ alignSelf: 'flex-start', marginTop: 4 }} />
@@ -202,7 +207,7 @@ export default function SearchScreen() {
           </ScrollView>
         )}
 
-        {visible.length > 0 && <T kind="caption">Cheapest first</T>}
+        {visible.length > 0 && <T kind="caption">Best matches · cheapest first</T>}
       </View>
     </View>
   )
@@ -217,7 +222,7 @@ export default function SearchScreen() {
           <View style={{ paddingHorizontal: 16 }}>
             <ProductCard
               group={item}
-              total={Math.max(1, active.length)}
+              total={Math.max(1, statuses.filter(s => s.state === 'done').length)}
               inCart={cartQty.get(item.key) ?? 0}
               saved={s.isSaved(item.key)}
               onOpen={open}

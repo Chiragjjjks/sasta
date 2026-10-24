@@ -23,6 +23,8 @@ export interface SignInOptions {
   doneOrigins?: string[]
   /** JS expression run in the page; true once signed in (reads the site's own storage). */
   doneScript?: string
+  hint?: string
+  doneLabel?: string
 }
 
 export interface PageResult { ok: boolean; value?: unknown; error?: string }

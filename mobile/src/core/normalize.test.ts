@@ -45,9 +45,9 @@ describe('groupOffers', () => {
       offer("Lay's Indias Magic Masala 50 g", 19, 'bigbasket'),
       offer("Lay's India's Magic Masala 115 g", 45, 'blinkit'),
     ])
-    expect(groups).toHaveLength(2)
+    expect(groups).toHaveLength(3)
     const small = groups.find((g) => g.sizeGrams === 48)!
-    expect(small.offers).toHaveLength(3)
+    expect(small.offers).toHaveLength(2)
     expect(small.best.platform).toBe('zepto')
   })
   it('ranks in-stock offers ahead of cheaper out-of-stock ones', () => {

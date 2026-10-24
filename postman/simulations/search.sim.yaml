@@ -1,0 +1,7 @@
+simulation: sasta-search
+routing: path
+mocks:
+  - routeKey: zepto
+    path: ../mocks/zepto/zepto.js
+  - routeKey: flipkart
+    path: ../mocks/flipkart/flipkart.js

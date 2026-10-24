@@ -36,7 +36,7 @@ export default function CompareScreen() {
             <T kind="caption" style={{ letterSpacing: 1.2 }}>{group.brand.toUpperCase()}</T>
             <T kind="h2" numberOfLines={3}>{group.variant}</T>
             <T kind="small">
-              {formatSize(group.sizeGrams)}{group.pricePer100g ? ` · best ${rupee(+group.pricePer100g.toFixed(1))}/100 g` : ''}
+              {(group.packLabel ?? formatSize(group.sizeGrams))}{group.pricePer100g ? ` · best ${rupee(+group.pricePer100g.toFixed(1))}/100 g` : ''}
             </T>
           </View>
         </View>

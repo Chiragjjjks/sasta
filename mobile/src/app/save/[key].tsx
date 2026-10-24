@@ -29,7 +29,7 @@ export default function SaveScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: t.bg }} edges={['bottom']}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={{ padding: 16, gap: 14 }} keyboardShouldPersistTaps="handled">
-          <T kind="small">{group.variant}{group.sizeGrams ? ` · ${formatSize(group.sizeGrams)}` : ''}</T>
+          <T kind="small">{group.variant}{(group.packLabel || group.sizeGrams) ? ` · ${(group.packLabel ?? formatSize(group.sizeGrams))}` : ''}</T>
           {s.lists.length > 0 && (
             <Card>
               {s.lists.map((l, i) => {

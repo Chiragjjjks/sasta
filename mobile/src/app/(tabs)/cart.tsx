@@ -61,7 +61,7 @@ export default function CartScreen() {
   const mode: 'cheapest' | Platform | 'custom' = pins.size === 1 && pins.has(undefined) ? 'cheapest' : pins.size === 1 ? [...pins][0]! : 'custom'
   const total = anyFees ? withFees : summary.total
   const best = anyFees ? Math.min(mixWithFees, afterFees?.total ?? Infinity) : cheapest.total
-  const oldest = Math.min(...items.map((i) => i.updatedAt))
+  const oldest = Math.min(...items.flatMap((i) => i.offers.length ? i.offers.map(o => o.fetchedAt) : [i.updatedAt]))
 
   const byPlatform = new Map<Platform, typeof summary.lines>()
   for (const l of summary.lines) if (l.offer) byPlatform.set(l.offer.platform, [...(byPlatform.get(l.offer.platform) ?? []), l])
@@ -144,7 +144,7 @@ export default function CartScreen() {
                       <View style={{ flex: 1, minWidth: 0 }}>
                         <T kind="bodyStrong" numberOfLines={2}>{item.variant}</T>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 }}>
-                          <T kind="small">{formatSize(item.sizeGrams)}</T>
+                          <T kind="small">{(item.packLabel ?? formatSize(item.sizeGrams))}</T>
                           {inStock.length > 1 && (
                             <Pressable onPress={() => { tap(); setChanging(changing === item.key ? null : item.key) }} hitSlop={6}>
                               <Text style={{ color: t.ink, fontFamily: t.fonts.bodyBold, fontSize: 12, textDecorationLine: 'underline' }}>Change app</Text>
@@ -181,7 +181,7 @@ export default function CartScreen() {
             <T kind="smallStrong">Out of stock everywhere</T>
             {summary.unavailable.map((i) => (
               <View key={i.key} style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <T kind="small" style={{ flex: 1 }}>{i.variant} {formatSize(i.sizeGrams)}</T>
+                <T kind="small" style={{ flex: 1 }}>{i.variant} {(i.packLabel ?? formatSize(i.sizeGrams))}</T>
                 <Button small variant="ghost" label="Remove" onPress={() => s.setCartQty(i.key, 0)} />
               </View>
             ))}

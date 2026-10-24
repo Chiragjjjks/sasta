@@ -1,5 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { adapters, IS_NATIVE } from '@/core/adapters'
+import { adapters, canSearch, IS_NATIVE } from '@/core/adapters'
+import { connectionReport, probeSearch } from '@/core/connection-test'
+import { migrateLists } from '@/core/identity'
+import { PlatformSession } from '@/native/platformSession'
 import { blinkitIdentity, fetchBlinkitBill, openBlinkitWithCart, prepareBlinkitSignIn } from '@/core/adapters/blinkit'
 import {
   ACCOUNT_CONFIG, connectSwiggyWebsite, connectWeb, disconnectWeb, loadAccounts, recheckWebSessions, saveAccounts,
@@ -69,6 +72,7 @@ interface Store {
   connect: (p: Platform, opts?: { website?: boolean }) => Promise<Account>
   disconnect: (p: Platform) => Promise<void>
   testConnection: (p: Platform) => Promise<void>
+  setupProvider: (p: Platform) => Promise<void>
   // feedback
   toast: string; showToast: (t: string) => void
 }
@@ -230,7 +234,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const importListsFn = useCallback((text: string) => {
     // Validate first: a bad file must show a message, never crash the app.
     let next: ShoppingList[]
-    try { next = importLists(lists, text) } catch (e) { setToast((e as Error).message || 'That file is not a Sasta lists backup.'); return }
+    try { next = migrateLists(importLists(lists, text)) } catch (e) { setToast((e as Error).message || 'That file is not a Sasta lists backup.'); return }
     setLists(next)
     setToast('Lists restored')
   }, [lists])
@@ -255,12 +259,39 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const runTest = useCallback(async (p: Platform, acc: Account, announce = true) => {
+    const searchAtStart = abortRef.current
     const t = await testAccount(p, acc)
-    const tested: Account = { ...acc, lastTest: { ...t, at: Date.now() }, verified: t.ok ? true : acc.verified }
+    if (!canSearch(p)) {
+      const tested: Account = { ...acc, lastTest: { ...t, sessionOk: t.ok, at: Date.now() }, verified: t.ok }
+      updateAccount(tested)
+      if (announce) setToast(`${PLATFORM[p].name}: ${t.detail}. Product search has not been added.`)
+      return tested
+    }
+    const probe = await probeSearch(p, canSearch(p) ? adapters.find(a => a.platform === p) : undefined, submitted || 'milk', locationRef.current)
+    const report = connectionReport(t, probe)
+    const tested: Account = { ...acc, status: t.ok ? 'connected' : acc.status, connectedAt: t.ok ? acc.connectedAt ?? Date.now() : acc.connectedAt, lastTest: report, verified: t.ok }
     updateAccount(tested)
-    if (announce) setToast(t.ok ? `${PLATFORM[p].name} connected · test passed` : `${PLATFORM[p].name}: ${t.detail}`)
+    if (submitted && abortRef.current === searchAtStart && !searchAtStart?.signal.aborted) {
+      setOffers(prev => ({ ...prev, [p]: probe.offers }))
+      setStatuses(prev => ({ ...prev, [p]: probe.status }))
+    }
+    if (announce) setToast(`${PLATFORM[p].name}: ${report.detail}`)
     return tested
-  }, [testAccount, updateAccount])
+  }, [testAccount, updateAccount, submitted])
+
+  const setupProvider = useCallback(async (p: Platform) => {
+    const config = ACCOUNT_CONFIG[p]
+    const url = p === 'flipkart_minutes' ? 'https://www.flipkart.com/hyperlocal-preview-page?marketplace=HYPERLOCAL'
+      : p === 'amazon_now' ? 'https://www.amazon.in/' : config.loginUrl
+    const result = await PlatformSession.signIn({ url, title: `${PLATFORM[p].name} · delivery area`,
+      doneLabel: 'Use this area', hint: p === 'amazon_now'
+        ? `Open Amazon Now and choose ${locationRef.current.label} (${locationRef.current.pincode}). Fresh and regular listings are excluded.`
+        : `Choose ${locationRef.current.label} (${locationRef.current.pincode}), then tap Use this area. Your login stays saved.` })
+    if (result.kind === 'cancelled') return
+    for (const origin of config.origins) await PlatformSession.pageReset({ origin: new URL(origin).origin })
+    clearSearchCache()
+    await runTest(p, accounts[p] ?? { platform: p, status: 'disconnected' })
+  }, [accounts, runTest])
 
   const connect = useCallback(async (p: Platform, opts: { website?: boolean } = {}): Promise<Account> => {
     let acc: Account
@@ -287,8 +318,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [accounts, updateAccount])
 
   const testConnection = useCallback(async (p: Platform) => {
-    const a = accounts[p]
-    if (a) await runTest(p, a)
+    await runTest(p, accounts[p] ?? { platform: p, status: 'disconnected' })
   }, [accounts, runTest])
 
   const value: Store = {
@@ -314,7 +344,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     },
     exportLists: async () => { await shareFile(`sasta-lists-${new Date().toISOString().slice(0, 10)}.json`, exportLists(lists)).catch(() => setToast('Could not export')) },
     importLists: importListsFn,
-    accounts, connect, disconnect, testConnection,
+    accounts, connect, disconnect, testConnection, setupProvider,
     toast, showToast: setToast,
   }
 

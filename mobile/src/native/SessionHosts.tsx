@@ -1,6 +1,6 @@
 import { X } from 'lucide-react-native'
 import { useCallback, useEffect, useRef, useState, type ComponentType, type RefAttributes } from 'react'
-import { BackHandler, Linking, Modal, Platform, Pressable, StyleSheet, Text, ToastAndroid, View } from 'react-native'
+import { BackHandler, Linking, Modal, Platform, Pressable, StyleSheet, Text, ToastAndroid, useWindowDimensions, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { WebView as RNWebView, type WebViewMessageEvent, type WebViewProps } from 'react-native-webview'
 import SastaNative from '../../modules/sasta-native'
@@ -27,9 +27,10 @@ interface Pending { origin: string; resolve: (r: PageResult) => void; timer: Ret
 /**
  * One invisible WebView per shopping site. Scripts run inside the site's own page, so requests
  * look like real Chrome (passing TLS-fingerprint bot checks) and carry the signed-in session.
- * Each page loads a tiny same-site file (robots.txt), so the site's whole web app never runs.
+ * API adapters use a tiny same-site file; storefront readers load the real search page.
  */
 export function HiddenPages() {
+  const viewport = useWindowDimensions()
   const [pages, setPages] = useState<Page[]>([])
   const refs = useRef(new Map<string, WebViewHandle | null>())
   const loaded = useRef(new Map<string, boolean>())
@@ -111,7 +112,7 @@ export function HiddenPages() {
         <WebView
           source={{ html: '<script>window.ReactNativeWebView.postMessage(navigator.userAgent)</script>' }}
           onMessage={(e: WebViewMessageEvent) => setUA(e.nativeEvent.data)}
-          style={styles.hiddenView}
+          style={{ width: viewport.width, height: viewport.height }}
         />
       )}
       {ua && pages.map((p) => (
@@ -126,7 +127,7 @@ export function HiddenPages() {
           onMessage={onMessage}
           thirdPartyCookiesEnabled
           domStorageEnabled
-          style={styles.hiddenView}
+          style={{ width: viewport.width, height: viewport.height }}
         />
       ))}
     </View>
@@ -224,14 +225,14 @@ export function SignInHost() {
           <View style={{ flex: 1 }}>
             <Text style={[styles.title, { color: t.ink, fontFamily: t.fonts.display }]} numberOfLines={1}>{req?.opts.title ?? 'Sign in'}</Text>
             <Text style={[styles.hint, { color: t.muted, fontFamily: t.fonts.body }]} numberOfLines={2}>
-              {signedIn ? 'Signed in. Returning to Sasta…' : req?.opts.interceptPrefix
+              {signedIn ? 'Signed in. Returning to Sasta…' : req?.opts.hint ?? (req?.opts.interceptPrefix
                 ? "Sign in on Swiggy's page. Sasta never sees your number or OTP."
-                : 'Tap Login on this page and enter your number and OTP. Sasta never sees them.'}
+                : 'Tap Login on this page and enter your number and OTP. Sasta never sees them.')}
             </Text>
           </View>
           {!req?.opts.interceptPrefix && (
             <Pressable onPress={() => finish({ kind: 'done' })} style={[styles.doneBtn, { backgroundColor: t.ink }]}>
-              <Text style={{ color: t.bg, fontFamily: t.fonts.bodyBold, fontSize: 13 }}>I&apos;m signed in</Text>
+              <Text style={{ color: t.bg, fontFamily: t.fonts.bodyBold, fontSize: 13 }}>{req?.opts.doneLabel ?? "I'm signed in"}</Text>
             </Pressable>
           )}
         </View>

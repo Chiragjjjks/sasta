@@ -1,6 +1,6 @@
 import { Preferences } from '@/native/kv'
 import { PlatformSession } from '@/native/platformSession'
-import type { Platform } from './types'
+import type { AdapterStatus, Platform } from './types'
 
 /**
  * How Sasta signs in to each platform.
@@ -62,13 +62,13 @@ export const ACCOUNT_CONFIG: Record<Platform, AccountConfig> = {
   flipkart_minutes: {
     platform: 'flipkart_minutes', method: 'web', account: 'Flipkart',
     loginUrl: 'https://www.flipkart.com/account/login', origins: ['https://www.flipkart.com'], sessionCookies: [],
-    note: 'Minutes may only work in the Flipkart app. Not confirmed yet.',
+    note: 'Select a delivery address in Minutes, then use Test search. Regular Flipkart listings are excluded.',
   },
   amazon_now: {
     platform: 'amazon_now', method: 'web', account: 'Amazon',
     // Anonymous visits get session-id and ubid-acbin; these appear only after sign-in.
     loginUrl: 'https://www.amazon.in/gp/sign-in.html', origins: ['https://www.amazon.in'], sessionCookies: ['at-acbin', 'x-acbin', 'sess-at-acbin'],
-    note: 'Amazon Now may only work in the Amazon app. Not confirmed yet.',
+    note: 'Now must be available in this web session. Fresh and regular Amazon listings are excluded.',
   },
 }
 
@@ -89,7 +89,7 @@ export interface Account {
   /** Who is signed in, masked, e.g. "•••• 1234". */
   label?: string
   /** Result of the quick check run right after connecting (or from the Test button). */
-  lastTest?: { ok: boolean; detail: string; at: number }
+  lastTest?: { ok: boolean; detail: string; at: number; sessionOk?: boolean; search?: AdapterStatus & { query: string } }
 }
 
 const KEY = 'sasta.accounts'
@@ -172,7 +172,7 @@ export async function testWebConnection(platform: Platform, acc: Account): Promi
   const { names } = await PlatformSession.cookieNames({ urls: target.origins })
   const judged = judgeWebSignIn(target, names, acc.learnedCookies)
   if (judged.status === 'connected' && judged.verified) return { ok: true, detail: 'Session found on this phone' }
-  if (judged.status === 'connected') return { ok: true, detail: 'Signed in. This app can only be checked after first use' }
+  if (judged.status === 'connected') return { ok: false, detail: 'Sign-in saved, but this site does not expose a verifiable web session yet' }
   return { ok: false, detail: `No ${cfg.account} session found. Tap Reconnect and sign in again` }
 }
 

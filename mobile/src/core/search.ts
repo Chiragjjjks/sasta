@@ -1,10 +1,24 @@
 import type { Adapter, AdapterStatus, Location, Offer, Platform } from './types'
-import { NeedsLoginError, NotLiveError } from './types'
+import { relevantOffers } from './normalize'
+import { NeedsLocationError, NeedsLoginError, NotLiveError, ProviderBlockedError, ProviderUnavailableError } from './types'
 
 export const ADAPTER_TIMEOUT_MS = 15000
 const CACHE_TTL_MS = 10 * 60 * 1000
 
 const cache = new Map<string, { at: number; offers: Offer[] }>()
+const turns = new WeakMap<Adapter, Promise<void>>()
+
+/** A full shopping page can serve one query at a time. Queue wait is outside its timeout. */
+async function withAdapterTurn(adapter: Adapter, signal: AbortSignal, work: () => Promise<void>) {
+  if (!adapter.serial) return work()
+  const job = (turns.get(adapter) ?? Promise.resolve()).then(() => signal.aborted ? undefined : work())
+  const tail = job.then(() => {}, () => {})
+  turns.set(adapter, tail)
+  void tail.then(() => { if (turns.get(adapter) === tail) turns.delete(adapter) })
+  let onAbort: () => void = () => {}
+  const cancelled = new Promise<void>(resolve => { onAbort = resolve; signal.addEventListener('abort', onAbort, { once: true }); if (signal.aborted) resolve() })
+  try { await Promise.race([job, cancelled]) } finally { signal.removeEventListener('abort', onAbort) }
+}
 
 export interface SearchCallbacks {
   onStatus: (s: AdapterStatus) => void
@@ -46,7 +60,7 @@ export async function runSearch(
   opts: { force?: boolean } = {},
 ): Promise<void> {
   await Promise.all(
-    adapters.map(async (adapter) => {
+    adapters.map((adapter) => withAdapterTurn(adapter, signal, async () => {
       const { platform } = adapter
       if (signal.aborted) return
       const key = JSON.stringify([platform, loc.pincode, loc.lat, loc.lng, query.trim().toLowerCase()])
@@ -58,13 +72,14 @@ export async function runSearch(
         return
       }
       cb.onStatus({ platform, state: 'searching', count: 0 })
-      for (let attempt = 0; attempt < 2; attempt++) {
+      const attempts = adapter.attempts ?? 2
+      for (let attempt = 0; attempt < attempts; attempt++) {
         try {
           const offers = await withTimeout(async (s) => {
             await adapter.setLocation(loc)
             if (s.aborted) throw new DOMException('Aborted', 'AbortError')
-            return adapter.search(query, s)
-          }, signal, ADAPTER_TIMEOUT_MS)
+            return relevantOffers(await adapter.search(query, s), query)
+          }, signal, adapter.timeoutMs ?? ADAPTER_TIMEOUT_MS)
           if (signal.aborted) return
           cache.set(key, { at: Date.now(), offers })
           cb.onOffers(platform, offers)
@@ -77,16 +92,24 @@ export async function runSearch(
             cb.onStatus({ platform, state: 'unavailable', count: 0 })
             return
           }
+          if (err instanceof ProviderUnavailableError) {
+            cb.onStatus({ platform, state: 'unavailable', count: 0, error: err.message })
+            return
+          }
           if (err instanceof NeedsLoginError) {
             cb.onStatus({ platform, state: 'needs_login', count: 0 })
             return
           }
-          if (attempt === 1) {
+          if (err instanceof NeedsLocationError || err instanceof ProviderBlockedError) {
+            cb.onStatus({ platform, state: err instanceof NeedsLocationError ? 'needs_location' : 'blocked', count: 0, error: err.message })
+            return
+          }
+          if (attempt === attempts - 1) {
             cb.onStatus({ platform, state: e?.name === 'AbortError' || e?.name === 'TimeoutError' ? 'timeout' : 'failed', count: 0, error: e?.message })
           }
         }
       }
-    }),
+    })),
   )
 }
 

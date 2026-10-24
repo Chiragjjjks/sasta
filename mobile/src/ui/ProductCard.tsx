@@ -15,6 +15,7 @@ function ProductCardImpl({ group, total, inCart, saved, onOpen, onAdd, onSave }:
 }) {
   const t = useTheme()
   const { best } = group
+  const title = group.brand !== 'Other' && !group.variant.toLowerCase().includes(group.brand.toLowerCase()) ? `${group.brand} ${group.variant}` : group.variant
   const others = group.offers.filter((o) => o.inStock).slice(1, 3)
   const more = Math.max(0, group.offers.filter((o) => o.inStock).length - 1 - others.length)
   return (
@@ -23,14 +24,14 @@ function ProductCardImpl({ group, total, inCart, saved, onOpen, onAdd, onSave }:
       android_ripple={{ color: t.dark ? '#ffffff12' : '#0000000b' }}
       style={[styles.card, { backgroundColor: t.surface }]}
       accessibilityRole="button"
-      accessibilityLabel={`${group.variant}, ${formatSize(group.sizeGrams)}, ${rupee(best.price)} on ${PLATFORM[best.platform].name}`}
+      accessibilityLabel={`${title}, ${(group.packLabel ?? formatSize(group.sizeGrams))}, ${rupee(best.price)} on ${PLATFORM[best.platform].name}`}
     >
       <View style={styles.row}>
         <PackIcon variantKey={group.variantKey} imageUrl={best.imageUrl} size={42} />
         <View style={styles.middle}>
-          <Text style={[styles.name, { color: t.ink, fontFamily: t.fonts.displayBold }]} numberOfLines={2}>{group.variant}</Text>
+          <Text style={[styles.name, { color: t.ink, fontFamily: t.fonts.displayBold }]} numberOfLines={2}>{title}</Text>
           <Text style={[styles.meta, { color: t.muted, fontFamily: t.fonts.body }]} numberOfLines={1}>
-            {formatSize(group.sizeGrams) || group.brand} · on {inStockCount(group)} of {total} {total === 1 ? 'app' : 'apps'}
+            {(group.packLabel ?? formatSize(group.sizeGrams)) || group.brand} · on {inStockCount(group)} of {total} {total === 1 ? 'app' : 'apps'}
           </Text>
         </View>
         <View style={styles.priceCol}>
