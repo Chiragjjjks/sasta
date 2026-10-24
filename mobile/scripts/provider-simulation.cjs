@@ -1,5 +1,4 @@
 /* Run the actual self-contained production reader over HTTP, without replacing fetch. */
-/* global __dirname */
 const assert = require('node:assert/strict')
 const readers = require('../src/core/adapters/readers.generated.json')
 
