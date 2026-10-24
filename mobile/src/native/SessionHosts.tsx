@@ -127,6 +127,8 @@ export function HiddenPages() {
           onMessage={onMessage}
           thirdPartyCookiesEnabled
           domStorageEnabled
+          geolocationEnabled={false}
+          injectedJavaScriptBeforeContentLoaded="try{if(navigator.geolocation){navigator.geolocation.getCurrentPosition=function(_,e){if(e)e({code:1,message:'denied'});};navigator.geolocation.watchPosition=function(_,e){if(e)e({code:1,message:'denied'});return 0;};}}catch(e){};true;"
           style={{ width: viewport.width, height: viewport.height }}
         />
       ))}
@@ -254,6 +256,7 @@ export function SignInHost() {
             onMessage={(e: WebViewMessageEvent) => { if (e.nativeEvent.data === '__sasta_signed_in__') announceSignedIn() }}
             thirdPartyCookiesEnabled
             domStorageEnabled
+            geolocationEnabled={false}
             setSupportMultipleWindows={false}
             startInLoadingState
             style={{ flex: 1 }}
@@ -265,11 +268,10 @@ export function SignInHost() {
 }
 
 const styles = StyleSheet.create({
-  hidden: { position: 'absolute', width: 1, height: 1, opacity: 0, overflow: 'hidden', left: -10, top: -10 },
-  hiddenView: { width: 1, height: 1 },
-  bar: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },
+  hidden: { position: 'absolute', top: -9999, left: -9999, width: 1, height: 1, opacity: 0 },
+  bar: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: 1 },
   barBtn: { padding: 4 },
   title: { fontSize: 16 },
-  hint: { fontSize: 11.5, marginTop: 1 },
-  doneBtn: { paddingHorizontal: 12, paddingVertical: 9, borderRadius: 12 },
+  hint: { fontSize: 12, marginTop: 2 },
+  doneBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
 })

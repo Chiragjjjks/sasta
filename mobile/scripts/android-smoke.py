@@ -117,6 +117,8 @@ try:
     seed_previous_release()
     # An actual in-place update: Android enforces matching package, signature and versionCode.
     adb('install', '-r', str(APK))
+    adb('shell', 'pm', 'grant', APP, 'android.permission.ACCESS_FINE_LOCATION', check=False)
+    adb('shell', 'pm', 'grant', APP, 'android.permission.ACCESS_COARSE_LOCATION', check=False)
     adb('logcat', '-c')
     launch()
     find('Search any product', timeout=45)
@@ -196,7 +198,15 @@ try:
     deadline = time.monotonic() + 50
     online_status = ''
     while time.monotonic() < deadline:
-        labels = ' '.join(n.get('text', '') + ' ' + n.get('content-desc', '') for n in tree())
+        current_tree = tree()
+        if any('permissioncontroller' in n.get('package', '') for n in current_tree):
+            for allow_label in ['While using the app', 'Allow', 'Precise']:
+                for node in current_tree:
+                    if node.get('text', '') == allow_label or node.get('content-desc', '') == allow_label:
+                        x1, y1, x2, y2 = map(int, re.findall(r'\d+', node.get('bounds')))
+                        adb('shell', 'input', 'tap', str((x1 + x2) // 2), str((y1 + y2) // 2))
+                        break
+        labels = ' '.join(n.get('text', '') + ' ' + n.get('content-desc', '') for n in current_tree)
         match = re.search(r'\b\d+ products? from \d+ apps?', labels)
         if match:
             online_status = match.group()
