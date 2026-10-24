@@ -3,7 +3,7 @@
 //  - VERSION_CODE env: Android versionCode (CI passes a number above every older release)
 //  - ANDROID_KEYSTORE_PATH / ANDROID_STORE_PASSWORD / ANDROID_KEY_ALIAS / ANDROID_KEY_PASSWORD: private key
 //  - otherwise the committed PUBLIC key in credentials/ signs, so sideloaded updates install over each other
-const { withAppBuildGradle } = require('expo/config-plugins')
+const { withAppBuildGradle, withGradleProperties } = require('expo/config-plugins')
 
 const SIGNING = `
     signingConfigs {
@@ -25,6 +25,13 @@ const SIGNING = `
 `
 
 module.exports = function withSastaAndroid(config) {
+  // Pin to the stable Android SDK available on the build runners.
+  config = withGradleProperties(config, (cfg) => {
+    const properties = { 'android.compileSdkVersion': '36', 'android.targetSdkVersion': '36', 'android.buildToolsVersion': '36.0.0' }
+    cfg.modResults = cfg.modResults.filter((p) => p.type !== 'property' || !(p.key in properties))
+    for (const [key, value] of Object.entries(properties)) cfg.modResults.push({ type: 'property', key, value })
+    return cfg
+  })
   return withAppBuildGradle(config, (cfg) => {
     let g = cfg.modResults.contents
     if (!g.includes('sastaRelease')) {
