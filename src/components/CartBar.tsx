@@ -8,7 +8,7 @@ export function CartBar({ summary, extra, onOpen }: { summary: CartSummary; extr
     <div className="pb-safe pointer-events-none fixed inset-x-0 bottom-0 z-30 mx-auto max-w-lg px-4 pb-4">
       <button
         onClick={onOpen}
-        className="rise pointer-events-auto flex w-full items-center gap-3 rounded-2xl bg-[#14152a] px-4 py-3.5 text-left text-white shadow-[0_12px_32px_rgba(20,21,42,.35)] active:scale-[.99] dark:bg-[#2a2c4a]"
+        className="rise pointer-events-auto flex w-full items-center gap-3 rounded-2xl bg-[#14152a] px-4 py-3.5 text-left text-white shadow-[0_4px_14px_rgba(20,21,42,.28)] active:scale-[.99] dark:bg-[#2a2c4a]"
       >
         <span className="relative">
           <ShoppingBag className="size-5" />

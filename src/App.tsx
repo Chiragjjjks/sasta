@@ -33,7 +33,6 @@ import { DEFAULT_LOCATION, DEFAULT_RECENTS, loadCart, loadFees, loadLists, saveF
 import type { AdapterStatus, Location, Offer, Platform, ProductGroup } from '@/lib/types'
 import { formatSize } from '@/lib/utils'
 
-type Sort = 'cheapest' | 'fastest'
 
 export default function App() {
   const [query, setQuery] = useState('')
@@ -44,7 +43,6 @@ export default function App() {
   const [offers, setOffers] = useState<Partial<Record<Platform, Offer[]>>>({})
   const [variant, setVariant] = useState<string | null>(null)
   const [size, setSize] = useState<number | null>(null)
-  const [sort, setSort] = useState<Sort>('cheapest')
   const [selected, setSelected] = useState<ProductGroup | null>(null)
   const [locationOpen, setLocationOpen] = useState(false)
   const [showStatus, setShowStatus] = useState(false)
@@ -256,13 +254,12 @@ export default function App() {
 
   const visible = useMemo(() => {
     const list = byVariant.filter((g) => activeSize === null || g.sizeGrams === activeSize || !g.sizeGrams)
+    // Cheapest first: in-stock packs, then lowest price, then quickest delivery as a tie-break.
     return [...list].sort((a, b) => {
       if (a.best.inStock !== b.best.inStock) return a.best.inStock ? -1 : 1
-      return sort === 'cheapest'
-        ? a.best.price - b.best.price || (a.best.etaMinutes ?? 99) - (b.best.etaMinutes ?? 99)
-        : (a.best.etaMinutes ?? 99) - (b.best.etaMinutes ?? 99) || a.best.price - b.best.price
+      return a.best.price - b.best.price || (a.best.etaMinutes ?? 99) - (b.best.etaMinutes ?? 99)
     })
-  }, [byVariant, activeSize, sort])
+  }, [byVariant, activeSize])
 
   const bestValue = useMemo(
     () => byVariant.filter((g) => g.pricePer100g).sort((a, b) => a.pricePer100g! - b.pricePer100g!)[0],
@@ -326,7 +323,7 @@ export default function App() {
                   {sizes.length > 1 ? (
                     <Segmented label="Pack size" value={activeSize ?? sizes[0]} onChange={setSize} options={sizes.map((s) => ({ value: s, label: formatSize(s) }))} />
                   ) : <span />}
-                  <Segmented<Sort> label="Sort" value={sort} onChange={setSort} options={[{ value: 'cheapest', label: 'Cheapest' }, { value: 'fastest', label: 'Fastest' }]} />
+                  <span className="text-[12.5px] font-semibold text-muted">Cheapest first</span>
                 </div>
                 <div className="space-y-2.5">
                   {visible.map((g, i) => (

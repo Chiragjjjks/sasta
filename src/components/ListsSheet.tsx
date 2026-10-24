@@ -239,7 +239,7 @@ function ListDetail({ list, lists, onBack, onRename, onDelete, onQty, onRemove, 
       {picked.size > 0 && (
         <div className="pb-safe fixed inset-x-0 bottom-0 z-50 mx-auto max-w-lg px-4 pb-4">
           <button onClick={add} disabled={busy}
-            className="flex w-full items-center justify-between rounded-2xl bg-[#14152a] px-4 py-3.5 text-[15px] font-bold text-white shadow-[0_12px_32px_rgba(20,21,42,.35)] dark:bg-[#2a2c4a]">
+            className="flex w-full items-center justify-between rounded-2xl bg-[#14152a] px-4 py-3.5 text-[15px] font-bold text-white shadow-[0_4px_14px_rgba(20,21,42,.28)] dark:bg-[#2a2c4a]">
             <span className="flex items-center gap-2">{busy && <Loader2 className="size-4 animate-spin" />}{busy ? 'Checking prices…' : `Add ${picked.size} to cart`}</span>
             <span className="tabular text-accent">about {rupee(estimateTotal(pickedItems))}</span>
           </button>

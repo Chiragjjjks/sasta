@@ -16,7 +16,8 @@ export interface PlatformSessionPlugin {
   secureGet(opts: { key: string }): Promise<{ value: string | null }>
   secureRemove(opts: { key: string }): Promise<void>
   /** Runs the body of an async JS function inside the platform's own page (hidden WebView). */
-  pageRun(opts: { origin: string; script: string; timeoutMs?: number }): Promise<{ ok: boolean; value?: unknown; error?: string }>
+  /** path: page loaded on the origin to host the script; defaults to /robots.txt so the site's app never runs. */
+  pageRun(opts: { origin: string; script: string; timeoutMs?: number; path?: string }): Promise<{ ok: boolean; value?: unknown; error?: string }>
   pageReset(opts: { origin: string }): Promise<void>
 }
 

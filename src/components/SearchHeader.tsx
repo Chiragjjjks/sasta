@@ -17,7 +17,7 @@ interface Props {
 export function SearchHeader({ query, onQuery, onSubmit, location, onLocation, recents, connectedCount, onAccounts, onLists }: Props) {
   const input = useRef<HTMLInputElement>(null)
   return (
-    <header className="pt-safe sticky top-0 z-20 bg-bg/85 px-4 pb-3 backdrop-blur-xl">
+    <header className="pt-safe sticky top-0 z-20 bg-bg px-4 pb-3">
       <div className="flex items-center justify-between pt-3">
         <span className="font-display text-[26px] font-extrabold tracking-[-0.04em]">
           sasta<span className="text-accent">.</span>
@@ -52,7 +52,7 @@ export function SearchHeader({ query, onQuery, onSubmit, location, onLocation, r
 
       <form
         role="search"
-        className="mt-3 flex items-center gap-2 rounded-2xl bg-surface py-1.5 pl-4 pr-1.5 shadow-[0_4px_20px_rgba(20,21,42,.08)]"
+        className="mt-3 flex items-center gap-2 rounded-2xl bg-surface py-1.5 pl-4 pr-1.5 shadow-[0_2px_8px_rgba(20,21,42,.06)]"
         onSubmit={(e) => { e.preventDefault(); input.current?.blur(); onSubmit(query) }}
       >
         <Search className="size-[18px] shrink-0 text-muted" />

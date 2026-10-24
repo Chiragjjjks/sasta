@@ -42,11 +42,16 @@ public class PageRunner {
         this.context = context.getApplicationContext();
     }
 
-    /** Runs `script` (the body of an async JS function) on `origin` and calls back with its JSON result. */
-    public void run(String origin, String script, long timeoutMs, Callback cb) {
+    /**
+     * Runs `script` (the body of an async JS function) on `origin` and calls back with its JSON result.
+     * The hidden page loads `path` on that origin, by default a tiny file such as /robots.txt, so the
+     * platform's whole web app never runs in the background: scripts only need same-origin fetch,
+     * cookies and storage, which any page on the origin has.
+     */
+    public void run(String origin, String path, String script, long timeoutMs, Callback cb) {
         main.post(() -> {
             Page page = pages.get(origin);
-            if (page == null) page = open(origin);
+            if (page == null) page = open(origin, path);
             final Page p = page;
             Runnable job = () -> execute(p, script, timeoutMs, cb);
             if (p.ready) job.run();
@@ -63,7 +68,7 @@ public class PageRunner {
     }
 
     @SuppressLint({ "SetJavaScriptEnabled", "AddJavascriptInterface" })
-    private Page open(String origin) {
+    private Page open(String origin, String path) {
         Page page = new Page();
         WebView v = new WebView(context);
         WebSettings s = v.getSettings();
@@ -84,7 +89,7 @@ public class PageRunner {
         });
         page.view = v;
         pages.put(origin, page);
-        v.loadUrl(origin);
+        v.loadUrl(origin + (path != null ? path : "/robots.txt"));
         // If the page never finishes (offline, challenge loop), fail queued work instead of hanging.
         main.postDelayed(() -> {
             if (!page.ready) {

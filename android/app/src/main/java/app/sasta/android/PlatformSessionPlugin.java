@@ -58,7 +58,7 @@ public class PlatformSessionPlugin extends Plugin {
             return;
         }
         long timeout = call.getLong("timeoutMs", 15000L);
-        runner.run(origin, script, timeout, json -> {
+        runner.run(origin, call.getString("path"), script, timeout, json -> {
             try {
                 call.resolve(new JSObject(json));
             } catch (JSONException e) {

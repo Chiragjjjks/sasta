@@ -8,7 +8,7 @@ export function BestValueCard({ group, onOpen }: { group: ProductGroup; onOpen: 
   return (
     <button
       onClick={onOpen}
-      className="rise flex w-full items-center gap-4 rounded-[22px] bg-[#14152a] p-4 text-left text-white shadow-[0_10px_30px_rgba(20,21,42,.25)] active:scale-[.99] dark:bg-[#22243d]"
+      className="rise flex w-full items-center gap-4 rounded-[22px] bg-[#14152a] p-4 text-left text-white shadow-[0_4px_12px_rgba(20,21,42,.18)] active:scale-[.99] dark:bg-[#22243d]"
     >
       <PackIcon variantKey={group.variantKey} imageUrl={best.imageUrl} className="h-[72px] w-14" />
       <div className="min-w-0 flex-1">
