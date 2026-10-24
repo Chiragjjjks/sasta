@@ -36,6 +36,8 @@ public class SignInActivity extends AppCompatActivity {
     /** Comma-separated cookie names that prove sign-in; when one appears, the screen closes by itself. */
     public static final String EXTRA_DONE_COOKIES = "doneCookies";
     public static final String EXTRA_DONE_ORIGINS = "doneOrigins";
+    /** JS expression evaluated in the page; "true" means signed in (reads the site's own storage). */
+    public static final String EXTRA_DONE_SCRIPT = "doneScript";
     public static final String RESULT_KIND = "kind"; // "done" | "redirect"
     public static final String RESULT_URL = "redirectUrl";
 
@@ -43,6 +45,7 @@ public class SignInActivity extends AppCompatActivity {
     private String interceptPrefix;
     private String[] doneCookies;
     private String[] doneOrigins;
+    private String doneScript;
     private final android.os.Handler poll = new android.os.Handler(android.os.Looper.getMainLooper());
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -56,6 +59,7 @@ public class SignInActivity extends AppCompatActivity {
         String dor = getIntent().getStringExtra(EXTRA_DONE_ORIGINS);
         doneCookies = dc != null && !dc.isEmpty() ? dc.split(",") : null;
         doneOrigins = dor != null && !dor.isEmpty() ? dor.split(",") : null;
+        doneScript = getIntent().getStringExtra(EXTRA_DONE_SCRIPT);
 
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
@@ -122,6 +126,24 @@ public class SignInActivity extends AppCompatActivity {
                 if (intercept(u)) view.stopLoading();
                 else super.onPageStarted(view, u, favicon);
             }
+
+            // Belt and braces for the OAuth redirect: some navigations skip shouldOverrideUrlLoading,
+            // and a blocked http://localhost load must still hand the code back.
+            @Override
+            public android.webkit.WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                String u = request.getUrl().toString();
+                if (interceptPrefix != null && u.startsWith(interceptPrefix)) {
+                    poll.post(() -> finishWith(Activity.RESULT_OK, "redirect", u));
+                    return new android.webkit.WebResourceResponse("text/plain", "utf-8", new java.io.ByteArrayInputStream(new byte[0]));
+                }
+                return null;
+            }
+
+            @Override
+            public void onReceivedError(WebView view, WebResourceRequest request, android.webkit.WebResourceError error) {
+                String u = request.getUrl().toString();
+                if (interceptPrefix != null && u.startsWith(interceptPrefix)) finishWith(Activity.RESULT_OK, "redirect", u);
+            }
         });
 
         root.addView(bar, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -144,12 +166,21 @@ public class SignInActivity extends AppCompatActivity {
         });
 
         if (url != null) webView.loadUrl(url);
-        if (doneCookies != null && doneOrigins != null) poll.postDelayed(this::checkSignedIn, 1500);
+        if ((doneCookies != null && doneOrigins != null) || doneScript != null) poll.postDelayed(this::checkSignedIn, 1500);
     }
 
     /** Closes the screen as soon as a cookie that proves sign-in shows up. */
     private void checkSignedIn() {
         if (finished) return;
+        if (doneScript != null) {
+            webView.evaluateJavascript("(function(){try{return !!(" + doneScript + ")}catch(e){return false}})()", value -> {
+                if ("true".equals(value)) signedIn();
+            });
+        }
+        if (doneCookies == null || doneOrigins == null) {
+            poll.postDelayed(this::checkSignedIn, 1000);
+            return;
+        }
         CookieManager cm = CookieManager.getInstance();
         for (String origin : doneOrigins) {
             String raw = cm.getCookie(origin);
@@ -161,15 +192,23 @@ public class SignInActivity extends AppCompatActivity {
                 String name = p.substring(0, eq);
                 for (String want : doneCookies) {
                     if (want.equals(name)) {
-                        android.widget.Toast.makeText(this, "Signed in", android.widget.Toast.LENGTH_SHORT).show();
-                        // Give the site a moment to finish writing its own storage before closing.
-                        poll.postDelayed(() -> finishWith(Activity.RESULT_OK, "done", null), 1200);
+                        signedIn();
                         return;
                     }
                 }
             }
         }
         poll.postDelayed(this::checkSignedIn, 1000);
+    }
+
+    private boolean signedInShown = false;
+
+    private void signedIn() {
+        if (finished || signedInShown) return;
+        signedInShown = true;
+        android.widget.Toast.makeText(this, "Signed in · returning to Sasta", android.widget.Toast.LENGTH_SHORT).show();
+        // Give the site a moment to finish writing its own storage before closing.
+        poll.postDelayed(() -> finishWith(Activity.RESULT_OK, "done", null), 1200);
     }
 
     private boolean intercept(String u) {

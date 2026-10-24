@@ -87,6 +87,8 @@ public class PlatformSessionPlugin extends Plugin {
         intent.putExtra(SignInActivity.EXTRA_TITLE, call.getString("title", "Sign in"));
         String intercept = call.getString("interceptPrefix");
         if (intercept != null) intent.putExtra(SignInActivity.EXTRA_INTERCEPT, intercept);
+        String doneScript = call.getString("doneScript");
+        if (doneScript != null) intent.putExtra(SignInActivity.EXTRA_DONE_SCRIPT, doneScript);
         JSArray doneCookies = call.getArray("doneCookies", new JSArray());
         JSArray doneOrigins = call.getArray("doneOrigins", new JSArray());
         try {

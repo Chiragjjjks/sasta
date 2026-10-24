@@ -16,8 +16,8 @@ import { ProductCard, ProductCardSkeleton } from '@/components/ProductCard'
 import { SearchHeader } from '@/components/SearchHeader'
 import { Segmented } from '@/components/Segmented'
 import { VariantChips } from '@/components/VariantChips'
-import { ACCOUNT_CONFIG, connectSwiggyWebsite, connectWeb, disconnectWeb, loadAccounts, recheckWebSessions, saveAccounts, type Account } from '@/lib/accounts'
-import { connectSwiggy, disconnectSwiggy } from '@/lib/swiggy'
+import { ACCOUNT_CONFIG, connectSwiggyWebsite, connectWeb, disconnectWeb, testWebConnection, loadAccounts, recheckWebSessions, saveAccounts, type Account } from '@/lib/accounts'
+import { connectSwiggy, disconnectSwiggy, swiggyClient } from '@/lib/swiggy'
 import { blinkitIdentity, fetchBlinkitBill, openBlinkitWithCart, prepareBlinkitSignIn } from '@/adapters/blinkit'
 import { blinkitRuleFromBill, type FeeRules } from '@/lib/fees'
 import { addItem, addItems, extraOverCheapest, fromGroup, pin, pinAll, refreshCart, setQty, summarize, type CartItem } from '@/lib/cart'
@@ -125,10 +125,34 @@ export default function App() {
   async function updateAccount(a: Account) {
     setAccounts((prev) => { const next = { ...prev, [a.platform]: a }; saveAccounts(next); return next })
   }
+  /** Quick check that a connection really works. */
+  async function testAccount(p: Platform, acc: Account): Promise<{ ok: boolean; detail: string }> {
+    if (p === 'instamart' && acc.via !== 'web') {
+      try { const tools = await swiggyClient().listTools(); return { ok: true, detail: `Swiggy answered with ${tools.length} actions` } }
+      catch (e) { return { ok: false, detail: `Swiggy didn't answer: ${(e as Error).message}` } }
+    }
+    if (p === 'blinkit') {
+      const who = await blinkitIdentity().catch(() => null)
+      if (who?.signedIn) return { ok: true, detail: `Blinkit says you are signed in${who.phone ? ` as ${who.phone}` : ''}` }
+    }
+    return testWebConnection(p, acc).catch((e) => ({ ok: false, detail: (e as Error).message }))
+  }
+
+  async function runTest(p: Platform, acc: Account, announce = true): Promise<Account> {
+    const t = await testAccount(p, acc)
+    const tested = { ...acc, lastTest: { ...t, at: Date.now() }, verified: t.ok ? true : acc.verified }
+    await updateAccount(tested)
+    if (announce) setToast(t.ok ? `${PLATFORMS.find((x) => x.id === p)!.name} connected · test passed` : `${PLATFORMS.find((x) => x.id === p)!.name}: ${t.detail}`)
+    return tested
+  }
+
   /** Connects one app. Returns the result so "Connect all" can stop when the user cancels. */
   const connectAccount = async (p: Platform, opts: { website?: boolean } = {}): Promise<Account> => {
     let acc: Account
-    if (p === 'instamart' && !opts.website) acc = await connectSwiggy()
+    if (p === 'instamart' && !opts.website) {
+      try { acc = await connectSwiggy() }
+      catch (e) { throw new Error(`Swiggy's official sign-in didn't finish (${(e as Error).message}). Try "Sign in on Swiggy's website" below.`) }
+    }
     else if (p === 'instamart') acc = await connectSwiggyWebsite()
     else {
       // Blinkit asks for a delivery location before its login form; set it first.
@@ -140,6 +164,8 @@ export default function App() {
       if (who?.signedIn) acc = { ...acc, verified: true, label: who.phone || acc.label }
     }
     await updateAccount(acc)
+    // Right after signing in: back in Sasta, test the connection once and say how it went.
+    if (acc.status === 'connected') acc = await runTest(p, acc)
     return acc
   }
   const disconnectAccount = async (p: Platform) => {
@@ -378,6 +404,7 @@ export default function App() {
         accounts={accounts}
         onClose={() => setAccountsOpen(false)}
         onConnect={(p, opts) => connectAccount(p, opts)}
+        onTest={async (p) => { const a = accounts[p]; if (a) await runTest(p, a) }}
         onDisconnect={disconnectAccount}
         canConnect={canConnect}
       />

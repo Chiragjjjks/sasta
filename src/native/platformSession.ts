@@ -8,7 +8,7 @@ export interface SignInResult {
 export interface PlatformSessionPlugin {
   /** Opens the platform's own sign-in page in an in-app browser. */
   /** doneCookies/doneOrigins: close by itself once one of these cookies appears. */
-  signIn(opts: { url: string; title?: string; interceptPrefix?: string; doneCookies?: string[]; doneOrigins?: string[] }): Promise<SignInResult>
+  signIn(opts: { url: string; title?: string; interceptPrefix?: string; doneCookies?: string[]; doneOrigins?: string[]; doneScript?: string }): Promise<SignInResult>
   /** Cookie names (never values) held for these URLs. */
   cookieNames(opts: { urls: string[] }): Promise<{ names: string[] }>
   clearSession(opts: { urls: string[] }): Promise<void>

@@ -24,6 +24,11 @@ export interface AccountConfig {
   sessionCookies: string[]
   note?: string
   mcpUrl?: string
+  /**
+   * JS expression run inside the platform's page that is true once signed in, read from the site's
+   * own storage. Used to close the sign-in screen right after the OTP and to test the connection.
+   */
+  signedInScript?: string
   /** Swiggy: sign in on the website instead, if the official MCP connection fails. */
   webFallback?: { loginUrl: string; origins: string[]; sessionCookies: string[] }
 }
@@ -40,12 +45,15 @@ export const ACCOUNT_CONFIG: Record<Platform, AccountConfig> = {
     platform: 'blinkit', method: 'web', account: 'Blinkit',
     loginUrl: 'https://blinkit.com/', origins: ['https://blinkit.com'], sessionCookies: ['gr_1_accessToken'],
     note: 'Separate from Zomato. Tap Login on the Blinkit page.',
+    signedInScript: "(function(){var a=JSON.parse(localStorage.getItem('auth')||'null');return !!(a&&a.accessToken)})()",
   },
   zepto: {
     platform: 'zepto', method: 'web', account: 'Zepto',
     // Not session_id: anonymous visits get one too.
     // zeptonow.com now redirects to zepto.com; check both.
     loginUrl: 'https://www.zepto.com/', origins: ['https://www.zepto.com', 'https://zepto.com', 'https://www.zeptonow.com'], sessionCookies: ['user_id'],
+    // zepto.com keeps { state: { user, isAuth } } under localStorage "user" (seen in its web bundle).
+    signedInScript: "(function(){var u=JSON.parse(localStorage.getItem('user')||'null');return !!(u&&u.state&&(u.state.isAuth||(u.state.user&&u.state.user.id)))})()",
   },
   bigbasket: {
     platform: 'bigbasket', method: 'web', account: 'BigBasket',
@@ -80,6 +88,8 @@ export interface Account {
   learnedCookies?: string[]
   /** Who is signed in, masked, e.g. "•••• 1234". */
   label?: string
+  /** Result of the quick check run right after connecting (or from the Test button). */
+  lastTest?: { ok: boolean; detail: string; at: number }
 }
 
 const KEY = 'sasta.accounts'
@@ -116,7 +126,7 @@ export function judgeWebSignIn(cfg: Pick<AccountConfig, 'sessionCookies'>, names
   return ok ? { status: 'connected', verified: true } : { status: 'disconnected' }
 }
 
-export interface SignInTarget { loginUrl: string; origins: string[]; sessionCookies: string[]; account: string }
+export interface SignInTarget { loginUrl: string; origins: string[]; sessionCookies: string[]; account: string; signedInScript?: string }
 
 /** Signs in on a platform's own page in the in-app browser and works out whether it worked. */
 export async function signInOnWeb(platform: Platform, target: SignInTarget, via: ConnectMethod = 'web'): Promise<Account> {
@@ -126,16 +136,44 @@ export async function signInOnWeb(platform: Platform, target: SignInTarget, via:
     title: `Sign in to ${target.account}`,
     doneCookies: target.sessionCookies,
     doneOrigins: target.origins,
+    doneScript: target.signedInScript,
   })
   if (res.kind === 'cancelled') return { platform, status: 'disconnected' }
   const after = (await PlatformSession.cookieNames({ urls: target.origins })).names
   const learned = target.sessionCookies.length ? [] : learnSessionCookies(before, after)
-  const judged = judgeWebSignIn(target, after, learned)
+  let judged = judgeWebSignIn(target, after, learned)
+  // The page said "signed in" from its own storage even if the cookie check is unsure.
+  if (judged.status !== 'connected' && target.signedInScript && (await checkInPage(target.origins[0], target.signedInScript))) {
+    judged = { status: 'connected', verified: true }
+  }
   return {
     platform, ...judged, via,
     learnedCookies: learned.length ? learned : undefined,
     connectedAt: judged.status === 'connected' ? Date.now() : undefined,
   }
+}
+
+/** Runs the platform's signed-in check inside its own page (fresh hidden WebView, shared storage). */
+export async function checkInPage(origin: string, script: string): Promise<boolean> {
+  await PlatformSession.pageReset({ origin })
+  const res = await PlatformSession.pageRun({ origin, script: `return ${script};`, timeoutMs: 12000 })
+  return res.ok && res.value === true
+}
+
+export interface ConnectionTest { ok: boolean; detail: string }
+
+/** One quick check after connecting, so the user knows the session really works. */
+export async function testWebConnection(platform: Platform, acc: Account): Promise<ConnectionTest> {
+  const cfg = ACCOUNT_CONFIG[platform]
+  const target = cfg.method === 'web' ? cfg : acc.via === 'web' ? cfg.webFallback : undefined
+  if (!target) return { ok: false, detail: 'Nothing to test' }
+  const script: string | undefined = cfg.method === 'web' ? cfg.signedInScript : undefined
+  if (script && (await checkInPage(target.origins[0], script).catch(() => false))) return { ok: true, detail: `${cfg.account} says you are signed in` }
+  const { names } = await PlatformSession.cookieNames({ urls: target.origins })
+  const judged = judgeWebSignIn(target, names, acc.learnedCookies)
+  if (judged.status === 'connected' && judged.verified) return { ok: true, detail: 'Session found on this phone' }
+  if (judged.status === 'connected') return { ok: true, detail: 'Signed in. This app can only be checked after first use' }
+  return { ok: false, detail: `No ${cfg.account} session found. Tap Reconnect and sign in again` }
 }
 
 export async function connectWeb(platform: Platform): Promise<Account> {

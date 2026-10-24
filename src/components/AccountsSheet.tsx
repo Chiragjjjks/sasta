@@ -12,10 +12,11 @@ interface Props {
   onClose: () => void
   onConnect: (p: Platform, opts?: { website?: boolean }) => Promise<Account>
   onDisconnect: (p: Platform) => Promise<void>
+  onTest: (p: Platform) => Promise<void>
   canConnect: (p: Platform) => boolean
 }
 
-export function AccountsSheet({ open, accounts, onClose, onConnect, onDisconnect, canConnect }: Props) {
+export function AccountsSheet({ open, accounts, onClose, onConnect, onDisconnect, onTest, canConnect }: Props) {
   const [busy, setBusy] = useState<Platform | null>(null)
   const [error, setError] = useState<{ p: Platform; msg: string } | null>(null)
 
@@ -92,14 +93,18 @@ export function AccountsSheet({ open, accounts, onClose, onConnect, onDisconnect
                   </div>
                 </div>
                 {status === 'connected' ? (
-                  <button
-                    disabled={isBusy}
-                    onClick={() => run(id, onDisconnect)}
-                    className="flex items-center gap-1.5 rounded-xl bg-chip px-3 py-2 text-[12.5px] font-semibold text-muted"
-                  >
-                    {isBusy ? <Loader2 className="size-3.5 animate-spin" /> : <CheckCircle2 className="size-3.5 text-good" />}
-                    Disconnect
-                  </button>
+                  <div className="flex shrink-0 gap-1.5">
+                    <button disabled={isBusy} onClick={() => run(id, onTest)} className="rounded-xl bg-chip px-2.5 py-2 text-[12.5px] font-semibold">
+                      {isBusy ? <Loader2 className="size-3.5 animate-spin" /> : 'Test'}
+                    </button>
+                    <button
+                      disabled={isBusy}
+                      onClick={() => run(id, onDisconnect)}
+                      className="flex items-center gap-1 rounded-xl bg-chip px-2.5 py-2 text-[12.5px] font-semibold text-muted"
+                    >
+                      <CheckCircle2 className="size-3.5 text-good" /> Disconnect
+                    </button>
+                  </div>
                 ) : (
                   <button
                     disabled={isBusy || !available}
@@ -111,6 +116,11 @@ export function AccountsSheet({ open, accounts, onClose, onConnect, onDisconnect
                   </button>
                 )}
               </div>
+              {status === 'connected' && acc?.lastTest && (
+                <p className={cn('mt-1 pl-5.5 text-[11.5px]', acc.lastTest.ok ? 'text-good' : 'text-accent')}>
+                  {acc.lastTest.ok ? '✓ ' : '! '}{acc.lastTest.detail}
+                </p>
+              )}
               {cfg.note && status !== 'connected' && <p className="mt-1.5 pl-5.5 text-[11.5px] text-faint">{cfg.note}</p>}
               {cfg.webFallback && status !== 'connected' && available && (
                 <button disabled={isBusy} onClick={() => run(id, (p) => onConnect(p, { website: true }))} className="mt-1 pl-5.5 text-[12px] font-semibold text-ink underline underline-offset-2">
