@@ -1,5 +1,4 @@
-import { useFocusEffect } from '@react-navigation/native'
-import { router } from 'expo-router'
+import { router, useFocusEffect } from 'expo-router'
 import { ArrowUpRight, RefreshCw, ShoppingBag } from 'lucide-react-native'
 import { useCallback, useState } from 'react'
 import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
