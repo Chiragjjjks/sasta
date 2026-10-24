@@ -49,4 +49,8 @@ describe('exact product and pack comparisons', () => {
     expect(lists[0].name).toBe('Office groceries')
     expect(lists[0].items[0]).toMatchObject({key:cart[0].key,qty:3,timesPicked:4})
   })
+  it('accepts equivalent litre spellings and honours a requested pack count', () => {
+    expect(relevantOffers([offer('Amul Milk 1 l'),offer('Amul Milk 1 kg')], 'amul milk 1 litre').map(o=>o.title)).toEqual(['Amul Milk 1 l'])
+    expect(relevantOffers([offer('Lays Classic Salted 160 g'),offer('Lays Classic Salted 2 x 80 g')], 'lays classic pack of 2').map(o=>o.title)).toEqual(['Lays Classic Salted 2 x 80 g'])
+  })
 })

@@ -80,7 +80,7 @@ export function parsePack(text: string): Pack {
   const multi = t.match(new RegExp(`(\\d+)\\s*[x×]\\s*(\\d+(?:\\.\\d+)?)\\s*${units}`))
   const reverse = t.match(new RegExp(`(\\d+(?:\\.\\d+)?)\\s*${units}\\s*[x×]\\s*(\\d+)`))
   const single = t.match(new RegExp(`(\\d+(?:\\.\\d+)?)\\s*${units}`))
-  const count = multi ? +multi[1] : reverse ? +reverse[3] : +(t.match(/pack of (\d+)/)?.[1] ?? 1)
+  const count = multi ? +multi[1] : reverse ? +reverse[3] : +(t.match(/pack of\s*(\d+)/)?.[1] ?? t.match(/\b(\d+)\s*packs?\b/)?.[1] ?? 1)
   const value = multi ? +multi[2] : reverse ? +reverse[1] : single ? +single[1] : undefined
   const rawUnit = multi?.[3] ?? reverse?.[2] ?? single?.[2]
   if (value !== undefined && rawUnit) {
@@ -95,7 +95,7 @@ export function parsePack(text: string): Pack {
   }
   const pieces = t.match(/(?:pack of\s+)?(\d+)\s*(?:pcs?|pieces?|count|units?|eggs)\b/)
   if (pieces) return { count: +pieces[1], ambiguous: false, amount: +pieces[1], unit: 'count', identity: `count:${+pieces[1]}`, label: `${+pieces[1]} pcs` }
-  return { count: 1, ambiguous: false, identity: '?' }
+  return { count, ambiguous: false, identity: '?' }
 }
 
 export function parseSizeGrams(title: string): number | undefined { return parsePack(title).grams }
@@ -128,7 +128,7 @@ export function detectVariant(title: string, brand?: string): VariantRule | unde
 export function residualVariant(title: string, brand?: string, stripNoise = true): string {
   let n = normalizeText(title)
   if (brand) for (const a of BRANDS.find((b) => b.brand === brand)?.aliases ?? [brand]) n = n.replace(normalizeText(a), ' ')
-  n = n.replace(/\d+(?:\.\d+)?\s*(kg|gms|gm|grams|gram|g|ltr|ml|l)\b/g, ' ').replace(/\b\d+\s*x\b/g, ' ')
+  n = n.replace(/\d+(?:\.\d+)?\s*(kg|gms|gm|grams|gram|g|litres|litre|liters|liter|ltr|ml|l)\b/g, ' ').replace(/\b\d+\s*x\b/g, ' ')
   n = n.replace(/\bpack of\s*\d+\b|\b\d+\s*(?:packs?|pcs?|pieces?|count|units?)\b|\beach\b/g, ' ')
   if (stripNoise) for (const w of NOISE) n = n.replace(new RegExp(`(^| )${w}( |$)`, 'g'), ' ')
   return n.replace(/\s+/g, ' ').trim()
@@ -203,6 +203,7 @@ export function relevance(offer: Offer, query: string): number {
   const pack = parsePack(query)
   const actual = parsePack(offer.packLabel || offer.title)
   if (pack.amount !== undefined && (actual.ambiguous || actual.unit !== pack.unit || actual.amount !== pack.amount || (pack.count > 1 && actual.count !== pack.count))) return -1
+  if (pack.count > 1 && actual.count !== pack.count) return -1
   let words = residualVariant(query, brand, false)
   if (variant) for (const alias of [...variant.aliases].sort((a,b)=>b.length-a.length)) words = words.replace(normalizeText(alias), ' ')
   words = words.replace(/\b\d+\s*(?:pcs?|pieces?|count|units?)\b/g, ' ')
