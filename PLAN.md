@@ -21,7 +21,7 @@ The user types `lays`.
 
 `lays cream onion` runs the same flow, pre-filtered to Cream & Onion.
 
-## Current status (v0.3.0)
+## Current status (v0.3.1)
 
 | Area | Status |
 |---|---|
