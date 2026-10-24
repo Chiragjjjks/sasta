@@ -27,6 +27,7 @@ export function parseSse(body: string): JsonRpcResponse[] {
 export function pickResponse(messages: JsonRpcResponse[], id: number): unknown {
   const msg = messages.find((m) => m.id === id)
   if (!msg) throw new Error('The server did not answer this request.')
+  if (msg.error?.code === -32001) throw new McpAuthError()
   if (msg.error) throw new Error(msg.error.message)
   return msg.result
 }
@@ -36,9 +37,10 @@ export class McpClient {
   private nextId = 1
   private initialized = false
 
-  constructor(private url: string, private getToken: () => Promise<string>) {}
+  constructor(private url: string, private getToken: () => Promise<string>, private signal?: AbortSignal) {}
 
   private async send(method: string, params?: unknown, notify = false): Promise<unknown> {
+    if (this.signal?.aborted) throw new DOMException('Aborted', 'AbortError')
     const id = notify ? undefined : this.nextId++
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -47,12 +49,12 @@ export class McpClient {
       Authorization: `Bearer ${await this.getToken()}`,
     }
     if (this.sessionId) headers['Mcp-Session-Id'] = this.sessionId
-    const res = await fetch(this.url, { method: 'POST', headers, body: JSON.stringify({ jsonrpc: '2.0', id, method, params }) })
+    const res = await fetch(this.url, { method: 'POST', headers, signal: this.signal, body: JSON.stringify({ jsonrpc: '2.0', id, method, params }) })
     if (res.status === 401 || res.status === 403) throw new McpAuthError()
     const sid = res.headers.get('mcp-session-id')
     if (sid) this.sessionId = sid
-    if (notify) return undefined
     if (!res.ok) throw new Error(`Server error ${res.status}`)
+    if (notify) return undefined
     const text = await res.text()
     const messages = (res.headers.get('content-type') ?? '').includes('text/event-stream') ? parseSse(text) : [JSON.parse(text)]
     return pickResponse(messages, id!)

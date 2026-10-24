@@ -18,18 +18,19 @@ export async function readZeptoPage(query: string, waitMs = 12000): Promise<Page
     const cards = [...document.querySelectorAll<HTMLAnchorElement>('a[data-testid="product-card"][href*="/pvid/"]')]
     if (/login to continue searching|please log\s?in/i.test(text) && location) return { kind: 'needs_login' }
     if (cards.length && location) {
-      return { kind: 'products', location, products: cards.slice(0,80).flatMap((card) => {
+      const products = cards.slice(0,80).flatMap((card) => {
         const title = card.querySelector('[data-slot-id="ProductName"]')?.textContent?.trim() || card.querySelector('img')?.alt || ''
         const packLabel = card.querySelector('[data-slot-id="PackSize"]')?.textContent?.trim()
-        const prices = [...(card.querySelector('[data-slot-id="EdlpPrice"]') ?? card.querySelector('[data-slot-id$="Price"]') ?? card).querySelectorAll('span')]
-          .map((e) => e.textContent?.trim() ?? '').filter((s) => /^₹\s*[\d,]+(?:\.\d+)?$/.test(s))
-          .map((s) => +s.replace(/[^\d.]/g, ''))
+        const priceRoot = card.querySelector<HTMLElement>('[data-slot-id="EdlpPrice"]') ?? card.querySelector<HTMLElement>('[data-slot-id$="Price"]') ?? card
+        const prices = [...priceRoot.innerText.matchAll(/₹\s*([\d,]+(?:\.\d+)?)/g)]
+          .map((m) => +m[1].replace(/,/g, ''))
         const id = card.pathname.split('/pvid/')[1]?.split('/')[0]
         if (!id || !title || !prices.length) return []
         return [{ id, title, packLabel, price: prices[0], mrp: prices[1],
           inStock: card.querySelector('[data-is-out-of-stock]')?.getAttribute('data-is-out-of-stock') !== 'true' && !/out of stock|notify me|sold out/i.test(card.innerText),
           imageUrl: card.querySelector('img')?.src, url: new URL(card.getAttribute('href')!, locationOrigin()).href }]
-      }) }
+      })
+      if (products.length) return { kind: 'products', location, products }
     }
     if (/select location|your location/i.test(text) && !location && Date.now() > end - waitMs + 1500) return { kind: 'needs_location', message: 'Choose a delivery area in Zepto, then search again.' }
     if (location && /no (?:products|results)|couldn.t find|no matches/i.test(text)) return { kind: 'products', products: [], location }

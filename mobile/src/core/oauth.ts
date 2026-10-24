@@ -79,11 +79,11 @@ export function needsRefresh(t: Tokens, now = Date.now()): boolean {
   return !!t.expires_at && t.expires_at - now < 60_000
 }
 
-async function postForm(url: string, body: Record<string, string>): Promise<Record<string, unknown>> {
+async function postForm(url: string, body: Record<string, string>, encoding: 'form' | 'json' = 'form'): Promise<Record<string, unknown>> {
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
-    body: new URLSearchParams(body).toString(),
+    headers: { 'Content-Type': encoding === 'json' ? 'application/json' : 'application/x-www-form-urlencoded', Accept: 'application/json' },
+    body: encoding === 'json' ? JSON.stringify(body) : new URLSearchParams(body).toString(),
   })
   const json = (await res.json().catch(() => ({}))) as Record<string, unknown>
   if (!res.ok) throw new Error(String(json.error_description || json.error || `Token request failed (${res.status})`))
@@ -128,7 +128,7 @@ export async function registerClient(meta: AuthServerMetadata, p: { name: string
 }
 
 export async function exchangeCode(meta: AuthServerMetadata, p: {
-  code: string; verifier: string; clientId: string; redirectUri: string; resource: string
+  code: string; verifier: string; clientId: string; redirectUri: string; resource: string; encoding?: 'form' | 'json'
 }): Promise<Tokens> {
   return toTokens(await postForm(meta.token_endpoint, {
     grant_type: 'authorization_code',
@@ -137,13 +137,13 @@ export async function exchangeCode(meta: AuthServerMetadata, p: {
     client_id: p.clientId,
     redirect_uri: p.redirectUri,
     resource: p.resource,
-  }))
+  }, p.encoding))
 }
 
-export async function refreshTokens(meta: AuthServerMetadata, t: Tokens, clientId: string, resource: string): Promise<Tokens> {
+export async function refreshTokens(meta: AuthServerMetadata, t: Tokens, clientId: string, resource: string, encoding: 'form' | 'json' = 'form'): Promise<Tokens> {
   if (!t.refresh_token) throw new Error('Session expired. Connect again.')
   const next = toTokens(await postForm(meta.token_endpoint, {
     grant_type: 'refresh_token', refresh_token: t.refresh_token, client_id: clientId, resource,
-  }))
+  }, encoding))
   return { ...next, refresh_token: next.refresh_token ?? t.refresh_token }
 }

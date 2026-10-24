@@ -2,6 +2,8 @@ import { Platform as RNPlatform } from 'react-native'
 import { PLATFORMS } from '@/core/platforms'
 import { NotLiveError, type Adapter, type Platform } from '@/core/types'
 import { createBlinkitAdapter } from './blinkit'
+import { createInstamartAdapter } from './instamart'
+import { createBigbasketAdapter } from './bigbasket'
 import { createZeptoAdapter } from './zepto'
 import { createFlipkartAdapter } from './flipkart'
 import { createAmazonNowAdapter } from './amazon-now'
@@ -14,7 +16,9 @@ import { mockAdapters } from './mock'
  */
 const LIVE: Partial<Record<Platform, () => Adapter>> = {
   blinkit: createBlinkitAdapter,
+  instamart: createInstamartAdapter,
   zepto: createZeptoAdapter,
+  bigbasket: createBigbasketAdapter,
   flipkart_minutes: createFlipkartAdapter,
   amazon_now: createAmazonNowAdapter,
 }

@@ -27,3 +27,21 @@ For the DOM reader, open `http://127.0.0.1:4955/zepto/search?query=lays` in a br
 Run `cd mobile && npm test` for pack identity, saved-data migration, query filtering and separate login/search reporting. Native WebView/session persistence is checked separately by the signed Android emulator smoke workflow; mocks do not prove real OTP login or personal prices.
 
 `npm run generate:readers` in `mobile/` updates the committed WebView text from the typed production readers. `npm test` rejects stale generated text. Runtime function-to-string conversion is deliberately avoided because Android Hermes does not preserve executable function source by default.
+
+## Instamart connector regressions
+
+The simulation also serves `/instamart/im`, using synthetic products conforming
+to Swiggy's official `search_products` schema (linked in `docs/platforms/instamart.md`).
+With the simulation running, exercise the real MCP client and adapter:
+
+```sh
+cd mobile
+SASTA_SIMULATION_URL=http://127.0.0.1:4955 npm test
+```
+
+This checks MCP initialization, read-only coordinate search, separate variants,
+stock, expired auth, HTTP 403/429/503, HTML gateway errors, tool errors, malformed
+payloads and an aborted hanging request. No personal credentials are used.
+The fixture accepts only the literal non-secret token `simulation-only`.
+The HTTP cases are skipped when `SASTA_SIMULATION_URL` is absent; parser, location,
+and DOM regressions still run in normal CI. Live authenticated search is separate.

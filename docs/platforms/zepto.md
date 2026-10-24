@@ -43,3 +43,10 @@ Source (third-party): [quick-commerce-mcp auth notes](https://github.com/Hardik5
 The site itself issues its signed search requests at `/search?query=…`. Sasta reads `a[data-testid="product-card"][href*="/pvid/"]`, the `ProductName`, `PackSize` and `EdlpPrice` slots, stock markers, product IDs, image URLs and links. Displayed rupee prices are used directly; the API's paise fields above are not mixed with them.
 
 Use Account → Delivery area to choose the same area in Zepto. The page's `user-position.state.userPosition` point must exist and, when Sasta has coordinates, be within 2 km. No location is overwritten through storage injection. Variable packs such as “48 g or 58 g” remain separate from exact packs. Login, location, blocked and unavailable states are returned explicitly. Account Test search runs a real query separately from the login check.
+
+## Connector repair
+
+The price reader now handles a currency value on the price slot itself, not only
+nested spans. Incomplete product cards wait for hydration rather than reporting
+zero products as a successful search. Login probes and storefront searches share
+an origin queue so a concurrent account check cannot reset the active search.

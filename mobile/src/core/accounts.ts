@@ -1,3 +1,4 @@
+import { withSessionTurn } from './session-turn'
 import { Preferences } from '@/native/kv'
 import { PlatformSession } from '@/native/platformSession'
 import type { AdapterStatus, Platform } from './types'
@@ -37,8 +38,8 @@ export const ACCOUNT_CONFIG: Record<Platform, AccountConfig> = {
   instamart: {
     platform: 'instamart', method: 'mcp', account: 'Swiggy',
     loginUrl: 'https://mcp.swiggy.com/auth/authorize', origins: ['https://mcp.swiggy.com'],
-    sessionCookies: [], mcpUrl: 'https://mcp.swiggy.com/instamart',
-    note: "Official Swiggy connection. You sign in on Swiggy's own page.",
+    sessionCookies: [], mcpUrl: 'https://mcp.swiggy.com/im',
+    note: "Search requires the official Swiggy connection and an exact location in Sasta. Website login alone does not enable search.",
     webFallback: { loginUrl: 'https://www.swiggy.com/instamart', origins: ['https://www.swiggy.com'], sessionCookies: ['_session_tid'] },
   },
   blinkit: {
@@ -155,9 +156,13 @@ export async function signInOnWeb(platform: Platform, target: SignInTarget, via:
 
 /** Runs the platform's signed-in check inside its own page (fresh hidden WebView, shared storage). */
 export async function checkInPage(origin: string, script: string): Promise<boolean> {
-  await PlatformSession.pageReset({ origin })
-  const res = await PlatformSession.pageRun({ origin, script: `return ${script};`, timeoutMs: 12000 })
-  return res.ok && res.value === true
+  return withSessionTurn(origin, async () => {
+    await PlatformSession.pageReset({ origin })
+    try {
+      const res = await PlatformSession.pageRun({ origin, script: `return ${script};`, timeoutMs: 12000 })
+      return res.ok && res.value === true
+    } finally { await PlatformSession.pageReset({ origin }) }
+  })
 }
 
 export interface ConnectionTest { ok: boolean; detail: string }

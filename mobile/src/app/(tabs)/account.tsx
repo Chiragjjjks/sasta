@@ -98,7 +98,8 @@ export default function AccountScreen() {
                   {IS_NATIVE && (canSearch(id) || status === 'connected') && (
                     <View style={{ marginTop: 10, marginLeft: 20, flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                       <Button small variant="secondary" label={canSearch(id) ? 'Test search' : 'Check login'} loading={isBusy} disabled={busy !== null && !isBusy} onPress={() => run(id, () => s.testConnection(id))} />
-                      {canSearch(id) && <Button small variant="secondary" label="Delivery area" disabled={busy !== null} onPress={() => run(id, () => s.setupProvider(id))} />}
+                      {id === 'instamart' && status === 'connected' && <Button small variant="secondary" label="Reconnect Swiggy" disabled={busy !== null} onPress={() => run(id, () => s.connect(id))} />}
+                      {canSearch(id) && <Button small variant="secondary" label="Delivery area" disabled={busy !== null} onPress={() => id === 'instamart' ? router.push('/location') : run(id, () => s.setupProvider(id))} />}
                     </View>
                   )}
                   {acc?.lastTest && (
@@ -109,7 +110,7 @@ export default function AccountScreen() {
                   {status !== 'connected' && cfg.note && <T kind="caption" style={{ marginTop: 6, marginLeft: 20 }}>{cfg.note}</T>}
                   {status !== 'connected' && cfg.webFallback && IS_NATIVE && (
                     <Pressable onPress={() => run(id, () => s.connect(id, { website: true }))} style={{ marginTop: 6, marginLeft: 20 }}>
-                      <Text style={{ color: t.ink, fontFamily: t.fonts.bodyBold, fontSize: 12.5, textDecorationLine: 'underline' }}>Or sign in on Swiggy&apos;s website</Text>
+                      <Text style={{ color: t.ink, fontFamily: t.fonts.bodyBold, fontSize: 12.5, textDecorationLine: 'underline' }}>Website sign-in only (does not enable search)</Text>
                     </Pressable>
                   )}
                   {!!errors[id] && <T kind="small" style={{ color: t.accent, marginTop: 6, marginLeft: 20 }}>{errors[id]}</T>}

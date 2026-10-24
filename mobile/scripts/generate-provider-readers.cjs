@@ -4,7 +4,7 @@ const fs = require('node:fs')
 const path = require('node:path')
 const ts = require('typescript')
 const directory = path.join(__dirname, '../src/core/adapters')
-const readers = [['zepto','readZeptoPage'],['flipkart','readFlipkartPage'],['amazon-now','readAmazonNowPage']]
+const readers = [['bigbasket','readBigbasketPage'],['zepto','readZeptoPage'],['flipkart','readFlipkartPage'],['amazon-now','readAmazonNowPage']]
 const generated = {}
 for (const [file, name] of readers) {
   const source = ts.createSourceFile(file, fs.readFileSync(path.join(directory, file + '.ts'), 'utf8'), ts.ScriptTarget.Latest, true)

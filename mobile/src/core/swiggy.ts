@@ -1,7 +1,7 @@
 import { PlatformSession } from '@/native/platformSession'
 import type { Account } from './accounts'
 import { ACCOUNT_CONFIG } from './accounts'
-import { McpClient } from './mcp'
+import { McpAuthError, McpClient } from './mcp'
 import {
   authorizeUrl, createPkce, discover, exchangeCode, needsRefresh, parseRedirect, randomState,
   refreshTokens, registerClient, type AuthServerMetadata, type Tokens,
@@ -32,16 +32,16 @@ async function save(s: Stored) {
 
 async function accessToken(): Promise<string> {
   const s = await load()
-  if (!s) throw new Error('Swiggy is not connected.')
+  if (!s) throw new McpAuthError()
   if (needsRefresh(s.tokens)) {
-    s.tokens = await refreshTokens(s.meta, s.tokens, s.clientId, MCP_URL)
+    s.tokens = await refreshTokens(s.meta, s.tokens, s.clientId, MCP_URL, 'json')
     await save(s)
   }
   return s.tokens.access_token
 }
 
-export function swiggyClient(): McpClient {
-  return new McpClient(MCP_URL, accessToken)
+export function swiggyClient(signal?: AbortSignal): McpClient {
+  return new McpClient(MCP_URL, accessToken, signal)
 }
 
 export async function connectSwiggy(): Promise<Account> {
@@ -62,7 +62,7 @@ export async function connectSwiggy(): Promise<Account> {
   let lastError: unknown
   for (const id of ids) {
     try {
-      tokens = await exchangeCode(meta, { code, verifier, clientId: id, redirectUri: SWIGGY_REDIRECT, resource: MCP_URL })
+      tokens = await exchangeCode(meta, { code, verifier, clientId: id, redirectUri: SWIGGY_REDIRECT, resource: MCP_URL, encoding: 'json' })
       usedId = id
       break
     } catch (e) { lastError = e }

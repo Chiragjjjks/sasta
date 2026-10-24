@@ -5,3 +5,5 @@ mocks:
     path: ../mocks/zepto/zepto.js
   - routeKey: flipkart
     path: ../mocks/flipkart/flipkart.js
+  - routeKey: instamart
+    path: ../mocks/instamart/instamart.js
