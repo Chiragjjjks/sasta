@@ -10,7 +10,12 @@
 | Connected apps screen with Connect / Disconnect for all six | Built |
 | Blinkit, Zepto, BigBasket, Flipkart, Amazon sign-in | Built. Marked "not verified yet" until each platform's session cookie names are recorded in `src/lib/accounts.ts` |
 | Swiggy Instamart over the official MCP server | Built: discovery, app registration, PKCE sign-in, token exchange and refresh, `tools/list`. Checked live up to Swiggy's sign-in page. The OTP step needs a real phone |
-| Using a connection for prices, fees or carts | Not started. Next step |
+| Sign-in signals | Blinkit `gr_1_accessToken`, Zepto `user_id` on zepto.com, Amazon `at-acbin` / `x-acbin` / `sess-at-acbin`, Swiggy website `_session_tid`. Flipkart and BigBasket: learned on the phone from cookies that appear during sign-in |
+| Sign-in screen | Closes by itself when a known session cookie appears. "I'm signed in" for the rest. Hint line under the title |
+| Blinkit | Delivery location is set before its login form. After sign-in, shows "Connected as •••• 1234" from Blinkit's own storage |
+| Swiggy | Official MCP first; "Or sign in on Swiggy's website" if that fails |
+| Connect all | One button walks through every app not yet connected; cancelling one stops the walk |
+| Using a connection | Blinkit search, fees and checkout already use the signed-in session. Others follow their live adapters |
 
 ### Verified facts about Swiggy's MCP server
 

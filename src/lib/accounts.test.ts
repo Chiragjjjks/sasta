@@ -22,3 +22,22 @@ describe('accounts', () => {
     expect(judgeWebSignIn(cfg, ['foo']).status).toBe('disconnected')
   })
 })
+
+describe('learning session cookies on the phone', () => {
+  it('keeps only new, session-looking cookies', async () => {
+    const { learnSessionCookies } = await import('./accounts')
+    const before = ['T', 'vh', '_ga', 'session-id']
+    const after = [...before, '_gid', 'at', 'rt', 'ud', 'SN', 'fonts-loaded']
+    expect(learnSessionCookies(before, after)).toEqual(['at', 'rt', 'SN'])
+  })
+  it('uses learned cookies when the platform has no known signal', () => {
+    const cfg = { sessionCookies: [] as string[] }
+    expect(judgeWebSignIn(cfg, ['at'], ['at']).status).toBe('connected')
+    expect(judgeWebSignIn(cfg, ['T'], ['at']).status).toBe('disconnected')
+  })
+  it('checks Zepto on its new domain and Amazon by its sign-in cookies', () => {
+    expect(ACCOUNT_CONFIG.zepto.origins).toContain('https://www.zepto.com')
+    expect(judgeWebSignIn(ACCOUNT_CONFIG.amazon_now, ['session-id', 'ubid-acbin']).status).toBe('disconnected')
+    expect(judgeWebSignIn(ACCOUNT_CONFIG.amazon_now, ['session-id', 'at-acbin']).status).toBe('connected')
+  })
+})

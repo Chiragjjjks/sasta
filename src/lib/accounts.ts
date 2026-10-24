@@ -24,6 +24,8 @@ export interface AccountConfig {
   sessionCookies: string[]
   note?: string
   mcpUrl?: string
+  /** Swiggy: sign in on the website instead, if the official MCP connection fails. */
+  webFallback?: { loginUrl: string; origins: string[]; sessionCookies: string[] }
 }
 
 export const ACCOUNT_CONFIG: Record<Platform, AccountConfig> = {
@@ -32,6 +34,7 @@ export const ACCOUNT_CONFIG: Record<Platform, AccountConfig> = {
     loginUrl: 'https://mcp.swiggy.com/auth/authorize', origins: ['https://mcp.swiggy.com'],
     sessionCookies: [], mcpUrl: 'https://mcp.swiggy.com/instamart',
     note: "Official Swiggy connection. You sign in on Swiggy's own page.",
+    webFallback: { loginUrl: 'https://www.swiggy.com/instamart', origins: ['https://www.swiggy.com'], sessionCookies: ['_session_tid'] },
   },
   blinkit: {
     platform: 'blinkit', method: 'web', account: 'Blinkit',
@@ -41,7 +44,8 @@ export const ACCOUNT_CONFIG: Record<Platform, AccountConfig> = {
   zepto: {
     platform: 'zepto', method: 'web', account: 'Zepto',
     // Not session_id: anonymous visits get one too.
-    loginUrl: 'https://www.zeptonow.com/', origins: ['https://www.zeptonow.com', 'https://zeptonow.com'], sessionCookies: ['user_id'],
+    // zeptonow.com now redirects to zepto.com; check both.
+    loginUrl: 'https://www.zepto.com/', origins: ['https://www.zepto.com', 'https://zepto.com', 'https://www.zeptonow.com'], sessionCookies: ['user_id'],
   },
   bigbasket: {
     platform: 'bigbasket', method: 'web', account: 'BigBasket',
@@ -54,7 +58,8 @@ export const ACCOUNT_CONFIG: Record<Platform, AccountConfig> = {
   },
   amazon_now: {
     platform: 'amazon_now', method: 'web', account: 'Amazon',
-    loginUrl: 'https://www.amazon.in/gp/sign-in.html', origins: ['https://www.amazon.in'], sessionCookies: [],
+    // Anonymous visits get session-id and ubid-acbin; these appear only after sign-in.
+    loginUrl: 'https://www.amazon.in/gp/sign-in.html', origins: ['https://www.amazon.in'], sessionCookies: ['at-acbin', 'x-acbin', 'sess-at-acbin'],
     note: 'Amazon Now may only work in the Amazon app. Not confirmed yet.',
   },
 }
@@ -69,6 +74,12 @@ export interface Account {
   verified?: boolean
   /** Swiggy MCP: tool names the server offered after connecting. */
   tools?: string[]
+  /** How it was connected. Swiggy can fall back to the website. */
+  via?: ConnectMethod
+  /** Session cookies learned on this phone by comparing cookies before and after sign-in. */
+  learnedCookies?: string[]
+  /** Who is signed in, masked, e.g. "•••• 1234". */
+  label?: string
 }
 
 const KEY = 'sasta.accounts'
@@ -87,20 +98,54 @@ export async function saveAccounts(a: Partial<Record<Platform, Account>>) {
   await Preferences.set({ key: KEY, value: JSON.stringify(a) })
 }
 
-/** Decides whether a cookie sign-in succeeded from the cookie names now present. */
-export function judgeWebSignIn(cfg: AccountConfig, names: string[]): Pick<Account, 'status' | 'verified'> {
-  if (cfg.sessionCookies.length === 0) return { status: 'connected', verified: false }
-  const ok = cfg.sessionCookies.some((c) => names.includes(c))
+/** Cookies every visitor gets (analytics, bot checks); never evidence of a sign-in. */
+const NOISE = /^(_ga|_gid|_gat|_gcl|_fbp|_abck|bm_|ak_|aws-waf|csm-hit|i18n|lc-|ubid|session-id|session-token|NRBA|T$|vh$|vw$|dpr$|fonts|Network|isH2|h2Network|ts$|adb$|rxc$|csrftoken|csurftoken|XSRF|x-channel)/i
+const AUTH_HINT = /(auth|token|sess|login|user|uid|sso|jwt|acc|^at$|^rt$|^sn$|member)/i
+
+/** New cookies that look like a session, from names before vs after sign-in. */
+export function learnSessionCookies(before: string[], after: string[]): string[] {
+  const prev = new Set(before)
+  return after.filter((n) => !prev.has(n) && !NOISE.test(n) && AUTH_HINT.test(n))
+}
+
+/** Decides whether a cookie sign-in holds, from the cookie names now present. */
+export function judgeWebSignIn(cfg: Pick<AccountConfig, 'sessionCookies'>, names: string[], learned: string[] = []): Pick<Account, 'status' | 'verified'> {
+  const signals = cfg.sessionCookies.length ? cfg.sessionCookies : learned
+  if (signals.length === 0) return { status: 'connected', verified: false }
+  const ok = signals.some((c) => names.includes(c))
   return ok ? { status: 'connected', verified: true } : { status: 'disconnected' }
 }
 
-export async function connectWeb(platform: Platform): Promise<Account> {
-  const cfg = ACCOUNT_CONFIG[platform]
-  const res = await PlatformSession.signIn({ url: cfg.loginUrl, title: `Sign in to ${cfg.account}` })
+export interface SignInTarget { loginUrl: string; origins: string[]; sessionCookies: string[]; account: string }
+
+/** Signs in on a platform's own page in the in-app browser and works out whether it worked. */
+export async function signInOnWeb(platform: Platform, target: SignInTarget, via: ConnectMethod = 'web'): Promise<Account> {
+  const before = (await PlatformSession.cookieNames({ urls: target.origins })).names
+  const res = await PlatformSession.signIn({
+    url: target.loginUrl,
+    title: `Sign in to ${target.account}`,
+    doneCookies: target.sessionCookies,
+    doneOrigins: target.origins,
+  })
   if (res.kind === 'cancelled') return { platform, status: 'disconnected' }
-  const { names } = await PlatformSession.cookieNames({ urls: cfg.origins })
-  const judged = judgeWebSignIn(cfg, names)
-  return { platform, ...judged, connectedAt: judged.status === 'connected' ? Date.now() : undefined }
+  const after = (await PlatformSession.cookieNames({ urls: target.origins })).names
+  const learned = target.sessionCookies.length ? [] : learnSessionCookies(before, after)
+  const judged = judgeWebSignIn(target, after, learned)
+  return {
+    platform, ...judged, via,
+    learnedCookies: learned.length ? learned : undefined,
+    connectedAt: judged.status === 'connected' ? Date.now() : undefined,
+  }
+}
+
+export async function connectWeb(platform: Platform): Promise<Account> {
+  return signInOnWeb(platform, ACCOUNT_CONFIG[platform])
+}
+
+/** Swiggy website sign-in, used when the official MCP connection does not work. */
+export async function connectSwiggyWebsite(): Promise<Account> {
+  const fb = ACCOUNT_CONFIG.instamart.webFallback!
+  return signInOnWeb('instamart', { ...fb, account: 'Swiggy' }, 'web')
 }
 
 /**
@@ -111,15 +156,20 @@ export async function recheckWebSessions(accounts: Partial<Record<Platform, Acco
   const next = { ...accounts }
   for (const cfg of Object.values(ACCOUNT_CONFIG)) {
     const acc = next[cfg.platform]
-    if (cfg.method !== 'web' || !cfg.sessionCookies.length || !acc || acc.status === 'disconnected') continue
-    const { names } = await PlatformSession.cookieNames({ urls: cfg.origins })
-    const judged = judgeWebSignIn(cfg, names)
+    if (!acc || acc.status === 'disconnected') continue
+    const web = cfg.method === 'web' ? cfg : acc.via === 'web' ? cfg.webFallback : undefined
+    if (!web) continue
+    const signals = web.sessionCookies.length ? web.sessionCookies : acc.learnedCookies ?? []
+    if (!signals.length) continue
+    const { names } = await PlatformSession.cookieNames({ urls: web.origins })
+    const judged = judgeWebSignIn(web, names, acc.learnedCookies)
     next[cfg.platform] = judged.status === 'connected' ? { ...acc, ...judged } : { ...acc, status: 'expired', verified: false }
   }
   return next
 }
 
 export async function disconnectWeb(platform: Platform): Promise<Account> {
-  await PlatformSession.clearSession({ urls: ACCOUNT_CONFIG[platform].origins })
+  const cfg = ACCOUNT_CONFIG[platform]
+  await PlatformSession.clearSession({ urls: [...cfg.origins, ...(cfg.webFallback?.origins ?? [])] })
   return { platform, status: 'disconnected' }
 }

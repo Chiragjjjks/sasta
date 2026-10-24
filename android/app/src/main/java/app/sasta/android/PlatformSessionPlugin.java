@@ -87,6 +87,17 @@ public class PlatformSessionPlugin extends Plugin {
         intent.putExtra(SignInActivity.EXTRA_TITLE, call.getString("title", "Sign in"));
         String intercept = call.getString("interceptPrefix");
         if (intercept != null) intent.putExtra(SignInActivity.EXTRA_INTERCEPT, intercept);
+        JSArray doneCookies = call.getArray("doneCookies", new JSArray());
+        JSArray doneOrigins = call.getArray("doneOrigins", new JSArray());
+        try {
+            if (doneCookies.length() > 0 && doneOrigins.length() > 0) {
+                intent.putExtra(SignInActivity.EXTRA_DONE_COOKIES, android.text.TextUtils.join(",", doneCookies.<String>toList()));
+                intent.putExtra(SignInActivity.EXTRA_DONE_ORIGINS, android.text.TextUtils.join(",", doneOrigins.<String>toList()));
+            }
+        } catch (JSONException e) {
+            call.reject("doneCookies and doneOrigins must be arrays of strings");
+            return;
+        }
         startActivityForResult(call, intent, "signInResult");
     }
 

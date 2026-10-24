@@ -46,3 +46,20 @@ describe('Blinkit cart hand-off', () => {
     expect(JSON.parse(store.location).coords).toMatchObject({ lat: 12.99, lon: 77.55, locality: 'Rajajinagar', isDefault: false })
   })
 })
+
+describe('Blinkit sign-in helpers', () => {
+  const run = (script: string, store: Record<string, string>) =>
+    new Function('localStorage', `return (async () => {${script}})()`)({ getItem: (k: string) => store[k] ?? null, setItem: (k: string, v: string) => { store[k] = v } })
+
+  it('sets the delivery location before login', async () => {
+    const { locationScript } = await import('./blinkit')
+    const store: Record<string, string> = { location: JSON.stringify({ coords: { isDefault: true, lat: 28.4, lon: 77.0, locality: 'Gurugram', id: 1849 } }) }
+    await run(locationScript({ pincode: '560010', label: 'Rajajinagar', lat: 12.99, lng: 77.55 }), store)
+    expect(JSON.parse(store.location).coords).toMatchObject({ isDefault: false, lat: 12.99, lon: 77.55, locality: 'Rajajinagar', id: 1849 })
+  })
+  it('reports who is signed in with only a masked number', async () => {
+    const { WHO_AM_I_SCRIPT } = await import('./blinkit')
+    expect(await run(WHO_AM_I_SCRIPT, { auth: JSON.stringify({ accessToken: 'v2::x', phoneNumber: '9876543210' }) })).toEqual({ signedIn: true, phone: '•••• 3210' })
+    expect(await run(WHO_AM_I_SCRIPT, {})).toEqual({ signedIn: false, phone: '' })
+  })
+})

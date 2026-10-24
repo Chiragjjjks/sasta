@@ -16,9 +16,9 @@ import { ProductCard, ProductCardSkeleton } from '@/components/ProductCard'
 import { SearchHeader } from '@/components/SearchHeader'
 import { Segmented } from '@/components/Segmented'
 import { VariantChips } from '@/components/VariantChips'
-import { ACCOUNT_CONFIG, connectWeb, disconnectWeb, loadAccounts, recheckWebSessions, saveAccounts, type Account } from '@/lib/accounts'
+import { ACCOUNT_CONFIG, connectSwiggyWebsite, connectWeb, disconnectWeb, loadAccounts, recheckWebSessions, saveAccounts, type Account } from '@/lib/accounts'
 import { connectSwiggy, disconnectSwiggy } from '@/lib/swiggy'
-import { fetchBlinkitBill, openBlinkitWithCart } from '@/adapters/blinkit'
+import { blinkitIdentity, fetchBlinkitBill, openBlinkitWithCart, prepareBlinkitSignIn } from '@/adapters/blinkit'
 import { blinkitRuleFromBill, type FeeRules } from '@/lib/fees'
 import { addItem, addItems, extraOverCheapest, fromGroup, pin, pinAll, refreshCart, setQty, summarize, type CartItem } from '@/lib/cart'
 import {
@@ -72,7 +72,8 @@ export default function App() {
     loadFees().then(setFees)
     loadAccounts().then(async (a) => {
       setAccounts(a)
-      const checked = await recheckWebSessions(a).catch(() => a)
+      // The browser preview has no real platform cookies, so only the Android app re-checks sessions.
+      const checked = IS_NATIVE ? await recheckWebSessions(a).catch(() => a) : a
       setAccounts(checked)
       saveAccounts(checked)
     })
@@ -124,11 +125,26 @@ export default function App() {
   async function updateAccount(a: Account) {
     setAccounts((prev) => { const next = { ...prev, [a.platform]: a }; saveAccounts(next); return next })
   }
-  const connectAccount = async (p: Platform) => {
-    await updateAccount(ACCOUNT_CONFIG[p].method === 'mcp' ? await connectSwiggy() : await connectWeb(p))
+  /** Connects one app. Returns the result so "Connect all" can stop when the user cancels. */
+  const connectAccount = async (p: Platform, opts: { website?: boolean } = {}): Promise<Account> => {
+    let acc: Account
+    if (p === 'instamart' && !opts.website) acc = await connectSwiggy()
+    else if (p === 'instamart') acc = await connectSwiggyWebsite()
+    else {
+      // Blinkit asks for a delivery location before its login form; set it first.
+      if (p === 'blinkit' && IS_NATIVE) await prepareBlinkitSignIn(location).catch(() => {})
+      acc = await connectWeb(p)
+    }
+    if (p === 'blinkit' && IS_NATIVE && acc.status === 'connected') {
+      const who = await blinkitIdentity().catch(() => null)
+      if (who?.signedIn) acc = { ...acc, verified: true, label: who.phone || acc.label }
+    }
+    await updateAccount(acc)
+    return acc
   }
   const disconnectAccount = async (p: Platform) => {
-    await updateAccount(ACCOUNT_CONFIG[p].method === 'mcp' ? await disconnectSwiggy() : await disconnectWeb(p))
+    const acc = accounts[p]
+    await updateAccount(p === 'instamart' && acc?.via !== 'web' ? await disconnectSwiggy() : await disconnectWeb(p))
   }
   // Swiggy's OAuth sign-in needs the in-app browser, so it is only offered in the Android app.
   const canConnect = (p: Platform) => ACCOUNT_CONFIG[p].method === 'web' || Capacitor.isNativePlatform()
@@ -361,7 +377,7 @@ export default function App() {
         open={accountsOpen}
         accounts={accounts}
         onClose={() => setAccountsOpen(false)}
-        onConnect={connectAccount}
+        onConnect={(p, opts) => connectAccount(p, opts)}
         onDisconnect={disconnectAccount}
         canConnect={canConnect}
       />

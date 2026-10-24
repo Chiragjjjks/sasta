@@ -161,9 +161,7 @@ export function handoffScript(lines: HandoffLine[], loc: Location): string {
     cart.uniqueSkuInCart = all.length;
     cart.version = cart.version || 1;
     localStorage.setItem('cart', JSON.stringify(cart));
-    const location = (() => { try { return JSON.parse(localStorage.getItem('location') || '{}') } catch { return {} } })();
-    location.coords = Object.assign({}, location.coords || {}, { isDefault: false, lat: ${loc.lat}, lon: ${loc.lng}, locality: ${JSON.stringify(loc.label)} });
-    localStorage.setItem('location', JSON.stringify(location));
+    ${locationScript(loc).replace('return true;', '')}
     return { count: cart.count, total: cart.total };
   `
 }
@@ -173,4 +171,33 @@ export async function openBlinkitWithCart(lines: HandoffLine[], loc: Location): 
   const res = await PlatformSession.pageRun({ origin: BLINKIT_ORIGIN, script: handoffScript(lines, loc), timeoutMs: 12000 })
   if (!res.ok) throw new Error(res.error || 'Could not prepare the Blinkit cart')
   await PlatformSession.signIn({ url: `${BLINKIT_ORIGIN}/`, title: 'Blinkit · check out' })
+}
+
+/** Sets blinkit.com's own delivery location, which its login asks for before showing the OTP step. */
+export function locationScript(loc: Location): string {
+  return `
+    const location = (() => { try { return JSON.parse(localStorage.getItem('location') || '{}') } catch { return {} } })();
+    location.coords = Object.assign({}, location.coords || {}, { isDefault: false, lat: ${loc.lat}, lon: ${loc.lng}, locality: ${JSON.stringify(loc.label)} });
+    localStorage.setItem('location', JSON.stringify(location));
+    return true;
+  `
+}
+
+/** Reads who is signed in from blinkit.com's own storage. Only a masked number leaves the page. */
+export const WHO_AM_I_SCRIPT = `
+  const auth = (() => { try { return JSON.parse(localStorage.getItem('auth') || 'null') } catch { return null } })();
+  const phone = auth && (auth.phoneNumber || auth.phone || (auth.user && auth.user.phone)) ? String(auth.phoneNumber || auth.phone || auth.user.phone) : '';
+  return { signedIn: !!(auth && auth.accessToken), phone: phone ? '•••• ' + phone.slice(-4) : '' };
+`
+
+export async function prepareBlinkitSignIn(loc: Location): Promise<void> {
+  if (!loc.lat || !loc.lng) return
+  await PlatformSession.pageRun({ origin: BLINKIT_ORIGIN, script: locationScript(loc), timeoutMs: 12000 })
+}
+
+export async function blinkitIdentity(): Promise<{ signedIn: boolean; phone: string } | null> {
+  // The hidden page may hold storage from before sign-in; reload it so it reads the fresh session.
+  await PlatformSession.pageReset({ origin: BLINKIT_ORIGIN })
+  const res = await PlatformSession.pageRun({ origin: BLINKIT_ORIGIN, script: WHO_AM_I_SCRIPT, timeoutMs: 12000 })
+  return res.ok ? (res.value as { signedIn: boolean; phone: string }) : null
 }
