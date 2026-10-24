@@ -1,3 +1,4 @@
+import readerScripts from './readers.generated.json'
 import type { Location } from '../types'
 import { createPageAdapter, type PageSnapshot } from './page'
 
@@ -60,5 +61,5 @@ export async function readAmazonNowPage(query: string, pincode: string): Promise
   return { kind: 'products', products }
 }
 
-export const amazonNowReadScript = (query: string, loc: Location) => `return await (${readAmazonNowPage.toString()})(${JSON.stringify(query)},${JSON.stringify(loc.pincode)});`
+export const amazonNowReadScript = (query: string, loc: Location) => `return await (${readerScripts.readAmazonNowPage})(${JSON.stringify(query)},${JSON.stringify(loc.pincode)});`
 export const createAmazonNowAdapter = () => createPageAdapter('amazon_now', AMAZON_ORIGIN, 'Amazon Now', () => '/', amazonNowReadScript)

@@ -1,3 +1,4 @@
+import readerScripts from './readers.generated.json'
 import type { Location } from '../types'
 import { createPageAdapter, type PageSnapshot } from './page'
 
@@ -6,7 +7,7 @@ export const FLIPKART_API = 'https://1.rome.api.flipkart.com/api/4/page/fetch?ca
 export const flipkartSearchPath = (q: string) => `/hyperlocal/pr?q=${encodeURIComponent(q)}&marketplace=HYPERLOCAL&sid=search.flipkart.com`
 
 /** The same Hyperlocal page endpoint used by Flipkart's website. No retail fallback. */
-export async function readFlipkartPage(query: string, pincode: string, apiUrl = FLIPKART_API): Promise<PageSnapshot> {
+export async function readFlipkartPage(query: string, pincode: string, apiUrl: string): Promise<PageSnapshot> {
   const pageUri = `/hyperlocal/pr?q=${encodeURIComponent(query)}&marketplace=HYPERLOCAL&sid=search.flipkart.com`
   const response = await fetch(apiUrl, {
     method: 'POST', credentials: 'include', headers: { 'content-type': 'application/json', flipkart_secure: 'true',
@@ -62,5 +63,5 @@ export async function readFlipkartPage(query: string, pincode: string, apiUrl = 
 }
 
 export const flipkartReadScript = (query: string, loc: Location, apiUrl = FLIPKART_API) =>
-  `return await (${readFlipkartPage.toString()})(${JSON.stringify(query)},${JSON.stringify(loc.pincode)},${JSON.stringify(apiUrl)});`
+  `return await (${readerScripts.readFlipkartPage})(${JSON.stringify(query)},${JSON.stringify(loc.pincode)},${JSON.stringify(apiUrl)});`
 export const createFlipkartAdapter = () => createPageAdapter('flipkart_minutes', FLIPKART_ORIGIN, 'Flipkart Minutes', flipkartSearchPath, flipkartReadScript)

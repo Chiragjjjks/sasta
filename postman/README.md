@@ -14,9 +14,9 @@ In a second terminal:
 node mobile/scripts/provider-simulation.cjs
 ```
 
-The verifier extracts and compiles the production `readFlipkartPage` function and runs its real fetch client against the simulation. Requests retain `/api/4/page/fetch`, the Hyperlocal scope, postcode and headers. Check the log for both a `listening` event and actual `request` events. Stop the simulation with `pkill -INT -f 'simulation run postman/simulations/search.sim.yaml'`.
+The verifier loads the exact generated `readFlipkartPage` text shipped to Android and runs its real fetch client against the simulation. Requests retain `/api/4/page/fetch`, the Hyperlocal scope, postcode and headers. Check the log for both a `listening` event and actual `request` events. Stop the simulation with `pkill -INT -f 'simulation run postman/simulations/search.sim.yaml'`.
 
-For the DOM reader, open `http://127.0.0.1:4955/zepto/search?query=lays` in a browser. Generate the production reader with `node mobile/scripts/provider-simulation.cjs --browser zepto`, evaluate it on that page, then call `await readZeptoPage('lays', 1800)`. The expected result has 30 products. Repeat with `mode=login`, `mode=location` and `mode=blocked` for their corresponding states. This uses real served HTML rather than a stubbed DOM/client.
+For the DOM reader, open `http://127.0.0.1:4955/zepto/search?query=lays` in a browser. Print the shipped production reader with `node mobile/scripts/provider-simulation.cjs --browser zepto`, evaluate it on that page, then call `await readZeptoPage('lays', 1800)`. The expected result has 30 products. Repeat with `mode=login`, `mode=location` and `mode=blocked` for their corresponding states. This uses real served HTML rather than a stubbed DOM/client.
 
 ## Provenance and evidence
 
@@ -25,3 +25,5 @@ For the DOM reader, open `http://127.0.0.1:4955/zepto/search?query=lays` in a br
 - Amazon: no positive Now response is mocked. The production reader was run on the available first-party Fresh storefront and returned `unavailable`, excluding Fresh/retail as required. A real Now storefront still needs live verification.
 
 Run `cd mobile && npm test` for pack identity, saved-data migration, query filtering and separate login/search reporting. Native WebView/session persistence is checked separately by the signed Android emulator smoke workflow; mocks do not prove real OTP login or personal prices.
+
+`npm run generate:readers` in `mobile/` updates the committed WebView text from the typed production readers. `npm test` rejects stale generated text. Runtime function-to-string conversion is deliberately avoided because Android Hermes does not preserve executable function source by default.

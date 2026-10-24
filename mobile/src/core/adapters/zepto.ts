@@ -1,3 +1,4 @@
+import readerScripts from './readers.generated.json'
 import type { Location } from '../types'
 import { createPageAdapter, type PageSnapshot } from './page'
 
@@ -38,5 +39,5 @@ export async function readZeptoPage(query: string, waitMs = 12000): Promise<Page
   function locationOrigin() { return 'https://www.zepto.com' }
 }
 
-export const zeptoReadScript = (query: string, _loc?: Location) => `return await (${readZeptoPage.toString()})(${JSON.stringify(query)});`
+export const zeptoReadScript = (query: string, _loc?: Location) => `return await (${readerScripts.readZeptoPage})(${JSON.stringify(query)});`
 export const createZeptoAdapter = () => createPageAdapter('zepto', ZEPTO_ORIGIN, 'Zepto', zeptoSearchPath, zeptoReadScript)

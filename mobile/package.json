@@ -48,7 +48,9 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "export:web": "expo export --platform web",
-    "lint": "eslint . --max-warnings 0"
+    "lint": "eslint . --max-warnings 0",
+    "generate:readers": "node scripts/generate-provider-readers.cjs",
+    "pretest": "node scripts/generate-provider-readers.cjs --check"
   },
   "private": true
 }
