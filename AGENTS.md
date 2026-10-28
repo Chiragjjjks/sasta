@@ -21,7 +21,7 @@ Owner: Chirag (GitHub `Chiragjjjks`), Bengaluru. The test location is Rajajinaga
 - They care a lot about UI clarity ("instinct-to-UI"). Before declaring UI work done, check it visually. The browser preview with sample data is fine for that.
 - When a delegated agent asks a question meant for the owner (for example a login prompt), tell the owner. Never answer it on their behalf.
 
-## Current state: v0.7.0 on main, not yet tagged or published
+## Current state: v0.7.0 published (tag on 44aa30a)
 
 | Platform | How Sasta searches | Status |
 |---|---|---|
@@ -32,24 +32,21 @@ Owner: Chirag (GitHub `Chiragjjjks`), Bengaluru. The test location is Rajajinaga
 | Flipkart Minutes | Hyperlocal page API inside the page | **Unverified.** Needs an exact Flipkart address; no positive price list seen yet |
 | Amazon Now | Guarded Now storefront discovery | **Unverified.** Only works if the Amazon session offers a Now store |
 
-Releases: v0.6.0 is published (live Instamart and Zepto). v0.7.0 is not published yet. It covers lists by app and coloured platform marks, plus the UI rework from 2026-10-28:
+Releases: v0.6.0 is published (live Instamart and Zepto). v0.7.0 is published (2026-10-29). It covers lists by app and coloured platform marks, plus the UI rework from 2026-10-28:
 - light and dark with an Appearance switch;
 - ranked app rows (`ui/OfferSlots.tsx`) in results, compare, lists and cart;
 - a shared plan card (`ui/PlanHero.tsx`);
 - a cart that re-checks prices when they are over 5 minutes old (`refreshPrices`, `cartChanges` in the store).
-
-It goes out when the owner says "release" and CI has passed for the tagged commit.
 
 Open work outside main:
 - **Site index toolkit (Codex).** Branch `t3/research-site-index-toolkit`, worktree `~/.t3/worktrees/sasta/t3-5eeaf107`, folder `automation/`. It is Playwright + TypeScript (`npm run login|crawl|action|verify-readers|inspect`) with a persistent profile at `~/.sasta/automation-profile`. It is not merged and the crawl is unfinished: no logins persisted yet, and each login needs the owner in that window.
 
 ## Next, in order
 
-1. Publish v0.7.0 when the owner approves (see Release).
-2. Finish and merge the `automation/` site index, then use it to fix Flipkart Minutes and Amazon Now.
-3. Wishlist and list follow-ups the owner asked for after the list redesign.
-4. `cart.quote` for Instamart and Zepto over MCP. This needs cart write scopes, so put it behind an explicit setting.
-5. `orders.history` and `offers.list` per `docs/ACTIONS.md`.
+1. Finish and merge the `automation/` site index, then use it to fix Flipkart Minutes and Amazon Now.
+2. Wishlist and list follow-ups the owner asked for after the list redesign.
+3. `cart.quote` for Instamart and Zepto over MCP. This needs cart write scopes, so put it behind an explicit setting.
+4. `orders.history` and `offers.list` per `docs/ACTIONS.md`.
 
 ## Repository map
 
