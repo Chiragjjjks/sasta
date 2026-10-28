@@ -66,10 +66,15 @@ export default function AccountScreen() {
           <ChevronRight size={18} color={t.faint} />
         </Card>
 
-        <Card style={styles.locRow}>
-          <Palette size={18} color={t.ink} />
-          <T kind="bodyStrong" style={{ flex: 1 }}>Appearance</T>
-          <Segmented value={appearance} onChange={setAppearance}
+        <Card style={{ padding: 14, gap: 12 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <Palette size={18} color={t.ink} />
+            <View style={{ flex: 1 }}>
+              <T kind="bodyStrong">Appearance</T>
+              <T kind="small">System follows your phone&apos;s light or dark setting</T>
+            </View>
+          </View>
+          <Segmented stretch value={appearance} onChange={setAppearance}
             options={[{ value: 'system', label: 'System' }, { value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }]} />
         </Card>
 

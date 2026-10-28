@@ -89,9 +89,11 @@ export default function ListsScreen() {
         )}
 
         <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 22, marginTop: 14 }}>
-          <Pressable onPress={s.exportLists} disabled={!s.lists.length} style={[styles.link, { opacity: s.lists.length ? 1 : 0.4 }]}>
-            <Download size={15} color={t.muted} /><T kind="smallStrong" style={{ color: t.muted }}>Back up lists</T>
-          </Pressable>
+          {s.lists.length > 0 && (
+            <Pressable onPress={s.exportLists} style={styles.link}>
+              <Download size={15} color={t.muted} /><T kind="smallStrong" style={{ color: t.muted }}>Back up lists</T>
+            </Pressable>
+          )}
           <Pressable onPress={async () => { const text = await pickJsonText().catch(() => null); if (text) s.importLists(text) }} style={styles.link}>
             <Upload size={15} color={t.muted} /><T kind="smallStrong" style={{ color: t.muted }}>Restore</T>
           </Pressable>

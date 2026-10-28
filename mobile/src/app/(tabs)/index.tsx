@@ -107,11 +107,22 @@ export default function SearchScreen() {
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 24 }}>
           {header}
           <View style={{ paddingHorizontal: 16, paddingTop: 18 }}>
-            <T kind="title">One search.</T>
-            <T kind="title" style={{ color: t.muted }}>Every quick-commerce app.</T>
-            <T kind="small" style={{ marginTop: 10, fontSize: 14, lineHeight: 20 }}>
-              Type a product once. Sasta checks every app that delivers to you and shows the cheapest pack.
+            <T kind="title">Where is it cheapest?</T>
+            <T kind="small" style={{ marginTop: 8, fontSize: 14, lineHeight: 20 }}>
+              Type any product. Sasta checks {PLATFORMS.length} apps that deliver to {s.location.pincode} and shows the cheapest first.
             </T>
+            <View style={[styles.steps, { backgroundColor: t.surface }]}>
+              {['Search', 'Compare apps', 'Add to cart'].map((label, n) => (
+                <View key={label} style={styles.step}>
+                  <View style={[styles.stepNum, { backgroundColor: t.ink }]}>
+                    <Text style={{ color: t.bg, fontFamily: t.fonts.bodyBold, fontSize: 12 }}>{n + 1}</Text>
+                  </View>
+                  <T kind="smallStrong" numberOfLines={1} style={{ flexShrink: 1 }}>{label}</T>
+                </View>
+              ))}
+            </View>
+            <T kind="caption" style={{ marginTop: 8 }}>The cart splits your order by app. You order and pay in each app.</T>
+            <T kind="smallStrong" style={{ marginTop: 22, color: t.muted }}>Apps Sasta checks</T>
             <View style={styles.appGrid}>
               {PLATFORMS.map((p) => {
                 return (
@@ -271,7 +282,10 @@ const styles = StyleSheet.create({
   compare: { height: 42, borderRadius: 13, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center' },
   recents: { gap: 8, paddingRight: 16 },
   recent: { borderWidth: 1, borderRadius: 17, height: 34, paddingHorizontal: 13, justifyContent: 'center', maxWidth: 220 },
-  appGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 22 },
+  appGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
+  steps: { flexDirection: 'row', justifyContent: 'space-between', gap: 6, borderRadius: 16, padding: 12, marginTop: 16 },
+  step: { flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 7 },
+  stepNum: { width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   appTile: { width: '48.5%', flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, height: 48, borderRadius: 16 },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   hero: { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 22, padding: 16 },
