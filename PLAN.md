@@ -2,7 +2,7 @@
 
 Sasta is an Android app (APK). You type one product, and it shows every matching pack from every quick-commerce app that delivers to you, sorted by price. No login, no backend server. All fetching happens on the phone.
 
-This file is the handoff. A coding agent should be able to read it top to bottom and continue without any other context.
+Agents: start with `AGENTS.md`. It has the current state, the code map for `mobile/`, and the rules. This file keeps the original phased plan and the reality check. Its Architecture and Repository map sections describe the retired Capacitor app.
 
 ## Problem
 
