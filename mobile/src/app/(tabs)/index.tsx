@@ -53,6 +53,7 @@ export default function SearchScreen() {
   const submit = (q: string) => { Keyboard.dismiss(); s.search(q) }
   const open = (g: ProductGroup) => router.push({ pathname: '/product/[key]', params: { key: g.key } })
   const save = (g: ProductGroup) => router.push({ pathname: '/save/[key]', params: { key: g.key } })
+  const setQty = (g: ProductGroup, q: number) => s.setCartQty(g.key, q)
 
   const header = (
     <View style={styles.headerWrap}>
@@ -88,7 +89,7 @@ export default function SearchScreen() {
           <Text style={{ color: t.bg, fontFamily: t.fonts.bodyBold, fontSize: 14 }}>Compare</Text>
         </Pressable>
       </View>
-      {s.recents.length > 0 && (
+      {s.recents.length > 0 && !s.submitted && (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.recents} keyboardShouldPersistTaps="handled">
           {s.recents.map((r) => (
             <Pressable key={r} onPress={() => { tap(); submit(r) }} style={[styles.recent, { borderColor: t.line }]}>
@@ -142,11 +143,10 @@ export default function SearchScreen() {
               ? `Searching ${active.length} ${active.length === 1 ? 'app' : 'apps'}…`
               : `${plural(s.groups.length, 'product')} from ${plural(appsWithResults, 'app')}${s.elapsed !== null ? ` · ${(s.elapsed / 1000).toFixed(1)} s` : ''}`}
           </T>
-          <View style={{ flexDirection: 'row', gap: 4 }}>
-            {PLATFORMS.map((p) => {
-              const st = s.statuses[p.id]?.state
-              return <View key={p.id} style={[styles.statusDot, { backgroundColor: p.color, opacity: st === 'done' ? 1 : 0.22 }]} />
-            })}
+          <View style={{ flexDirection: 'row', gap: 4 }} accessibilityLabel={`${appsWithResults} of ${PLATFORMS.length} apps have results`}>
+            {PLATFORMS.map((p) => (
+              <PlatformMark key={p.id} platform={p.id} size={18} style={{ opacity: s.statuses[p.id]?.state === 'done' && (s.offers[p.id]?.length ?? 0) > 0 ? 1 : 0.25 }} />
+            ))}
           </View>
         </View>
 
@@ -174,7 +174,7 @@ export default function SearchScreen() {
           </Card>
         )}
 
-        {bestValue && (
+        {bestValue && bestValue.key !== visible[0]?.key && (
           <Pressable onPress={() => open(bestValue)} style={[styles.hero, { backgroundColor: t.hero }]} accessibilityRole="button">
             <PackIcon variantKey={bestValue.variantKey} imageUrl={bestValue.best.imageUrl} size={48} />
             <View style={{ flex: 1 }}>
@@ -201,7 +201,7 @@ export default function SearchScreen() {
           </ScrollView>
         )}
 
-        {sizes.length > 1 && (
+        {sizes.length > 1 && (variant !== null || variantOptions.length <= 1) && (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow} style={{ marginHorizontal: -16 }}>
             <Chip label="All sizes" active={activeSize === null} onPress={() => setSize(null)} />
             {sizes.map((g) => <Chip key={g} label={formatSize(g)} active={activeSize === g} onPress={() => setSize(activeSize === g ? null : g)} />)}
@@ -228,6 +228,7 @@ export default function SearchScreen() {
               saved={s.isSaved(item.key)}
               onOpen={open}
               onAdd={s.addToCart}
+              onQty={setQty}
               onSave={save}
             />
           </View>
@@ -272,9 +273,7 @@ const styles = StyleSheet.create({
   recent: { borderWidth: 1, borderRadius: 17, height: 34, paddingHorizontal: 13, justifyContent: 'center', maxWidth: 220 },
   appGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 22 },
   appTile: { width: '48.5%', flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, height: 48, borderRadius: 16 },
-  dot: { width: 10, height: 10, borderRadius: 5 },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  statusDot: { width: 8, height: 8, borderRadius: 4 },
   hero: { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 22, padding: 16 },
   chipRow: { gap: 8, paddingHorizontal: 16 },
 })

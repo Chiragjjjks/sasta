@@ -1,75 +1,76 @@
-import { Bookmark, Check, Plus } from 'lucide-react-native'
+import { Bookmark, Plus } from 'lucide-react-native'
 import { memo } from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { inStockCount } from '@/core/normalize'
 import { PLATFORM } from '@/core/platforms'
 import type { ProductGroup } from '@/core/types'
 import { formatSize, rupee } from '@/core/utils'
-import { tap } from './kit'
+import { Stepper, T, tap } from './kit'
+import { OfferSlots } from './OfferSlots'
 import { PackIcon } from './PackIcon'
 import { useTheme } from './theme'
 
-function ProductCardImpl({ group, total, inCart, saved, onOpen, onAdd, onSave }: {
+/** Rows shown on a result card; the rest are one tap away on the compare screen. */
+const ROWS = 3
+
+/** One product: its top apps ranked by price, then Save and Add (or a quantity once it is in the cart). */
+function ProductCardImpl({ group, total, inCart, saved, onOpen, onAdd, onQty, onSave }: {
   group: ProductGroup; total: number; inCart: number; saved: boolean
-  onOpen: (g: ProductGroup) => void; onAdd: (g: ProductGroup) => void; onSave: (g: ProductGroup) => void
+  onOpen: (g: ProductGroup) => void; onAdd: (g: ProductGroup) => void; onQty: (g: ProductGroup, qty: number) => void; onSave: (g: ProductGroup) => void
 }) {
   const t = useTheme()
   const { best } = group
   const title = group.brand !== 'Other' && !group.variant.toLowerCase().includes(group.brand.toLowerCase()) ? `${group.brand} ${group.variant}` : group.variant
-  const others = group.offers.filter((o) => o.inStock).slice(1, 3)
-  const more = Math.max(0, group.offers.filter((o) => o.inStock).length - 1 - others.length)
+  const inStock = group.offers.filter((o) => o.inStock)
+  const pack = (group.packLabel ?? formatSize(group.sizeGrams)) || group.brand
   return (
     <Pressable
       onPress={() => onOpen(group)}
       android_ripple={{ color: t.dark ? '#ffffff12' : '#0000000b' }}
       style={[styles.card, { backgroundColor: t.surface }]}
       accessibilityRole="button"
-      accessibilityLabel={`${title}, ${(group.packLabel ?? formatSize(group.sizeGrams))}, ${rupee(best.price)} on ${PLATFORM[best.platform].name}`}
+      accessibilityLabel={`${title}, ${pack}, ${best.inStock ? `${rupee(best.price)} on ${PLATFORM[best.platform].name}` : 'out of stock'}. Compare all apps`}
     >
-      <View style={styles.row}>
-        <PackIcon variantKey={group.variantKey} imageUrl={best.imageUrl} size={42} />
-        <View style={styles.middle}>
+      <View style={styles.head}>
+        <PackIcon variantKey={group.variantKey} imageUrl={best.imageUrl} size={38} />
+        <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={[styles.name, { color: t.ink, fontFamily: t.fonts.displayBold }]} numberOfLines={2}>{title}</Text>
           <Text style={[styles.meta, { color: t.muted, fontFamily: t.fonts.body }]} numberOfLines={1}>
-            {(group.packLabel ?? formatSize(group.sizeGrams)) || group.brand} · on {inStockCount(group)} of {total} {total === 1 ? 'app' : 'apps'}
+            {pack} · on {inStockCount(group)} of {total} {total === 1 ? 'app' : 'apps'}
           </Text>
         </View>
-        <View style={styles.priceCol}>
-          <Text style={[styles.price, { color: t.ink, fontFamily: t.fonts.display }]}>{best.inStock ? rupee(best.price) : '—'}</Text>
-          {!!best.mrp && best.mrp > best.price && (
-            <Text style={[styles.mrp, { color: t.muted, fontFamily: t.fonts.body }]}>{rupee(best.mrp)}</Text>
-          )}
-          <Text style={[styles.where, { color: t.good, fontFamily: t.fonts.bodyBold }]} numberOfLines={1}>{PLATFORM[best.platform].short}</Text>
-        </View>
       </View>
+      {inStock.length > 0
+        ? <OfferSlots offers={inStock} chosen={best.platform} limit={ROWS} countHidden={false} />
+        : <T kind="small" style={{ paddingLeft: 6, paddingVertical: 6 }}>Out of stock on every app right now</T>}
       <View style={styles.footer}>
-        <View style={styles.pills}>
-          {others.map((o) => (
-            <View key={o.platform} style={[styles.pill, { backgroundColor: t.chip }]}>
-              <Text style={[styles.pillTxt, { color: t.muted, fontFamily: t.fonts.body }]} numberOfLines={1}>{PLATFORM[o.platform].short} {rupee(o.price)}</Text>
-            </View>
-          ))}
-          {more > 0 && <View style={[styles.pill, { backgroundColor: t.chip }]}><Text style={[styles.pillTxt, { color: t.muted, fontFamily: t.fonts.body }]}>+{more}</Text></View>}
-        </View>
         <Pressable
-          hitSlop={8}
+          hitSlop={4}
           onPress={() => { tap(); onSave(group) }}
           style={[styles.iconBtn, { backgroundColor: saved ? t.ink : t.chip }]}
           accessibilityLabel={saved ? 'Saved to a list' : 'Save to list'}
         >
-          <Bookmark size={16} color={saved ? t.bg : t.muted} fill={saved ? t.bg : 'transparent'} />
+          <Bookmark size={17} color={saved ? t.bg : t.ink} fill={saved ? t.bg : 'transparent'} />
         </Pressable>
-        {best.inStock && (
+        <T kind="smallStrong" style={{ flex: 1, color: t.muted }} numberOfLines={1}>
+          {inStock.length > ROWS ? `+${inStock.length - ROWS} more ${inStock.length - ROWS === 1 ? 'app' : 'apps'}` : ''}
+        </T>
+        {best.inStock && (inCart ? (
+          <View style={styles.inCart}>
+            <T kind="smallStrong" style={{ color: t.good }}>In cart</T>
+            <Stepper qty={inCart} onChange={(q) => onQty(group, q)} />
+          </View>
+        ) : (
           <Pressable
-            hitSlop={8}
+            hitSlop={4}
             onPress={() => { tap(); onAdd(group) }}
-            style={[styles.addBtn, { backgroundColor: inCart ? t.goodBg : t.ink }]}
-            accessibilityLabel={inCart ? `Add another, ${inCart} in cart` : 'Add to cart'}
+            style={[styles.addBtn, { backgroundColor: t.ink }]}
+            accessibilityLabel={`Add to cart from ${PLATFORM[best.platform].name}`}
           >
-            {inCart ? <Check size={15} color={t.good} /> : <Plus size={15} color={t.bg} />}
-            <Text style={{ color: inCart ? t.good : t.bg, fontFamily: t.fonts.bodyBold, fontSize: 13 }}>{inCart ? inCart : 'Add'}</Text>
+            <Plus size={15} color={t.bg} />
+            <Text style={{ color: t.bg, fontFamily: t.fonts.bodyBold, fontSize: 13.5 }}>Add · {PLATFORM[best.platform].short}</Text>
           </Pressable>
-        )}
+        ))}
       </View>
     </Pressable>
   )
@@ -79,19 +80,12 @@ export const ProductCard = memo(ProductCardImpl, (a, b) =>
   a.group === b.group && a.inCart === b.inCart && a.saved === b.saved && a.total === b.total)
 
 const styles = StyleSheet.create({
-  card: { borderRadius: 20, padding: 14, overflow: 'hidden' },
-  row: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  middle: { flex: 1, minWidth: 0 },
+  card: { borderRadius: 20, padding: 12, paddingBottom: 12, overflow: 'hidden', gap: 6 },
+  head: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 2, paddingBottom: 4 },
   name: { fontSize: 15.5, lineHeight: 20 },
-  meta: { fontSize: 12, marginTop: 3 },
-  priceCol: { alignItems: 'flex-end' },
-  price: { fontSize: 21, lineHeight: 24 },
-  mrp: { fontSize: 12, textDecorationLine: 'line-through' },
-  where: { fontSize: 12, marginTop: 1 },
-  footer: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10, paddingLeft: 54 },
-  pills: { flex: 1, flexDirection: 'row', gap: 5, overflow: 'hidden' },
-  pill: { borderRadius: 7, paddingHorizontal: 7, paddingVertical: 3 },
-  pillTxt: { fontSize: 11.5 },
-  iconBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  addBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, height: 36, borderRadius: 18, paddingHorizontal: 14 },
+  meta: { fontSize: 12, marginTop: 2 },
+  footer: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 },
+  iconBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  addBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, height: 40, borderRadius: 20, paddingHorizontal: 16 },
+  inCart: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 })

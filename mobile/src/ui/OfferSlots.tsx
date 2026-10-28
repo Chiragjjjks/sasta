@@ -15,7 +15,7 @@ import { useTheme } from './theme'
  * Read-only unless `onPick` is given. Tapping a row picks that app; tapping the cheapest, or the
  * current pick again, goes back to "cheapest" (undefined).
  */
-export function OfferSlots({ offers, qty = 1, chosen, pinned, limit, onPick, onMore, onOpen, outOfStock = [] }: {
+export function OfferSlots({ offers, qty = 1, chosen, pinned, limit, onPick, onMore, onOpen, outOfStock = [], countHidden = true }: {
   /** In-stock offers, cheapest first. */
   offers: Offer[]
   qty?: number
@@ -31,6 +31,8 @@ export function OfferSlots({ offers, qty = 1, chosen, pinned, limit, onPick, onM
   /** Adds an open-in-app button to each row. */
   onOpen?: (o: Offer) => void
   outOfStock?: Platform[]
+  /** Say how many apps are hidden. Off when the caller shows that count itself. */
+  countHidden?: boolean
 }) {
   const t = useTheme()
   const cheapest = offers[0] ? offers[0].price * qty : 0
@@ -77,7 +79,7 @@ export function OfferSlots({ offers, qty = 1, chosen, pinned, limit, onPick, onM
           </View>
         )
       })}
-      {hidden > 0 && (onMore ? (
+      {hidden > 0 && countHidden && (onMore ? (
         <Pressable onPress={onMore} hitSlop={8} style={styles.more} accessibilityRole="button">
           <ChevronDown size={14} color={t.muted} /><T kind="smallStrong" style={{ color: t.muted }}>{plural(hidden, 'more app')}</T>
         </Pressable>
