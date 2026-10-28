@@ -28,7 +28,7 @@ def tree():
     return list(ET.fromstring(data).iter('node'))
 
 
-def find(label, timeout=20, contains=False):
+def find(label, timeout=20, contains=False, scroll=False):
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         for node in tree():
@@ -36,12 +36,15 @@ def find(label, timeout=20, contains=False):
                 value = node.get(attr, '')
                 if (label in value if contains else label == value):
                     return node
+        if scroll:
+            # Off-screen rows are missing from the UI dump: scroll the page down a little.
+            adb('shell', 'input', 'swipe', '540', '1500', '540', '900', '300')
         time.sleep(0.5)
     raise AssertionError(f'Element not found: {label}')
 
 
-def tap(label, contains=False):
-    node = find(label, contains=contains)
+def tap(label, contains=False, scroll=False):
+    node = find(label, contains=contains, scroll=scroll)
     x1, y1, x2, y2 = map(int, re.findall(r'\d+', node.get('bounds')))
     adb('shell', 'input', 'tap', str((x1 + x2) // 2), str((y1 + y2) // 2))
 
@@ -171,11 +174,11 @@ try:
     find('Cancel sign-in')
     tap('Cancel sign-in')
     find('Connected apps')
-    tap('Delivery area')
+    tap('Delivery area', scroll=True)
     find('Use this area')
     find('Cancel sign-in')
     tap('Cancel sign-in')
-    find('Connected apps')
+    find('Delivery area')
     shot('04-account')
 
     tap_tab('Search')
