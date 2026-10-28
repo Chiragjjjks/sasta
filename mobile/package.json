@@ -1,6 +1,6 @@
 {
   "name": "sasta",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "main": "index.js",
   "dependencies": {
     "@expo-google-fonts/bricolage-grotesque": "^0.4.1",

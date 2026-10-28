@@ -31,7 +31,7 @@ module.exports = function withSastaAndroid(config) {
       g = g.replace(/android\s*\{/, (m) => `${m}\n${SIGNING}`)
       // Release builds sign with sastaRelease instead of the debug key Expo uses by default.
       g = g.replace(/(buildTypes\s*\{[\s\S]*?release\s*\{[\s\S]*?)signingConfig\s+signingConfigs\.debug/, '$1signingConfig signingConfigs.sastaRelease')
-      g = g.replace(/versionCode\s+\d+/, "versionCode((System.getenv('VERSION_CODE') ?: '700').toInteger())")
+      g = g.replace(/versionCode\s+\d+/, "versionCode((System.getenv('VERSION_CODE') ?: '800').toInteger())")
     }
     cfg.modResults.contents = g
     return cfg

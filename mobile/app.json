@@ -2,7 +2,7 @@
   "expo": {
     "name": "Sasta",
     "slug": "sasta",
-    "version": "0.7.0",
+    "version": "0.8.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "sasta",
@@ -21,7 +21,7 @@
       ],
       "softwareKeyboardLayoutMode": "resize",
       "predictiveBackGestureEnabled": false,
-      "versionCode": 700
+      "versionCode": 800
     },
     "web": {
       "favicon": "./assets/favicon.png",

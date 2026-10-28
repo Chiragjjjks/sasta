@@ -70,7 +70,7 @@ export class McpClient {
     await this.send('initialize', {
       protocolVersion: MCP_PROTOCOL_VERSION,
       capabilities: {},
-      clientInfo: { name: 'sasta-android', version: '0.6.0' },
+      clientInfo: { name: 'sasta-android', version: '0.8.0' },
     }, false, signal)
     await this.send('notifications/initialized', undefined, true, signal)
     this.initialized = true
