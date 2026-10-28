@@ -1,19 +1,23 @@
 import { router, useLocalSearchParams } from 'expo-router'
-import { ArrowUpRight, Bookmark, ShoppingBag } from 'lucide-react-native'
+import { Bookmark, ShoppingBag } from 'lucide-react-native'
+import { useState } from 'react'
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { chosenOffer, summarize } from '@/core/cart'
 import { PLATFORM } from '@/core/platforms'
-import { formatSize, rupee } from '@/core/utils'
+import type { Platform } from '@/core/types'
+import { formatSize, plural, rupee } from '@/core/utils'
 import { useStore } from '@/state/store'
-import { Badge, Button, Card, Divider, T } from '@/ui/kit'
+import { Button, Card, Stepper, T, tap } from '@/ui/kit'
+import { OfferSlots } from '@/ui/OfferSlots'
 import { PackIcon } from '@/ui/PackIcon'
 import { useTheme } from '@/ui/theme'
-import { PlatformMark } from '@/ui/PlatformMark'
 
 export default function CompareScreen() {
   const t = useTheme()
   const { key } = useLocalSearchParams<{ key: string }>()
   const s = useStore()
+  const [pick, setPick] = useState<Platform | undefined>(undefined)
   const group = s.groupByKey(String(key))
   if (!group) {
     return (
@@ -24,9 +28,17 @@ export default function CompareScreen() {
     )
   }
   const inStock = group.offers.filter((o) => o.inStock)
-  const save = inStock.length > 1 ? inStock[inStock.length - 1].price - inStock[0].price : 0
-  const inCart = s.cart.find((i) => i.key === group.key)?.qty ?? 0
+  const outOfStock = group.offers.filter((o) => !o.inStock).map((o) => o.platform)
+  const cartItem = s.cart.find((i) => i.key === group.key)
+  // In the cart, picking an app changes the cart straight away; before that it picks where Add buys from.
+  const chosen = cartItem ? chosenOffer(cartItem) : inStock.find((o) => o.platform === pick) ?? inStock[0]
+  const pinned = cartItem ? cartItem.pinned : pick
+  const cheapest = inStock[0]
+  const priciest = inStock[inStock.length - 1]
   const saved = s.isSaved(group.key)
+  const cart = summarize(s.cart)
+  const choose = (p: Platform | undefined) => (cartItem ? s.pinItem(group.key, p) : setPick(p))
+  const open = (url: string, p: Platform) => Linking.openURL(url).catch(() => s.showToast(`Could not open ${PLATFORM[p].name}`))
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: t.bg }} edges={['bottom']}>
@@ -42,63 +54,52 @@ export default function CompareScreen() {
           </View>
         </View>
 
-        {save > 0 && (
-          <View style={[styles.saveBanner, { backgroundColor: t.goodBg }]}>
+        {cheapest && (
+          <View style={[styles.banner, { backgroundColor: t.goodBg }]}>
             <Text style={{ color: t.good, fontFamily: t.fonts.bodyBold, fontSize: 14 }}>
-              You save {rupee(save)} buying on {PLATFORM[group.best.platform].name} instead of the priciest app.
+              {inStock.length === 1
+                ? `Only ${PLATFORM[cheapest.platform].name} has this right now.`
+                : priciest.price > cheapest.price
+                  ? `Cheapest on ${PLATFORM[cheapest.platform].name}. ${rupee(priciest.price - cheapest.price)} less than ${PLATFORM[priciest.platform].name}.`
+                  : `Same price on all ${inStock.length} apps.`}
             </Text>
           </View>
         )}
 
-        <Card>
-          {group.offers.map((o, i) => (
-            <View key={o.productId}>
-              {i > 0 && <Divider />}
-              <View style={[styles.offer, { opacity: o.inStock ? 1 : 0.45 }]}>
-                <PlatformMark platform={o.platform} size={26} />
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <T kind="bodyStrong">{PLATFORM[o.platform].name}</T>
-                    {i === 0 && o.inStock && <Badge label="Cheapest" tone="good" />}
-                  </View>
-                  <T kind="small" numberOfLines={1}>
-                    {o.inStock ? (o.etaMinutes ? `${o.etaMinutes} min` : 'In stock') : 'Out of stock'} · {o.title}
-                  </T>
-                </View>
-                <View style={{ alignItems: 'flex-end' }}>
-                  <Text style={{ color: t.ink, fontFamily: t.fonts.display, fontSize: 17 }}>{rupee(o.price)}</Text>
-                  {!!o.mrp && o.mrp > o.price && <Text style={{ color: t.muted, fontFamily: t.fonts.body, fontSize: 11.5, textDecorationLine: 'line-through' }}>{rupee(o.mrp)}</Text>}
-                </View>
-                <Pressable
-                  disabled={!o.inStock}
-                  onPress={() => Linking.openURL(o.deepLink).catch(() => s.showToast(`Could not open ${PLATFORM[o.platform].name}`))}
-                  style={[styles.openBtn, { backgroundColor: o.inStock ? t.ink : t.chip }]}
-                  accessibilityLabel={`Open in ${PLATFORM[o.platform].name}`}
-                >
-                  <Text style={{ color: o.inStock ? t.bg : t.faint, fontFamily: t.fonts.bodyBold, fontSize: 12.5 }}>Open</Text>
-                  <ArrowUpRight size={13} color={o.inStock ? t.bg : t.faint} />
-                </Pressable>
-              </View>
-            </View>
-          ))}
-        </Card>
-        <T kind="caption" style={{ textAlign: 'center' }}>Open takes you to that app. Ordering happens there.</T>
+        {inStock.length > 0 ? (
+          <Card style={{ padding: 8 }}>
+            <OfferSlots offers={inStock} chosen={chosen?.platform} pinned={pinned} onPick={choose}
+              onOpen={(o) => open(o.deepLink, o.platform)} outOfStock={outOfStock} />
+          </Card>
+        ) : (
+          <Card style={{ padding: 16 }}>
+            <T kind="bodyStrong">Out of stock everywhere right now</T>
+            <T kind="small">Checked {outOfStock.map((p) => PLATFORM[p].short).join(', ')}. Search again later.</T>
+          </Card>
+        )}
+        <T kind="caption" style={{ textAlign: 'center' }}>
+          Tap an app to buy from it. The arrow opens that app; ordering and payment happen there.
+        </T>
       </ScrollView>
 
       <View style={[styles.bottom, { borderTopColor: t.line, backgroundColor: t.bg }]}>
-        <Button
-          variant={saved ? 'primary' : 'secondary'}
-          label={saved ? 'Saved' : 'Save'}
-          icon={<Bookmark size={16} color={saved ? t.bg : t.ink} fill={saved ? t.bg : 'transparent'} />}
-          onPress={() => router.push({ pathname: '/save/[key]', params: { key: group.key } })}
-        />
-        {group.best.inStock && (
-          <Button
-            flex
-            label={inCart ? `Add another · ${inCart} in cart` : `Add · ${rupee(group.best.price)} on ${PLATFORM[group.best.platform].short}`}
-            icon={<ShoppingBag size={16} color={t.bg} />}
-            onPress={() => { s.addToCart(group); s.showToast('Added to cart') }}
-          />
+        {cartItem ? (
+          <>
+            <Stepper qty={cartItem.qty} onChange={(q) => s.setCartQty(group.key, q)} />
+            <Button flex label={`View cart · ${plural(cart.itemCount, 'item')} · ${rupee(cart.total)}`}
+              icon={<ShoppingBag size={16} color={t.bg} />} onPress={() => router.navigate('/cart')} />
+          </>
+        ) : (
+          <>
+            <Pressable onPress={() => { tap(); router.push({ pathname: '/save/[key]', params: { key: group.key } }) }}
+              style={[styles.save, { backgroundColor: saved ? t.ink : t.chip }]} accessibilityLabel={saved ? 'Saved to a list' : 'Save to list'}>
+              <Bookmark size={18} color={saved ? t.bg : t.ink} fill={saved ? t.bg : 'transparent'} />
+            </Pressable>
+            {chosen && (
+              <Button flex label={`Add · ${rupee(chosen.price)} · ${PLATFORM[chosen.platform].short}`}
+                icon={<ShoppingBag size={16} color={t.bg} />} onPress={() => s.addToCart(group, chosen.platform)} />
+            )}
+          </>
         )}
       </View>
     </SafeAreaView>
@@ -106,9 +107,7 @@ export default function CompareScreen() {
 }
 
 const styles = StyleSheet.create({
-  saveBanner: { borderRadius: 16, padding: 14 },
-  offer: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 13 },
-  dot: { width: 10, height: 10, borderRadius: 5 },
-  openBtn: { flexDirection: 'row', alignItems: 'center', gap: 2, height: 34, paddingHorizontal: 11, borderRadius: 11 },
-  bottom: { flexDirection: 'row', gap: 10, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 10, borderTopWidth: StyleSheet.hairlineWidth },
+  banner: { borderRadius: 16, padding: 14 },
+  bottom: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 10, borderTopWidth: StyleSheet.hairlineWidth },
+  save: { width: 50, height: 50, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
 })

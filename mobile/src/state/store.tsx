@@ -11,7 +11,7 @@ import {
 import {
   listSwiggyAddresses, loadInstamartAddress, resolveInstamartAddress, saveInstamartAddress, type SelectedAddress, type SwiggyAddress,
 } from '@/core/adapters/instamart'
-import { addItem, addItems, chosenOffer, fromGroup, mergeRefreshedCart, pin, pinAll, refreshCart, setQty, summarize, type CartItem } from '@/core/cart'
+import { addItem, addItems, cheapestOffer, chosenOffer, fromGroup, mergeRefreshedCart, pin, pinAll, refreshCart, setQty, summarize, type CartItem } from '@/core/cart'
 import { blinkitRuleFromBill, type FeeRules } from '@/core/fees'
 import {
   createList, deleteList, exportLists, importLists, listItemFromGroup, markPicked, moveItem, pinAllItems, pinItem, removeFromList, renameList,
@@ -45,7 +45,8 @@ interface Store {
   location: Location; setLocation: (l: Location) => void
   // cart
   cart: CartItem[]
-  addToCart: (g: ProductGroup) => void
+  /** Adds one pack. With a platform, buys it there (or from the cheapest app when that is the cheapest). */
+  addToCart: (g: ProductGroup, platform?: Platform) => void
   setCartQty: (key: string, qty: number) => void
   pinItem: (key: string, p: Platform | undefined) => void
   pinAllTo: (p: Platform | undefined) => void
@@ -197,9 +198,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   /* ---------------------------------------------------------------- cart */
 
-  const addToCart = useCallback((g: ProductGroup) => {
+  const addToCart = useCallback((g: ProductGroup, platform?: Platform) => {
     lastCartGroups.current.set(g.key, g)
-    setCart((c) => addItem(c, fromGroup(g, submitted || g.variant)))
+    setCart((c) => {
+      const item = fromGroup(g, submitted || g.variant)
+      const next = addItem(c, item)
+      return platform === undefined ? next : pin(next, g.key, platform === cheapestOffer(item)?.platform ? undefined : platform)
+    })
   }, [submitted])
 
   const refreshPrices = useCallback(async (opts: { force?: boolean } = { force: true }) => {
