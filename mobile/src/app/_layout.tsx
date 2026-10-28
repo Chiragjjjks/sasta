@@ -3,12 +3,12 @@ import { Figtree_400Regular, Figtree_500Medium, Figtree_600SemiBold, Figtree_700
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { View } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { HiddenPages, SignInHost } from '@/native/SessionHosts'
 import { StoreProvider } from '@/state/store'
-import { useTheme } from '@/ui/theme'
+import { restoreAppearance, useTheme } from '@/ui/theme'
 import { Toast } from '@/ui/Toast'
 
 SplashScreen.preventAutoHideAsync().catch(() => {})
@@ -18,9 +18,12 @@ export default function RootLayout() {
     BricolageGrotesque_700Bold, BricolageGrotesque_800ExtraBold,
     Figtree_400Regular, Figtree_500Medium, Figtree_600SemiBold, Figtree_700Bold,
   })
+  const [themed, setThemed] = useState(false)
   const t = useTheme()
-  useEffect(() => { if (loaded || fontError) SplashScreen.hideAsync().catch(() => {}) }, [loaded, fontError])
-  if (!loaded && !fontError) return null
+  useEffect(() => { restoreAppearance().finally(() => setThemed(true)) }, [])
+  const ready = (loaded || !!fontError) && themed
+  useEffect(() => { if (ready) SplashScreen.hideAsync().catch(() => {}) }, [ready])
+  if (!ready) return null
 
   const nav = t.dark ? DarkTheme : DefaultTheme
   return (

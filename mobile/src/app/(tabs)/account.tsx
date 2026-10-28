@@ -1,5 +1,5 @@
 import { router } from 'expo-router'
-import { CheckCircle2, ChevronRight, MapPin, ShieldCheck } from 'lucide-react-native'
+import { CheckCircle2, ChevronRight, MapPin, Palette, ShieldCheck } from 'lucide-react-native'
 import { useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -10,13 +10,14 @@ import { PLATFORM, PLATFORMS } from '@/core/platforms'
 import type { SwiggyAddress } from '@/core/adapters/instamart'
 import type { Platform } from '@/core/types'
 import { useStore } from '@/state/store'
-import { Badge, Button, Card, Divider, T } from '@/ui/kit'
-import { useTheme } from '@/ui/theme'
+import { Badge, Button, Card, Divider, Segmented, T } from '@/ui/kit'
+import { setAppearance, useAppearance, useTheme } from '@/ui/theme'
 import { PlatformMark } from '@/ui/PlatformMark'
 
 export default function AccountScreen() {
   const t = useTheme()
   const s = useStore()
+  const appearance = useAppearance()
   const [busy, setBusy] = useState<Platform | null>(null)
   const [all, setAll] = useState(false)
   const [errors, setErrors] = useState<Partial<Record<Platform, string>>>({})
@@ -63,6 +64,13 @@ export default function AccountScreen() {
             <T kind="small">{s.location.lat !== undefined ? 'Exact location set' : 'No exact location: live prices may fail'}</T>
           </View>
           <ChevronRight size={18} color={t.faint} />
+        </Card>
+
+        <Card style={styles.locRow}>
+          <Palette size={18} color={t.ink} />
+          <T kind="bodyStrong" style={{ flex: 1 }}>Appearance</T>
+          <Segmented value={appearance} onChange={setAppearance}
+            options={[{ value: 'system', label: 'System' }, { value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }]} />
         </Card>
 
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 }}>

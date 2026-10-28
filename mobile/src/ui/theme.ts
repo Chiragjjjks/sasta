@@ -1,4 +1,6 @@
-import { useColorScheme } from 'react-native'
+import { useSyncExternalStore } from 'react'
+import { Appearance, Platform, useColorScheme } from 'react-native'
+import { loadAppearance, saveAppearance, type AppearancePref } from '@/core/storage'
 
 /** Design tokens from the sasta.html prototype. */
 const light = {
@@ -22,10 +24,40 @@ export const fonts = {
 }
 
 export type Theme = typeof light & { fonts: typeof fonts }
+const LIGHT: Theme = { ...light, fonts }
+const DARK: Theme = { ...dark, fonts }
+
+/** System, Light or Dark, chosen in Account. Kept outside React so every screen re-renders together. */
+let pref: AppearancePref = 'system'
+const listeners = new Set<() => void>()
+const subscribe = (l: () => void) => { listeners.add(l); return () => { listeners.delete(l) } }
+
+function apply(next: AppearancePref) {
+  pref = next
+  // Native dialogs and the system bars follow the app's choice on Android.
+  if (Platform.OS !== 'web') Appearance.setColorScheme(next === 'system' ? 'unspecified' : next)
+  listeners.forEach((l) => l())
+}
+
+export function setAppearance(next: AppearancePref) {
+  apply(next)
+  void saveAppearance(next)
+}
+
+/** Read the saved choice before the first screen renders, so the app never flashes the wrong theme. */
+export async function restoreAppearance() {
+  const saved = await loadAppearance()
+  if (saved !== pref) apply(saved)
+}
+
+export function useAppearance(): AppearancePref {
+  return useSyncExternalStore(subscribe, () => pref, () => pref)
+}
 
 export function useTheme(): Theme {
   const scheme = useColorScheme()
-  return { ...(scheme === 'dark' ? dark : light), fonts }
+  const choice = useAppearance()
+  return (choice === 'system' ? scheme === 'dark' : choice === 'dark') ? DARK : LIGHT
 }
 
 export const PLATFORM_COLORS: Record<string, string> = {}

@@ -46,3 +46,11 @@ export const saveFees = (f: import('./fees').FeeRules) => set(FEES, f)
 const CART = 'sasta.cart'
 export const loadCart = async () => migrateCart(await get<import('./cart').CartItem[]>(CART, []))
 export const saveCart = (c: import('./cart').CartItem[]) => set(CART, c)
+
+const APPEARANCE = 'sasta.appearance'
+export type AppearancePref = 'system' | 'light' | 'dark'
+export const loadAppearance = async (): Promise<AppearancePref> => {
+  const v = await get<string>(APPEARANCE, 'system')
+  return v === 'light' || v === 'dark' ? v : 'system'
+}
+export const saveAppearance = (a: AppearancePref) => set(APPEARANCE, a)
