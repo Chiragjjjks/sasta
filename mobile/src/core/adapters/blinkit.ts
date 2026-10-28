@@ -1,6 +1,6 @@
 import { PlatformSession } from '@/native/platformSession'
-import { PLATFORM } from '@/core/platforms'
-import type { Adapter, Location, Offer } from '@/core/types'
+import { withSessionTurn } from '@/core/session-turn'
+import { NeedsLocationError, ProviderBlockedError, type Adapter, type Location, type Offer } from '@/core/types'
 
 /**
  * Live Blinkit search. Runs inside a hidden WebView on blinkit.com because Cloudflare rejects
@@ -97,10 +97,15 @@ export function createBlinkitAdapter(): Adapter {
     platform: 'blinkit',
     async setLocation(next) { loc = next },
     async search(query, signal) {
-      if (!loc?.lat || !loc?.lng) throw new Error(`${PLATFORM.blinkit.name} needs your exact location. Use "current location".`)
-      const res = await PlatformSession.pageRun({ origin: BLINKIT_ORIGIN, script: searchScript(query, loc.lat, loc.lng), timeoutMs: 12000 })
+      const at = loc
+      if (!Number.isFinite(at?.lat) || !Number.isFinite(at?.lng)) throw new NeedsLocationError('Blinkit needs an exact location. Use "current location" or pick your area.')
+      // Account checks reset this origin's page; never let one land in the middle of a search.
+      const res = await withSessionTurn(BLINKIT_ORIGIN, () => PlatformSession.pageRun({ origin: BLINKIT_ORIGIN, script: searchScript(query, at!.lat!, at!.lng!), timeoutMs: 12000 }), signal)
       if (signal.aborted) throw new DOMException('Aborted', 'AbortError')
-      if (!res.ok) throw new Error(res.error || 'Blinkit search failed')
+      if (!res.ok) {
+        if (/blocked:|HTTP 4(03|29)/.test(res.error ?? '')) throw new ProviderBlockedError('Blinkit blocked this request. Open Blinkit once in Account, then search again.')
+        throw new Error(res.error || 'Blinkit search failed')
+      }
       return parseBlinkitSearch(res.value)
     },
   }
