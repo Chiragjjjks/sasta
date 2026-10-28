@@ -34,6 +34,8 @@ The app now lives in `mobile/` (React Native + Expo). Root `src/` and `android/`
 | Flipkart Minutes | Hyperlocal page API inside the page | Address redirect only; no positive price list yet |
 | Amazon Now | Guarded Now storefront discovery | Fresh only in the tested session |
 
+UI (v0.7.0): light/dark with an Appearance switch; every price is shown as a ranked app row with its mark (results, compare, lists, cart); the cart re-checks itself and shows the cheapest way first.
+
 Lists (v0.7.0): opening a list checks every item on every app, ranks apps per item, lets you pick an app per item, and shows the cheapest plan by app (`core/lists.ts` `listPlan`, `rankedOffers`, `singleAppTotals`).
 
 Actions, lifecycles and the site index: `docs/ACTIONS.md`. The desktop Playwright toolkit and signed-in site index live in `automation/` once merged.

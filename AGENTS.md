@@ -21,7 +21,7 @@ Owner: Chirag (GitHub `Chiragjjjks`), Bengaluru. The test location is Rajajinaga
 - They care a lot about UI clarity ("instinct-to-UI"). Before declaring UI work done, check it visually. The browser preview with sample data is fine for that.
 - When a delegated agent asks a question meant for the owner (for example a login prompt), tell the owner. Never answer it on their behalf.
 
-## Current state: v0.7.0 ready on main (0f80733), not yet tagged or published
+## Current state: v0.7.0 on main, not yet tagged or published
 
 | Platform | How Sasta searches | Status |
 |---|---|---|
@@ -32,7 +32,13 @@ Owner: Chirag (GitHub `Chiragjjjks`), Bengaluru. The test location is Rajajinaga
 | Flipkart Minutes | Hyperlocal page API inside the page | **Unverified.** Needs an exact Flipkart address; no positive price list seen yet |
 | Amazon Now | Guarded Now storefront discovery | **Unverified.** Only works if the Amazon session offers a Now store |
 
-Releases: v0.6.0 is published (live Instamart and Zepto). The v0.7.0 build (lists by app, coloured platform marks) passed CI run 40665055159 and is waiting for the owner to say "release".
+Releases: v0.6.0 is published (live Instamart and Zepto). v0.7.0 is not published yet. It covers lists by app and coloured platform marks, plus the UI rework from 2026-10-28:
+- light and dark with an Appearance switch;
+- ranked app rows (`ui/OfferSlots.tsx`) in results, compare, lists and cart;
+- a shared plan card (`ui/PlanHero.tsx`);
+- a cart that re-checks prices when they are over 5 minutes old (`refreshPrices`, `cartChanges` in the store).
+
+It goes out when the owner says "release" and CI has passed for the tagged commit.
 
 Open work outside main:
 - **Site index toolkit (Codex).** Branch `t3/research-site-index-toolkit`, worktree `~/.t3/worktrees/sasta/t3-5eeaf107`, folder `automation/`. It is Playwright + TypeScript (`npm run login|crawl|action|verify-readers|inspect`) with a persistent profile at `~/.sasta/automation-profile`. It is not merged and the crawl is unfinished: no logins persisted yet, and each login needs the owner in that window.
@@ -67,7 +73,7 @@ The app is in **`mobile/`** (Expo SDK 58, React Native 0.88, expo-router, Hermes
 | `src/native/SessionHosts.tsx` | One invisible WebView per shopping site (`HiddenPages`) plus the sign-in host |
 | `modules/sasta-native/` | Local Expo module (Kotlin): shares WebView cookies, migrates old preferences, encrypted storage |
 | `plugins/withSastaAndroid.js` | Config plugin for Android settings (versionCode default, etc.) |
-| `src/ui/` | `kit.tsx` (Segmented, buttons…), `PlatformMark.tsx` (coloured app monogram; use it wherever an app is named), `ProductCard`, `PackIcon`, `theme.ts` |
+| `src/ui/` | `kit.tsx` (Segmented, buttons…), `PlatformMark.tsx` (coloured app monogram; use it wherever an app is named), `OfferSlots.tsx` (ranked app rows; use them wherever prices are compared), `PlanHero.tsx` (total split by app with alternative pills), `ProductCard`, `PackIcon`, `theme.ts` (light/dark tokens and the saved Appearance choice) |
 | `fixtures/<platform>/` | Trimmed real responses for parser tests |
 | `scripts/android-smoke.py` | Emulator smoke test run by CI |
 
@@ -124,3 +130,5 @@ Sign-in and live search only work in a native Android build, not Expo Go or the 
 - In vitest jsdom tests, `import.meta.url` is not a file URL. Load fixtures with `readFileSync('fixtures/...')` relative to `mobile/`.
 - `singleAppTotals` sorts by items covered, then total. A tie keeps platform order.
 - The Amazon `color` stays `#ff9900` (navy disappears in dark mode). Its `mark` carries the dark tile.
+- Theme text colours: use `ink` or `muted` for text. `faint` is only for icons, placeholders and disabled states, and `accentText` is for orange words. Both themes pass WCAG AA; check new colours in both.
+- Screens that check prices as they open rely on the store's refs updating in `useLayoutEffect`. Child effects run before the parent's passive effects, so a passive effect would hand the check an empty cart.
