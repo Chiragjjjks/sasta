@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { adapters, canSearch, IS_NATIVE } from '@/core/adapters'
 import { connectionReport, probeSearch } from '@/core/connection-test'
 import { migrateLists } from '@/core/identity'
@@ -57,6 +57,7 @@ interface Store {
   refreshPrices: (opts?: { force?: boolean }) => Promise<void>
   /** Cart price change per item key from the last check (new minus old chosen price). */
   cartChanges: Record<string, number>
+  dismissCartChanges: () => void
   fees: FeeRules
   learnFees: () => void
   checkout: (p: Platform) => Promise<void>
@@ -114,10 +115,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [fees, setFees] = useState<FeeRules>({})
   const [lists, setLists] = useState<ShoppingList[]>([])
   const [listChecks, setListChecks] = useState<Record<string, { running: boolean; at?: number }>>({})
+  // Layout effects run before any screen's effects, so a screen that checks prices as it opens sees the latest data.
   const listsRef = useRef(lists)
-  useEffect(() => { listsRef.current = lists }, [lists])
+  useLayoutEffect(() => { listsRef.current = lists }, [lists])
   const cartRef = useRef(cart)
-  useEffect(() => { cartRef.current = cart }, [cart])
+  useLayoutEffect(() => { cartRef.current = cart }, [cart])
   const cartChecking = useRef(false)
   const [cartChanges, setCartChanges] = useState<Record<string, number>>({})
   const checking = useRef(new Set<string>())
@@ -404,7 +406,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     pinAllTo: (p) => setCart((c) => pinAll(c, p)),
     pinMap: (pins) => setCart((c) => c.map((i) => ({ ...i, pinned: pins[i.key] }))),
     clearCart: () => setCart([]),
-    refreshing, refreshPrices, cartChanges, fees, learnFees, checkout,
+    refreshing, refreshPrices, cartChanges, dismissCartChanges: () => setCartChanges({}), fees, learnFees, checkout,
     lists, isSaved, toggleSaved, createList: createListFn,
     renameList: (id, n, e) => setLists((ls) => renameList(ls, id, n, e)),
     deleteList: (id) => setLists((ls) => deleteList(ls, id)),

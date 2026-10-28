@@ -29,7 +29,7 @@ export function PlanHero({ label, total, sub, groups, saving, choices }: {
       </View>
       {groups.length > 0 && (
         <View style={styles.bar}>
-          {groups.map((g) => <View key={g.platform} style={{ flex: Math.max(g.total, 0.01), backgroundColor: PLATFORM[g.platform].mark.bg }} />)}
+          {groups.map((g) => <View key={g.platform} style={[styles.segment, { flex: Math.max(g.total, 0.01), backgroundColor: PLATFORM[g.platform].mark.bg }]} />)}
         </View>
       )}
       <View style={styles.legend}>
@@ -61,6 +61,8 @@ const styles = StyleSheet.create({
   hero: { borderRadius: 20, padding: 16 },
   label: { fontSize: 11, letterSpacing: 0.6, textTransform: 'uppercase' },
   bar: { flexDirection: 'row', height: 10, borderRadius: 5, overflow: 'hidden', gap: 2, marginTop: 12, marginBottom: 10 },
+  // The outline keeps dark app colours (Amazon) visible on the dark card.
+  segment: { borderRadius: 3, borderWidth: 1, borderColor: '#ffffff30' },
   legend: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, rowGap: 6 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   pill: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 15, paddingHorizontal: 10, height: 30 },

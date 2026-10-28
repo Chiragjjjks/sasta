@@ -1,18 +1,26 @@
 import { router, useFocusEffect } from 'expo-router'
-import { ArrowUpRight, RefreshCw, ShoppingBag } from 'lucide-react-native'
-import { useCallback, useState } from 'react'
-import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ArrowUpRight, ChevronDown, RefreshCw, ShoppingBag } from 'lucide-react-native'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { ActivityIndicator, Alert, AppState, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { IS_NATIVE } from '@/core/adapters'
-import { chosenOffer, singleAppOptions, summarize } from '@/core/cart'
+import { singleAppOptions, summarize, type CartLine } from '@/core/cart'
 import { billsFor, cheapestAfterFees, grandTotal } from '@/core/fees'
+import { itemPack, itemTitle } from '@/core/lists'
+import { compareOffers } from '@/core/normalize'
 import { PLATFORM } from '@/core/platforms'
 import type { Platform } from '@/core/types'
-import { formatSize, plural, rupee } from '@/core/utils'
+import { plural, rupee } from '@/core/utils'
 import { useStore } from '@/state/store'
-import { Badge, Button, Card, Chip, Divider, Stepper, T, tap } from '@/ui/kit'
+import { Button, Card, Stepper, T, tap } from '@/ui/kit'
+import { OfferSlots } from '@/ui/OfferSlots'
 import { PackIcon } from '@/ui/PackIcon'
+import { PlanHero, type HeroChoice } from '@/ui/PlanHero'
+import { PlatformMark } from '@/ui/PlatformMark'
 import { useTheme } from '@/ui/theme'
+
+/** Opening the cart re-checks prices when the last check is older than this. */
+const STALE_MS = 5 * 60 * 1000
 
 function ago(ts: number) {
   const m = Math.round((Date.now() - ts) / 60000)
@@ -23,10 +31,30 @@ export default function CartScreen() {
   const t = useTheme()
   const s = useStore()
   const items = s.cart
-  const [changing, setChanging] = useState<string | null>(null)
+  const [open, setOpen] = useState<string | null>(null)
   const [checkingOut, setCheckingOut] = useState(false)
+  const { refreshPrices, learnFees } = s
 
-  useFocusEffect(useCallback(() => { s.learnFees() }, [s.learnFees])) // eslint-disable-line react-hooks/exhaustive-deps
+  // The cart keeps itself current: on open, when the app comes back to the foreground, and when the location changes.
+  const cartRef = useRef(items)
+  useEffect(() => { cartRef.current = items }, [items])
+  const autoCheck = useCallback(() => {
+    const c = cartRef.current
+    if (c.length && Date.now() - Math.min(...c.map((i) => i.updatedAt)) > STALE_MS) refreshPrices({ force: false })
+  }, [refreshPrices])
+  useFocusEffect(useCallback(() => {
+    learnFees()
+    autoCheck()
+    const sub = AppState.addEventListener('change', (state) => { if (state === 'active') autoCheck() })
+    return () => sub.remove()
+  }, [learnFees, autoCheck]))
+  const where = `${s.location.pincode}|${s.location.lat}|${s.location.lng}`
+  const lastWhere = useRef(where)
+  useEffect(() => {
+    if (lastWhere.current === where) return
+    lastWhere.current = where
+    if (cartRef.current.length) refreshPrices({ force: true })
+  }, [where, refreshPrices])
 
   if (!items.length) {
     return (
@@ -34,7 +62,7 @@ export default function CartScreen() {
         <View style={styles.empty}>
           <ShoppingBag size={40} color={t.faint} />
           <T kind="h2">Your cart is empty</T>
-          <T kind="small" style={{ textAlign: 'center' }}>Tap Add on any product, or pick products from one of your lists.</T>
+          <T kind="small" style={{ textAlign: 'center' }}>Search a product and tap Add, or add a whole list. Sasta then shows the cheapest way to buy everything.</T>
           <View style={{ flexDirection: 'row', gap: 10, marginTop: 8 }}>
             <Button small label="Search" onPress={() => router.navigate('/')} />
             <Button small variant="secondary" label="Your lists" onPress={() => router.navigate('/lists')} />
@@ -49,9 +77,7 @@ export default function CartScreen() {
   const options = singleAppOptions(items)
   const current = Object.fromEntries(summary.lines.flatMap((l) => (l.offer ? [[l.item.key, l.offer.platform]] : []))) as Record<string, Platform>
   const bills = billsFor(items, current, s.fees)
-  const billFor = (p: Platform) => bills.find((b) => b.platform === p)
   const anyFees = bills.some((b) => b.known)
-  const withFees = grandTotal(bills)
   const afterFees = anyFees ? cheapestAfterFees(items, s.fees) : null
   const mixAssign = Object.fromEntries(cheapest.lines.flatMap((l) => (l.offer ? [[l.item.key, l.offer.platform]] : []))) as Record<string, Platform>
   const mixWithFees = grandTotal(billsFor(items, mixAssign, s.fees))
@@ -59,13 +85,31 @@ export default function CartScreen() {
   const pins = new Set(items.map((i) => i.pinned))
   const onAfterFees = !!afterFees && items.some((i) => i.pinned) && items.every((i) => current[i.key] === afterFees.assign[i.key])
   const mode: 'cheapest' | Platform | 'custom' = pins.size === 1 && pins.has(undefined) ? 'cheapest' : pins.size === 1 ? [...pins][0]! : 'custom'
-  const total = anyFees ? withFees : summary.total
+  const total = anyFees ? grandTotal(bills) : summary.total
   const best = anyFees ? Math.min(mixWithFees, afterFees?.total ?? Infinity) : cheapest.total
-  const oldest = Math.min(...items.flatMap((i) => i.offers.length ? i.offers.map(o => o.fetchedAt) : [i.updatedAt]))
+  const pricedAt = Math.min(...items.flatMap((i) => i.offers.length ? i.offers.map((o) => o.fetchedAt) : [i.updatedAt]))
+  const changed = Object.keys(s.cartChanges).filter((k) => items.some((i) => i.key === k)).length
 
-  const byPlatform = new Map<Platform, typeof summary.lines>()
+  const byPlatform = new Map<Platform, CartLine[]>()
   for (const l of summary.lines) if (l.offer) byPlatform.set(l.offer.platform, [...(byPlatform.get(l.offer.platform) ?? []), l])
+  const groups = [...byPlatform].map(([platform, lines]) => {
+    const bill = bills.find((b) => b.platform === platform)
+    return { platform, lines, bill, total: bill?.total ?? lines.reduce((a, l) => a + l.lineTotal, 0) }
+  })
 
+  const choices: HeroChoice[] = [
+    { key: 'mix', label: 'Cheapest mix', on: mode === 'cheapest' && !onAfterFees, onPress: () => s.pinAllTo(undefined) },
+    ...(showAfterFees && afterFees ? [{ key: 'fees', label: `Fewer deliveries ${rupee(afterFees.total)}`, on: onAfterFees, onPress: () => s.pinMap(afterFees.assign) }] : []),
+    ...options.slice(0, 4).map((o) => {
+      const oneApp = anyFees && !o.missing.length ? grandTotal(billsFor(items, Object.fromEntries(items.map((i) => [i.key, o.platform])), s.fees)) : o.total
+      return {
+        key: o.platform, platform: o.platform, on: mode === o.platform, onPress: () => s.pinAllTo(o.platform),
+        label: `Only ${PLATFORM[o.platform].short} ${rupee(oneApp)}${o.missing.length ? ` · ${o.covered} of ${items.length}` : ''}`,
+      }
+    }),
+  ]
+
+  const openUrl = (url: string, p: Platform) => Linking.openURL(url).catch(() => s.showToast(`Could not open ${PLATFORM[p].name}`))
   const checkout = async (p: Platform) => {
     setCheckingOut(true)
     try { await s.checkout(p) } catch (e) { s.showToast((e as Error).message) } finally { setCheckingOut(false) }
@@ -73,186 +117,177 @@ export default function CartScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: t.bg }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: 32 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
-          <View style={{ flex: 1 }}>
-            <T kind="title" style={{ fontSize: 26 }}>Your cart</T>
-            <T kind="small">{plural(summary.itemCount, 'item')} · prices from {ago(oldest)}</T>
-          </View>
-          <Button small variant="secondary" label={s.refreshing ? 'Checking…' : 'Refresh'} loading={s.refreshing} icon={!s.refreshing ? <RefreshCw size={14} color={t.ink} /> : undefined} onPress={() => s.refreshPrices()} />
+      <ScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 32 }}>
+        <T kind="title" style={{ fontSize: 26 }}>Your cart</T>
+        <View style={styles.status}>
+          {s.refreshing ? <ActivityIndicator size="small" color={t.muted} /> : <View style={[styles.liveDot, { backgroundColor: t.good }]} />}
+          <T kind="small" style={{ flex: 1 }}>
+            {s.refreshing ? `Checking ${plural(items.length, 'item')} on every app…` : `${plural(summary.itemCount, 'item')} · prices from ${ago(pricedAt)}`}
+          </T>
+          {!s.refreshing && (
+            <Pressable onPress={() => s.refreshPrices()} hitSlop={10} style={styles.refresh} accessibilityLabel="Check prices again">
+              <RefreshCw size={13} color={t.ink} /><T kind="smallStrong">Refresh</T>
+            </Pressable>
+          )}
         </View>
 
-        <Card>
-          {showAfterFees && afterFees && (
-            <Choice active={onAfterFees} onPress={() => s.pinMap(afterFees.assign)} title="Cheapest after fees" subtitle="Fewer deliveries, less in fees" price={afterFees.total} badge="Best total" />
-          )}
-          <Choice
-            active={mode === 'cheapest' && !onAfterFees}
-            onPress={() => s.pinAllTo(undefined)}
-            title="Cheapest cart"
-            subtitle={`Each item from its cheapest app · ${plural(cheapest.platforms.length, 'app')}`}
-            price={anyFees ? mixWithFees : cheapest.total}
-            badge={showAfterFees ? undefined : 'Best price'}
-            divider={showAfterFees}
+        <View style={{ opacity: s.refreshing ? 0.6 : 1 }}>
+          <PlanHero
+            label={mode === 'cheapest' && !onAfterFees ? `Cheapest way to buy all ${items.length}` : `Your cart · ${plural(items.length, 'product')}`}
+            total={summary.lines.some((l) => l.offer) ? total : undefined}
+            sub={`from ${plural(groups.length, 'app')} · ${anyFees ? 'with delivery fees' : 'before fees'}`}
+            groups={groups}
+            saving={total > best + 0.001 ? undefined : summary.savingsVsMrp > 0 ? `You save ${rupee(summary.savingsVsMrp)} vs MRP` : undefined}
+            choices={choices}
           />
-          {options.slice(0, 4).map((o) => {
-            const oneApp = anyFees && !o.missing.length ? grandTotal(billsFor(items, Object.fromEntries(items.map((i) => [i.key, o.platform])), s.fees)) : o.total
-            return (
-              <Choice
-                key={o.platform}
-                divider
-                active={mode === o.platform}
-                onPress={() => s.pinAllTo(o.platform)}
-                dot={PLATFORM[o.platform].color}
-                title={`All on ${PLATFORM[o.platform].name}`}
-                subtitle={o.missing.length ? `Has ${o.covered} of ${items.length} · rest from cheapest` : 'One delivery'}
-                price={o.missing.length ? undefined : oneApp}
-                delta={o.missing.length ? undefined : oneApp - best}
-              />
-            )
-          })}
-        </Card>
+        </View>
+        {total > best + 0.001 && (
+          <Pressable onPress={() => (showAfterFees && afterFees ? s.pinMap(afterFees.assign) : s.pinAllTo(undefined))} style={[styles.banner, { backgroundColor: t.goodBg }]} accessibilityRole="button">
+            <T kind="smallStrong" style={{ color: t.good, flex: 1 }}>Switch to the cheapest way and save {rupee(total - best)}</T>
+            <T kind="smallStrong" style={{ color: t.good }}>Switch</T>
+          </Pressable>
+        )}
 
-        {[...byPlatform].map(([platform, lines]) => {
-          const bill = billFor(platform)
+        {changed > 0 && !s.refreshing && (
+          <View style={[styles.banner, { backgroundColor: t.warnBg }]}>
+            <T kind="smallStrong" style={{ color: t.accentText, flex: 1 }}>{changed === 1 ? '1 price changed' : `${changed} prices changed`} since the last check</T>
+            <Pressable onPress={() => { tap(); s.dismissCartChanges() }} hitSlop={10}><T kind="smallStrong" style={{ color: t.accentText }}>Got it</T></Pressable>
+          </View>
+        )}
+
+        {groups.map(({ platform, lines, bill, total: groupTotal }) => {
+          const eta = Math.max(0, ...lines.map((l) => l.offer?.etaMinutes ?? 0))
           return (
-            <Card key={platform}>
-              <View style={styles.groupHead}>
-                <View style={[styles.dot, { backgroundColor: PLATFORM[platform].color }]} />
-                <T kind="bodyStrong" style={{ flex: 1 }}>{PLATFORM[platform].name}</T>
-                <T kind="bodyStrong">{rupee(bill?.total ?? lines.reduce((a, l) => a + l.lineTotal, 0))}</T>
+            <Card key={platform} style={[styles.app, { borderLeftColor: PLATFORM[platform].mark.bg }]}>
+              <View style={styles.appHead}>
+                <PlatformMark platform={platform} size={32} />
+                <View style={{ flex: 1 }}>
+                  <T kind="h3">From {PLATFORM[platform].name}</T>
+                  <T kind="small">
+                    {plural(lines.reduce((a, l) => a + l.item.qty, 0), 'item')}{eta ? ` · ${eta} min` : ''}
+                    {bill?.known ? ` · ${bill.delivery ? `delivery ${rupee(bill.delivery)}` : 'free delivery'}${bill.handling ? ` · handling ${rupee(bill.handling)}` : ''}${bill.other ? ` · small cart ${rupee(bill.other)}` : ''}` : ''}
+                  </T>
+                </View>
+                <Text style={{ color: t.ink, fontFamily: t.fonts.display, fontSize: 19 }}>{rupee(groupTotal)}</Text>
               </View>
-              {bill?.known && (
-                <T kind="small" style={{ paddingHorizontal: 14, paddingBottom: 8 }}>
-                  Items {rupee(bill.itemsTotal)} · {bill.delivery ? `delivery ${rupee(bill.delivery)}` : 'free delivery'}
-                  {bill.handling ? ` · handling ${rupee(bill.handling)}` : ''}{bill.other ? ` · small cart ${rupee(bill.other)}` : ''}
-                </T>
-              )}
+              {lines.map((l) => (
+                <CartRow key={l.item.key} line={l} change={s.cartChanges[l.item.key]} expanded={open === l.item.key}
+                  onExpand={() => { tap(); setOpen(open === l.item.key ? null : l.item.key) }}
+                  onQty={(q) => s.setCartQty(l.item.key, q)}
+                  onPin={(p) => { s.pinItem(l.item.key, p); setOpen(null) }}
+                  onOpen={(url) => openUrl(url, platform)} />
+              ))}
               {IS_NATIVE && platform === 'blinkit' && (
-                <View style={{ paddingHorizontal: 14, paddingBottom: 10 }}>
+                <View style={{ paddingHorizontal: 14, paddingBottom: 12 }}>
                   <Button small label="Open in Blinkit with these items" loading={checkingOut} icon={<ArrowUpRight size={14} color={t.bg} />} onPress={() => checkout(platform)} />
-                  <T kind="caption" style={{ textAlign: 'center', marginTop: 4 }}>Check out there with your account, coupons and payment.</T>
                 </View>
               )}
-              {lines.map(({ item, offer, lineTotal }) => {
-                const inStock = item.offers.filter((o) => o.inStock).sort((a, b) => a.price - b.price)
-                return (
-                  <View key={item.key}>
-                    <Divider />
-                    <View style={styles.line}>
-                      <PackIcon variantKey={item.variantKey} imageUrl={offer?.imageUrl} size={30} />
-                      <View style={{ flex: 1, minWidth: 0 }}>
-                        <T kind="bodyStrong" numberOfLines={2}>{item.variant}</T>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 }}>
-                          <T kind="small">{(item.packLabel ?? formatSize(item.sizeGrams))}</T>
-                          {inStock.length > 1 && (
-                            <Pressable onPress={() => { tap(); setChanging(changing === item.key ? null : item.key) }} hitSlop={6}>
-                              <Text style={{ color: t.ink, fontFamily: t.fonts.bodyBold, fontSize: 12, textDecorationLine: 'underline' }}>Change app</Text>
-                            </Pressable>
-                          )}
-                          {offer && (
-                            <Pressable onPress={() => Linking.openURL(offer.deepLink).catch(() => {})} hitSlop={6} accessibilityLabel={`Open in ${PLATFORM[platform].name}`}>
-                              <ArrowUpRight size={15} color={t.faint} />
-                            </Pressable>
-                          )}
-                        </View>
-                      </View>
-                      <Stepper qty={item.qty} onChange={(q) => s.setCartQty(item.key, q)} />
-                      <T kind="bodyStrong" style={{ minWidth: 44, textAlign: 'right' }}>{rupee(lineTotal)}</T>
-                    </View>
-                    {changing === item.key && (
-                      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingHorizontal: 14, paddingBottom: 12 }}>
-                        <Chip label="Cheapest" active={!item.pinned} onPress={() => { s.pinItem(item.key, undefined); setChanging(null) }} />
-                        {inStock.map((o) => (
-                          <Chip key={o.platform} label={`${PLATFORM[o.platform].short} ${rupee(o.price)}`} dot={PLATFORM[o.platform].color} active={chosenOffer(item)?.platform === o.platform && !!item.pinned}
-                            onPress={() => { s.pinItem(item.key, o.platform); setChanging(null) }} />
-                        ))}
-                      </ScrollView>
-                    )}
-                  </View>
-                )
-              })}
             </Card>
           )
         })}
 
         {summary.unavailable.length > 0 && (
-          <Card style={{ padding: 14, gap: 6, opacity: 0.7 }}>
-            <T kind="smallStrong">Out of stock everywhere</T>
+          <Card style={[styles.app, { borderLeftColor: t.line }]}>
+            <View style={styles.appHead}>
+              <View style={{ flex: 1 }}>
+                <T kind="h3" style={{ color: t.muted }}>Out of stock everywhere</T>
+                <T kind="small">No app has these right now</T>
+              </View>
+            </View>
             {summary.unavailable.map((i) => (
-              <View key={i.key} style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <T kind="small" style={{ flex: 1 }}>{i.variant} {(i.packLabel ?? formatSize(i.sizeGrams))}</T>
+              <View key={i.key} style={[styles.unavailable, { borderTopColor: t.line }]}>
+                <T kind="body" style={{ flex: 1, color: t.muted }} numberOfLines={1}>{itemTitle(i)} {itemPack(i)}</T>
                 <Button small variant="ghost" label="Remove" onPress={() => s.setCartQty(i.key, 0)} />
               </View>
             ))}
           </Card>
         )}
 
-        <Card style={{ padding: 16, gap: 4 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-            <T kind="bodyStrong" style={{ flex: 1 }}>Total · {plural(summary.itemCount, 'item')}</T>
-            <Text style={{ color: t.ink, fontFamily: t.fonts.display, fontSize: 26 }}>{rupee(total)}</Text>
-          </View>
-          {summary.savingsVsMrp > 0 && (
-            <View style={{ flexDirection: 'row' }}>
-              <T kind="smallStrong" style={{ color: t.good, flex: 1 }}>You save {rupee(summary.savingsVsMrp)} vs MRP</T>
-              <T kind="small" style={{ textDecorationLine: 'line-through' }}>{rupee(summary.mrpTotal)}</T>
-            </View>
-          )}
-          {total > best + 0.001 ? (
-            <Button style={{ marginTop: 8 }} variant="secondary" label={`Switch to ${anyFees && afterFees && afterFees.total <= mixWithFees ? 'cheapest after fees' : 'cheapest cart'} · save ${rupee(total - best)}`}
-              onPress={() => (anyFees && afterFees && afterFees.total <= mixWithFees ? s.pinMap(afterFees.assign) : s.pinAllTo(undefined))} />
-          ) : (
-            <T kind="smallStrong" style={{ color: t.good, marginTop: 2 }}>This is the cheapest cart across all apps</T>
-          )}
-          <T kind="caption" style={{ marginTop: 6 }}>
-            {anyFees
-              ? `Includes delivery and handling for ${bills.filter((b) => b.known).map((b) => PLATFORM[b.platform].short).join(', ')}, read from a real bill.`
-              : 'Delivery fees and handling charges are not included yet.'}
-          </T>
-          {items.some((i) => i.offers.some((o) => o.sample)) && <T kind="caption" style={{ color: t.accentText }}>Some prices here are sample data. Tap Refresh.</T>}
-        </Card>
-
+        <T kind="caption" style={{ textAlign: 'center', marginTop: 4 }}>
+          {anyFees
+            ? `Includes delivery and handling for ${bills.filter((b) => b.known).map((b) => PLATFORM[b.platform].short).join(', ')}, read from a real bill. `
+            : 'Delivery and handling fees are not included yet. '}
+          Order and pay in each app; Sasta never places orders.
+        </T>
+        {items.some((i) => i.offers.some((o) => o.sample)) && <T kind="caption" style={{ color: t.accentText, textAlign: 'center' }}>Some prices here are sample data. Tap Refresh.</T>}
         <Button variant="ghost" label="Clear cart" onPress={() => Alert.alert('Clear your cart?', undefined, [{ text: 'Cancel', style: 'cancel' }, { text: 'Clear', style: 'destructive', onPress: s.clearCart }])} />
       </ScrollView>
     </SafeAreaView>
   )
 }
 
-function Choice({ active, onPress, title, subtitle, price, delta, badge, dot, divider }: {
-  active: boolean; onPress: () => void; title: string; subtitle: string; price?: number; delta?: number; badge?: string; dot?: string; divider?: boolean
+/** One product in an app's order: quantity, price, what changed, and the other apps one tap away. */
+function CartRow({ line, change, expanded, onExpand, onQty, onPin, onOpen }: {
+  line: CartLine; change?: number; expanded: boolean
+  onExpand: () => void; onQty: (q: number) => void; onPin: (p: Platform | undefined) => void; onOpen: (url: string) => void
 }) {
   const t = useTheme()
+  const { item, offer, lineTotal } = line
+  if (!offer) return null
+  const inStock = item.offers.filter((o) => o.inStock).sort(compareOffers)
+  const cheapest = inStock[0]
+  const others = inStock.filter((o) => o.platform !== offer.platform)
+  // A picked app that ran out: the item moved to the cheapest app that still has it.
+  const movedFrom = item.pinned && item.pinned !== offer.platform ? item.pinned : undefined
+  const cheaper = !!item.pinned && !movedFrom && cheapest && cheapest.price < offer.price ? cheapest : undefined
+  const diff = (p: number) => (p === offer.price ? 'same' : p > offer.price ? `+${rupee(p - offer.price)}` : `−${rupee(offer.price - p)}`)
   return (
-    <View>
-      {divider && <Divider />}
-      <Pressable onPress={() => { tap(); onPress() }} style={styles.choice} accessibilityRole="radio" accessibilityState={{ selected: active }}>
-        <View style={[styles.radio, { borderColor: active ? t.ink : t.line }]}>{active && <View style={[styles.radioDot, { backgroundColor: t.ink }]} />}</View>
+    <View style={[styles.row, { borderTopColor: t.line }]}>
+      <View style={styles.rowMain}>
+        <PackIcon variantKey={item.variantKey} imageUrl={offer.imageUrl} size={30} />
         <View style={{ flex: 1, minWidth: 0 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            {dot && <View style={[styles.dot, { backgroundColor: dot }]} />}
-            <T kind="bodyStrong" numberOfLines={1} style={{ flexShrink: 1 }}>{title}</T>
-            {badge && <Badge label={badge} tone="good" />}
-          </View>
-          <T kind="small" numberOfLines={1}>{subtitle}</T>
+          <T kind="bodyStrong" numberOfLines={2}>{itemTitle(item)}</T>
+          <T kind="small" numberOfLines={1}>{itemPack(item)}{item.qty > 1 ? ` · ${rupee(offer.price)} each` : ''}</T>
+          {!!change && (
+            <T kind="smallStrong" style={{ color: change < 0 ? t.good : t.bad }}>
+              {change < 0 ? `↓ ${rupee(-change)}` : `↑ ${rupee(change)}`} since last check
+            </T>
+          )}
+          {movedFrom && <T kind="smallStrong" style={{ color: t.accentText }}>Out of stock on {PLATFORM[movedFrom].short}, so moved here</T>}
         </View>
-        {price !== undefined && (
-          <View style={{ alignItems: 'flex-end' }}>
-            <T kind="bodyStrong">{rupee(price)}</T>
-            {!!delta && delta > 0 && <T kind="caption">+{rupee(delta)}</T>}
-          </View>
+        <Stepper qty={item.qty} onChange={onQty} />
+        <T kind="bodyStrong" style={{ minWidth: 44, textAlign: 'right' }}>{rupee(lineTotal)}</T>
+      </View>
+      <View style={styles.rowFoot}>
+        {cheaper ? (
+          <Pressable onPress={() => { tap(); onPin(undefined) }} hitSlop={8} style={{ flex: 1 }} accessibilityRole="button">
+            <T kind="smallStrong" style={{ color: t.good }}>{PLATFORM[cheaper.platform].short} is {rupee((offer.price - cheaper.price) * item.qty)} cheaper · Switch</T>
+          </Pressable>
+        ) : others.length ? (
+          <Pressable onPress={onExpand} hitSlop={8} style={styles.also} accessibilityRole="button" accessibilityState={{ expanded }}
+            accessibilityLabel={`Change app. Also on ${others.map((o) => PLATFORM[o.platform].name).join(', ')}`}>
+            <T kind="small" numberOfLines={1} style={{ flexShrink: 1 }}>
+              Also {others.slice(0, 2).map((o) => `${PLATFORM[o.platform].short} ${diff(o.price)}`).join(' · ')}{others.length > 2 ? ` · +${others.length - 2}` : ''}
+            </T>
+            <ChevronDown size={14} color={t.muted} style={{ transform: [{ rotate: expanded ? '180deg' : '0deg' }] }} />
+          </Pressable>
+        ) : (
+          <T kind="small" style={{ flex: 1 }}>Only {PLATFORM[offer.platform].short} has this</T>
         )}
-      </Pressable>
+        <Pressable onPress={() => onOpen(offer.deepLink)} hitSlop={10} accessibilityLabel={`Open in ${PLATFORM[offer.platform].name}`}>
+          <ArrowUpRight size={16} color={t.muted} />
+        </Pressable>
+      </View>
+      {expanded && (
+        <View style={{ paddingTop: 4 }}>
+          <OfferSlots offers={inStock} qty={item.qty} chosen={offer.platform} pinned={item.pinned} onPick={onPin} />
+        </View>
+      )}
     </View>
   )
 }
 
 const styles = StyleSheet.create({
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10, padding: 32 },
-  groupHead: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingTop: 12, paddingBottom: 8 },
-  dot: { width: 9, height: 9, borderRadius: 5 },
-  line: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 12 },
-  choice: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 12 },
-  radio: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
-  radioDot: { width: 9, height: 9, borderRadius: 5 },
+  status: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 22, marginTop: -6 },
+  liveDot: { width: 8, height: 8, borderRadius: 4 },
+  refresh: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  banner: { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12 },
+  app: { borderLeftWidth: 5 },
+  appHead: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, paddingBottom: 10 },
+  row: { borderTopWidth: StyleSheet.hairlineWidth, marginHorizontal: 12, paddingVertical: 10, gap: 6 },
+  rowMain: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  rowFoot: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingLeft: 40 },
+  also: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 4 },
+  unavailable: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 6, borderTopWidth: StyleSheet.hairlineWidth },
 })
