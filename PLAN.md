@@ -21,7 +21,7 @@ The user types `lays`.
 
 `lays cream onion` runs the same flow, pre-filtered to Cream & Onion.
 
-## Current status (v0.6.0)
+## Current status (v0.7.0)
 
 The app now lives in `mobile/` (React Native + Expo). Root `src/` and `android/` are the old Capacitor app, kept for reference.
 
@@ -33,6 +33,8 @@ The app now lives in `mobile/` (React Native + Expo). Root `src/` and `android/`
 | BigBasket | `/listing-svc/v2/products` inside the page; card reader fallback | Live in Chrome, 2026-10-28 |
 | Flipkart Minutes | Hyperlocal page API inside the page | Address redirect only; no positive price list yet |
 | Amazon Now | Guarded Now storefront discovery | Fresh only in the tested session |
+
+Lists (v0.7.0): opening a list checks every item on every app, ranks apps per item, lets you pick an app per item, and shows the cheapest plan by app (`core/lists.ts` `listPlan`, `rankedOffers`, `singleAppTotals`).
 
 Actions, lifecycles and the site index: `docs/ACTIONS.md`. The desktop Playwright toolkit and signed-in site index live in `automation/` once merged.
 
