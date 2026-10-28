@@ -83,7 +83,7 @@ export default function AccountScreen() {
         {IS_NATIVE && connected < PLATFORMS.length && (
           <Button label={all ? 'Connecting one by one…' : connected ? `Connect the other ${PLATFORMS.length - connected}` : 'Connect all apps'} loading={all} disabled={busy !== null && !all} onPress={connectAll} />
         )}
-        {!IS_NATIVE && <T kind="small" style={{ color: t.accent }}>Signing in works in the Android app.</T>}
+        {!IS_NATIVE && <T kind="small" style={{ color: t.accentText }}>Signing in works in the Android app.</T>}
 
         <Card>
           {PLATFORMS.map(({ id }, i) => {
@@ -142,7 +142,7 @@ export default function AccountScreen() {
                     </View>
                   )}
                   {acc?.lastTest && (
-                    <Text style={{ marginTop: 6, marginLeft: 20, color: acc.lastTest.ok ? t.good : t.accent, fontFamily: t.fonts.body, fontSize: 12 }}>
+                    <Text style={{ marginTop: 6, marginLeft: 20, color: acc.lastTest.ok ? t.good : t.accentText, fontFamily: t.fonts.body, fontSize: 12 }}>
                       {acc.lastTest.search ? (acc.lastTest.ok ? '✓ ' : '! ') + acc.lastTest.detail : canSearch(id) ? 'Previous check verified login only. Tap Test search to check prices.' : acc.lastTest.detail}
                     </Text>
                   )}
@@ -154,7 +154,7 @@ export default function AccountScreen() {
                       </Text>
                     </Pressable>
                   )}
-                  {!!errors[id] && <T kind="small" style={{ color: t.accent, marginTop: 6, marginLeft: 20 }}>{errors[id]}</T>}
+                  {!!errors[id] && <T kind="small" style={{ color: t.accentText, marginTop: 6, marginLeft: 20 }}>{errors[id]}</T>}
                 </View>
               </View>
             )

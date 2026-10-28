@@ -13,7 +13,7 @@ export function Button({ label, onPress, variant = 'primary', icon, disabled, lo
 }) {
   const t = useTheme()
   const bg = { primary: t.ink, secondary: t.chip, ghost: 'transparent', good: t.goodBg, danger: t.accent }[variant]
-  const fg = { primary: t.bg, secondary: t.ink, ghost: t.ink, good: t.good, danger: '#fff' }[variant]
+  const fg = { primary: t.bg, secondary: t.ink, ghost: t.ink, good: t.good, danger: t.onAccent }[variant]
   return (
     <Pressable
       onPress={() => { tap(); onPress() }}
@@ -86,7 +86,7 @@ export function T({ children, style, kind = 'body', numberOfLines }: {
     bodyStrong: { fontFamily: t.fonts.bodyBold, fontSize: 14.5, color: t.ink },
     small: { fontFamily: t.fonts.body, fontSize: 12.5, color: t.muted },
     smallStrong: { fontFamily: t.fonts.bodyBold, fontSize: 12.5, color: t.ink },
-    caption: { fontFamily: t.fonts.body, fontSize: 11.5, color: t.faint },
+    caption: { fontFamily: t.fonts.body, fontSize: 11.5, color: t.muted },
     price: { fontFamily: t.fonts.display, fontSize: 20, color: t.ink },
   }
   return <Text style={[k[kind], style]} numberOfLines={numberOfLines}>{children}</Text>
@@ -94,11 +94,11 @@ export function T({ children, style, kind = 'body', numberOfLines }: {
 
 export function Badge({ label, tone }: { label: string; tone: 'good' | 'muted' | 'warn' }) {
   const t = useTheme()
-  const bg = { good: t.goodBg, muted: t.chip, warn: t.dark ? '#3a2614' : '#fdecdc' }[tone]
-  const fg = { good: t.good, muted: t.muted, warn: t.accent }[tone]
+  const bg = { good: t.goodBg, muted: t.chip, warn: t.warnBg }[tone]
+  const fg = { good: t.good, muted: t.muted, warn: t.accentText }[tone]
   return (
     <View style={[styles.badge, { backgroundColor: bg }]}>
-      <Text style={{ color: fg, fontFamily: t.fonts.bodyBold, fontSize: 10, letterSpacing: 0.4 }}>{label.toUpperCase()}</Text>
+      <Text style={{ color: fg, fontFamily: t.fonts.bodyBold, fontSize: 11, letterSpacing: 0.4 }}>{label.toUpperCase()}</Text>
     </View>
   )
 }
@@ -135,5 +135,5 @@ const styles = StyleSheet.create({
   card: { borderRadius: 20, overflow: 'hidden' },
   badge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
   seg: { flexDirection: 'row', borderRadius: 13, padding: 3 },
-  segItem: { paddingHorizontal: 14, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  segItem: { paddingHorizontal: 14, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
 })

@@ -154,7 +154,7 @@ export default function SearchScreen() {
           <Card style={{ padding: 14, gap: 6 }}>
             {problems.map((p) => (
               <View key={p.platform} style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-start' }}>
-                <CircleAlert size={16} color={t.accent} style={{ marginTop: 1 }} />
+                <CircleAlert size={16} color={t.accentText} style={{ marginTop: 1 }} />
                 <T kind="small" style={{ flex: 1, color: t.ink }}>
                   <Text style={{ fontFamily: t.fonts.bodyBold }}>{PLATFORM[p.platform].name}: </Text>
                   {p.state === 'timeout' ? 'took too long. Check your connection and search again.'
@@ -178,13 +178,13 @@ export default function SearchScreen() {
           <Pressable onPress={() => open(bestValue)} style={[styles.hero, { backgroundColor: t.hero }]} accessibilityRole="button">
             <PackIcon variantKey={bestValue.variantKey} imageUrl={bestValue.best.imageUrl} size={48} />
             <View style={{ flex: 1 }}>
-              <Text style={{ color: '#ffffff99', fontFamily: t.fonts.bodyBold, fontSize: 11, letterSpacing: 1.5 }}>BEST VALUE RIGHT NOW</Text>
+              <Text style={{ color: t.heroMuted, fontFamily: t.fonts.bodyBold, fontSize: 11, letterSpacing: 1.5 }}>BEST VALUE RIGHT NOW</Text>
               <Text style={{ color: t.heroText, fontFamily: t.fonts.displayBold, fontSize: 17, marginTop: 3 }} numberOfLines={2}>
                 {bestValue.variant}{bestValue.sizeGrams ? `, ${formatSize(bestValue.sizeGrams)}` : ''}
               </Text>
               <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, marginTop: 4, flexWrap: 'wrap' }}>
                 <Text style={{ color: t.accent, fontFamily: t.fonts.display, fontSize: 26 }}>{rupee(bestValue.best.price)}</Text>
-                <Text style={{ color: '#ffffffa0', fontFamily: t.fonts.body, fontSize: 12 }}>
+                <Text style={{ color: t.heroMuted, fontFamily: t.fonts.body, fontSize: 12 }}>
                   on {PLATFORM[bestValue.best.platform].name}{bestValue.pricePer100g ? ` · ${rupee(+bestValue.pricePer100g.toFixed(1))}/100 g` : ''}
                 </Text>
               </View>

@@ -58,7 +58,7 @@ export default function ListsScreen() {
                         <T kind="smallStrong" style={{ color: t.muted }}>{g.lines.length}</T>
                       </View>
                     ))}
-                    {plan.missing.length > 0 && <T kind="smallStrong" style={{ color: t.accent }}>{plan.missing.length} not found</T>}
+                    {plan.missing.length > 0 && <T kind="smallStrong" style={{ color: t.accentText }}>{plan.missing.length} not found</T>}
                   </View>
                 </>
               )}

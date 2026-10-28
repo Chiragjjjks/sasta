@@ -11,7 +11,7 @@ import {
 import {
   listSwiggyAddresses, loadInstamartAddress, resolveInstamartAddress, saveInstamartAddress, type SelectedAddress, type SwiggyAddress,
 } from '@/core/adapters/instamart'
-import { addItem, addItems, fromGroup, mergeRefreshedCart, pin, pinAll, refreshCart, setQty, summarize, type CartItem } from '@/core/cart'
+import { addItem, addItems, chosenOffer, fromGroup, mergeRefreshedCart, pin, pinAll, refreshCart, setQty, summarize, type CartItem } from '@/core/cart'
 import { blinkitRuleFromBill, type FeeRules } from '@/core/fees'
 import {
   createList, deleteList, exportLists, importLists, listItemFromGroup, markPicked, moveItem, pinAllItems, pinItem, removeFromList, renameList,
@@ -52,7 +52,10 @@ interface Store {
   pinMap: (pins: Record<string, Platform>) => void
   clearCart: () => void
   refreshing: boolean
-  refreshPrices: () => Promise<void>
+  /** Re-checks every cart item on every app. The cart calls this when it opens; Refresh forces fresh prices. */
+  refreshPrices: (opts?: { force?: boolean }) => Promise<void>
+  /** Cart price change per item key from the last check (new minus old chosen price). */
+  cartChanges: Record<string, number>
   fees: FeeRules
   learnFees: () => void
   checkout: (p: Platform) => Promise<void>
@@ -112,6 +115,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [listChecks, setListChecks] = useState<Record<string, { running: boolean; at?: number }>>({})
   const listsRef = useRef(lists)
   useEffect(() => { listsRef.current = lists }, [lists])
+  const cartRef = useRef(cart)
+  useEffect(() => { cartRef.current = cart }, [cart])
+  const cartChecking = useRef(false)
+  const [cartChanges, setCartChanges] = useState<Record<string, number>>({})
   const checking = useRef(new Set<string>())
   const [accounts, setAccounts] = useState<Partial<Record<Platform, Account>>>({})
   const [instamartAddress, setInstamartAddress] = useState<SelectedAddress | null>(null)
@@ -195,15 +202,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setCart((c) => addItem(c, fromGroup(g, submitted || g.variant)))
   }, [submitted])
 
-  const refreshPrices = useCallback(async () => {
+  const refreshPrices = useCallback(async (opts: { force?: boolean } = { force: true }) => {
+    const before = cartRef.current
+    if (!before.length || cartChecking.current) return
+    cartChecking.current = true
     setRefreshing(true)
     try {
-      const fresh = await refreshCart(cart, adapters, locationRef.current, new AbortController().signal)
+      const fresh = await refreshCart(before, adapters, locationRef.current, new AbortController().signal, { force: !!opts.force })
+      const was = new Map(before.map((i) => [i.key, chosenOffer(i)?.price]))
+      const changes: Record<string, number> = {}
+      for (const i of fresh) {
+        const old = was.get(i.key), now = chosenOffer(i)?.price
+        if (old !== undefined && now !== undefined && Math.abs(now - old) >= 0.5) changes[i.key] = now - old
+      }
+      setCartChanges(changes)
       setCart((current) => mergeRefreshedCart(current, fresh))
     }
     catch { setToast('Could not refresh prices. Check your connection.') }
-    finally { setRefreshing(false) }
-  }, [cart])
+    finally { cartChecking.current = false; setRefreshing(false) }
+  }, [])
 
   const learnFees = useCallback(() => {
     const items = cart.flatMap((i) => i.offers.filter((o) => o.platform === 'blinkit' && o.inStock && o.meta?.cartItem).slice(0, 1).map((o) => o.meta!.cartItem))
@@ -382,7 +399,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     pinAllTo: (p) => setCart((c) => pinAll(c, p)),
     pinMap: (pins) => setCart((c) => c.map((i) => ({ ...i, pinned: pins[i.key] }))),
     clearCart: () => setCart([]),
-    refreshing, refreshPrices, fees, learnFees, checkout,
+    refreshing, refreshPrices, cartChanges, fees, learnFees, checkout,
     lists, isSaved, toggleSaved, createList: createListFn,
     renameList: (id, n, e) => setLists((ls) => renameList(ls, id, n, e)),
     deleteList: (id) => setLists((ls) => deleteList(ls, id)),

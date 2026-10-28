@@ -79,7 +79,7 @@ export default function CartScreen() {
             <T kind="title" style={{ fontSize: 26 }}>Your cart</T>
             <T kind="small">{plural(summary.itemCount, 'item')} · prices from {ago(oldest)}</T>
           </View>
-          <Button small variant="secondary" label={s.refreshing ? 'Checking…' : 'Refresh'} loading={s.refreshing} icon={!s.refreshing ? <RefreshCw size={14} color={t.ink} /> : undefined} onPress={s.refreshPrices} />
+          <Button small variant="secondary" label={s.refreshing ? 'Checking…' : 'Refresh'} loading={s.refreshing} icon={!s.refreshing ? <RefreshCw size={14} color={t.ink} /> : undefined} onPress={() => s.refreshPrices()} />
         </View>
 
         <Card>
@@ -210,7 +210,7 @@ export default function CartScreen() {
               ? `Includes delivery and handling for ${bills.filter((b) => b.known).map((b) => PLATFORM[b.platform].short).join(', ')}, read from a real bill.`
               : 'Delivery fees and handling charges are not included yet.'}
           </T>
-          {items.some((i) => i.offers.some((o) => o.sample)) && <T kind="caption" style={{ color: t.accent }}>Some prices here are sample data. Tap Refresh.</T>}
+          {items.some((i) => i.offers.some((o) => o.sample)) && <T kind="caption" style={{ color: t.accentText }}>Some prices here are sample data. Tap Refresh.</T>}
         </Card>
 
         <Button variant="ghost" label="Clear cart" onPress={() => Alert.alert('Clear your cart?', undefined, [{ text: 'Cancel', style: 'cancel' }, { text: 'Clear', style: 'destructive', onPress: s.clearCart }])} />

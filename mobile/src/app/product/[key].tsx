@@ -67,7 +67,7 @@ export default function CompareScreen() {
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
                   <Text style={{ color: t.ink, fontFamily: t.fonts.display, fontSize: 17 }}>{rupee(o.price)}</Text>
-                  {!!o.mrp && o.mrp > o.price && <Text style={{ color: t.faint, fontFamily: t.fonts.body, fontSize: 11.5, textDecorationLine: 'line-through' }}>{rupee(o.mrp)}</Text>}
+                  {!!o.mrp && o.mrp > o.price && <Text style={{ color: t.muted, fontFamily: t.fonts.body, fontSize: 11.5, textDecorationLine: 'line-through' }}>{rupee(o.mrp)}</Text>}
                 </View>
                 <Pressable
                   disabled={!o.inStock}

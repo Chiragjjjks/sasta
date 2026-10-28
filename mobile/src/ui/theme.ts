@@ -3,14 +3,22 @@ import { Appearance, Platform, useColorScheme } from 'react-native'
 import { loadAppearance, saveAppearance, type AppearancePref } from '@/core/storage'
 
 /** Design tokens from the sasta.html prototype. */
+/**
+ * Text uses ink or muted (AA contrast on bg, surface and chip). faint is for icons, placeholders and
+ * disabled states only. accent fills orange; accentText is the readable orange for words.
+ */
 const light = {
-  bg: '#f0f1f6', surface: '#ffffff', ink: '#14152a', muted: '#6b6d80', faint: '#9b9db0', line: '#e3e5ee',
-  chip: '#eceef4', accent: '#f08a24', good: '#1b8a4b', goodBg: '#e3f5ea', hero: '#14152a', heroText: '#ffffff',
+  bg: '#f0f1f6', surface: '#ffffff', ink: '#14152a', muted: '#5c5e72', faint: '#7f8196', line: '#e3e5ee', lineStrong: '#82859c',
+  chip: '#eceef4', accent: '#f08a24', accentText: '#a84f08', onAccent: '#14152a', warnBg: '#fdecdc',
+  good: '#16743f', goodBg: '#e3f5ea', bad: '#b3261e', badBg: '#fde8e6',
+  hero: '#14152a', heroText: '#ffffff', heroMuted: '#ffffffb3',
   overlay: 'rgba(10,11,20,0.45)', dark: false,
 }
 const dark: typeof light = {
-  bg: '#0d0e1a', surface: '#171829', ink: '#eef0fa', muted: '#a3a5bb', faint: '#7a7c93', line: '#262840',
-  chip: '#232540', accent: '#f39a40', good: '#5fd394', goodBg: '#173524', hero: '#22243d', heroText: '#ffffff',
+  bg: '#0d0e1a', surface: '#171829', ink: '#eef0fa', muted: '#a3a5bb', faint: '#8d8fa6', line: '#262840', lineStrong: '#6b6e98',
+  chip: '#232540', accent: '#f39a40', accentText: '#f39a40', onAccent: '#14152a', warnBg: '#3a2614',
+  good: '#5fd394', goodBg: '#173524', bad: '#ff8a80', badBg: '#3a1a1a',
+  hero: '#2a2d5a', heroText: '#ffffff', heroMuted: '#ffffffb3',
   overlay: 'rgba(0,0,0,0.6)', dark: true,
 }
 
@@ -60,4 +68,3 @@ export function useTheme(): Theme {
   return (choice === 'system' ? scheme === 'dark' : choice === 'dark') ? DARK : LIGHT
 }
 
-export const PLATFORM_COLORS: Record<string, string> = {}

@@ -37,7 +37,7 @@ function ProductCardImpl({ group, total, inCart, saved, onOpen, onAdd, onSave }:
         <View style={styles.priceCol}>
           <Text style={[styles.price, { color: t.ink, fontFamily: t.fonts.display }]}>{best.inStock ? rupee(best.price) : '—'}</Text>
           {!!best.mrp && best.mrp > best.price && (
-            <Text style={[styles.mrp, { color: t.faint, fontFamily: t.fonts.body }]}>{rupee(best.mrp)}</Text>
+            <Text style={[styles.mrp, { color: t.muted, fontFamily: t.fonts.body }]}>{rupee(best.mrp)}</Text>
           )}
           <Text style={[styles.where, { color: t.good, fontFamily: t.fonts.bodyBold }]} numberOfLines={1}>{PLATFORM[best.platform].short}</Text>
         </View>

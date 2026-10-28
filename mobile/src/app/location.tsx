@@ -71,7 +71,7 @@ export default function LocationScreen() {
           <T kind="smallStrong">Pincode</T>
           <TextInput value={pincode} onChangeText={(v) => setPincode(v.replace(/\D/g, '').slice(0, 6))} placeholder="6 digits" placeholderTextColor={t.faint}
             keyboardType="number-pad" maxLength={6} style={[styles.input, { backgroundColor: t.surface, color: t.ink, fontFamily: t.fonts.body }]} />
-          {!!msg && <T kind="small" style={{ color: t.accent }}>{msg}</T>}
+          {!!msg && <T kind="small" style={{ color: t.accentText }}>{msg}</T>}
         </ScrollView>
         <View style={{ padding: 16 }}>
           <Button label="Save location" disabled={!valid || busy !== null} loading={busy === 'save'} onPress={save} />

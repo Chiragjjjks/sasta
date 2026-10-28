@@ -200,7 +200,7 @@ function PlanCard({ plan, singles, scopeLabel, onPick }: { plan: ListPlan; singl
       <Text style={[styles.heroK, { fontFamily: t.fonts.bodySemi }]}>{plan.pinned ? `Your plan for ${scopeLabel}` : `Cheapest way to buy ${scopeLabel}`}</Text>
       <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
         <Text style={{ color: t.heroText, fontFamily: t.fonts.display, fontSize: 32, letterSpacing: -0.6 }}>{plan.available ? rupee(plan.total) : '—'}</Text>
-        <Text style={{ color: '#ffffffb3', fontFamily: t.fonts.bodySemi, fontSize: 12.5 }}>
+        <Text style={{ color: t.heroMuted, fontFamily: t.fonts.bodySemi, fontSize: 12.5 }}>
           {plan.available ? `from ${plural(plan.groups.length, 'app')} · before fees` : 'no app has these right now'}
           {plan.missing.length ? ` · ${plan.missing.length} not found` : ''}
         </Text>
@@ -292,7 +292,7 @@ function ItemCard({ item: i, picked, lastTime, showAll, onToggle, onQty, onPin, 
                 accessibilityRole="radio" accessibilityState={{ selected: isChosen }}
                 accessibilityLabel={`${PLATFORM[o.platform].name} ${rupee(total)}${rank === 0 ? ', cheapest' : ''}`}
                 style={[styles.slot, isChosen && { backgroundColor: rank === 0 ? t.goodBg : t.chip }]}>
-                <Text style={[styles.rank, { color: t.faint, fontFamily: t.fonts.bodyBold }]}>{rank + 1}</Text>
+                <Text style={[styles.rank, { color: t.muted, fontFamily: t.fonts.bodyBold }]}>{rank + 1}</Text>
                 <PlatformMark platform={o.platform} size={22} />
                 <Text style={{ flex: 1, color: t.ink, fontFamily: t.fonts.bodySemi, fontSize: 13.5 }} numberOfLines={1}>
                   {PLATFORM[o.platform].short}
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
   input: { height: 46, borderRadius: 12, paddingHorizontal: 12, fontSize: 15 },
   emojiBtn: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   hero: { borderRadius: 20, padding: 16 },
-  heroK: { color: '#ffffffa6', fontSize: 11, letterSpacing: 0.6, textTransform: 'uppercase' },
+  heroK: { color: '#ffffffb3', fontSize: 11, letterSpacing: 0.6, textTransform: 'uppercase' },
   bar: { flexDirection: 'row', height: 10, borderRadius: 5, overflow: 'hidden', gap: 2, marginTop: 12, marginBottom: 10 },
   legend: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, rowGap: 6 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },

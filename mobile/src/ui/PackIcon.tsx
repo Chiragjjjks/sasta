@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { Image } from 'react-native'
 import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg'
 
@@ -25,11 +26,12 @@ export function flavorColor(variantKey: string): string {
 
 /** Product photo when the app has one, otherwise a stylised chip bag in the flavour's colour. */
 export function PackIcon({ variantKey, imageUrl, size = 44 }: { variantKey: string; imageUrl?: string; size?: number }) {
+  // Unique per icon: two bags of the same flavour on screen must not share one gradient id.
+  const id = `g${useId().replace(/[^a-z0-9]/gi, '')}`
   if (imageUrl) {
     return <Image source={{ uri: imageUrl }} style={{ width: size, height: size * 1.2, borderRadius: 10, backgroundColor: '#fff' }} resizeMode="contain" />
   }
   const [top, bottom] = FLAVOR_COLORS[variantKey] ?? fallback(variantKey)
-  const id = `g${variantKey.replace(/[^a-z0-9]/gi, '')}`
   return (
     <Svg width={size} height={size * 1.25} viewBox="0 0 48 60">
       <Defs>
