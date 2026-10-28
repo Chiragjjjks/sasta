@@ -3,10 +3,11 @@ import { Check, Plus } from 'lucide-react-native'
 import { useState } from 'react'
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { STARTER_LISTS } from '@/core/lists'
-import { formatSize } from '@/core/utils'
+import { itemTitle, listPlan, STARTER_LISTS } from '@/core/lists'
+import { formatSize, plural, rupee } from '@/core/utils'
 import { useStore } from '@/state/store'
 import { Button, Card, Chip, Divider, T } from '@/ui/kit'
+import { PlatformMark } from '@/ui/PlatformMark'
 import { useTheme } from '@/ui/theme'
 
 export default function SaveScreen() {
@@ -34,6 +35,8 @@ export default function SaveScreen() {
             <Card>
               {s.lists.map((l, i) => {
                 const saved = l.items.some((x) => x.key === group.key)
+                const plan = listPlan(l.items)
+                const names = l.items.map(itemTitle)
                 return (
                   <View key={l.id}>
                     {i > 0 && <Divider />}
@@ -41,7 +44,15 @@ export default function SaveScreen() {
                       <View style={[styles.emoji, { backgroundColor: t.chip }]}><Text style={{ fontSize: 18 }}>{l.emoji}</Text></View>
                       <View style={{ flex: 1 }}>
                         <T kind="bodyStrong">{l.name}</T>
-                        <T kind="small">{l.items.length} {l.items.length === 1 ? 'product' : 'products'}</T>
+                        <T kind="small" numberOfLines={2}>
+                          {l.items.length ? `${names.slice(0, 3).join(', ')}${names.length > 3 ? ` +${names.length - 3} more` : ''}` : 'Empty'}
+                        </T>
+                        {plan.groups.length > 0 && (
+                          <View style={styles.apps}>
+                            {plan.groups.map((g) => <PlatformMark key={g.platform} platform={g.platform} size={16} />)}
+                            <T kind="caption">{plural(l.items.length, 'item')} · {rupee(plan.total)}</T>
+                          </View>
+                        )}
                       </View>
                       <View style={[styles.check, { borderColor: saved ? t.ink : t.line, backgroundColor: saved ? t.ink : 'transparent' }]}>
                         {saved && <Check size={15} color={t.bg} />}
@@ -84,4 +95,5 @@ const styles = StyleSheet.create({
   emoji: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   check: { width: 26, height: 26, borderRadius: 8, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   input: { flex: 1, height: 50, borderRadius: 14, paddingHorizontal: 14, fontSize: 15 },
+  apps: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
 })

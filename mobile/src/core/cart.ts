@@ -131,7 +131,7 @@ export function pinAll(items: CartItem[], platform: Platform | undefined): CartI
 }
 
 /** Re-runs each distinct query and swaps in fresh offers for items whose pack is still found. */
-export async function refreshCart(items: CartItem[], adapters: Adapter[], loc: Location, signal: AbortSignal): Promise<CartItem[]> {
+export async function refreshCart(items: CartItem[], adapters: Adapter[], loc: Location, signal: AbortSignal, opts: { force?: boolean } = { force: true }): Promise<CartItem[]> {
   const queries = [...new Set(items.map((i) => i.query))]
   const fresh = new Map<string, ProductGroup>()
   const successful = new Map<string, Set<Platform>>()
@@ -143,7 +143,7 @@ export async function refreshCart(items: CartItem[], adapters: Adapter[], loc: L
     await runSearch(adapters, q, loc, signal, {
       onStatus: () => {},
       onOffers: (p, o) => { platforms.add(p); offers.push(...o) },
-    }, { force: true })
+    }, { force: opts.force })
     for (const g of groupOffers(offers)) fresh.set(g.key, g)
   }))
   if (signal.aborted) return items

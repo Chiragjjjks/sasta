@@ -14,7 +14,7 @@ import {
 import { addItem, addItems, fromGroup, mergeRefreshedCart, pin, pinAll, refreshCart, setQty, summarize, type CartItem } from '@/core/cart'
 import { blinkitRuleFromBill, type FeeRules } from '@/core/fees'
 import {
-  createList, deleteList, exportLists, importLists, listItemFromGroup, markPicked, moveItem, removeFromList, renameList,
+  createList, deleteList, exportLists, importLists, listItemFromGroup, markPicked, moveItem, pinAllItems, pinItem, removeFromList, renameList,
   saveToList, setItemQty, shareText as listText, toCartItems, updatePrices, type ShoppingList,
 } from '@/core/lists'
 import { groupOffers } from '@/core/normalize'
@@ -67,6 +67,11 @@ interface Store {
   removeFromList: (listId: string, key: string) => void
   moveListItem: (from: string, to: string, key: string, copy: boolean) => void
   addListToCart: (listId: string, keys: string[]) => Promise<number>
+  /** Checks every item of a list on every app. Opening a list calls this; recent searches come from the cache. */
+  refreshList: (listId: string, opts?: { force?: boolean }) => Promise<void>
+  listChecks: Record<string, { running: boolean; at?: number }>
+  pinListItem: (listId: string, key: string, p: Platform | undefined) => void
+  pinListTo: (listId: string, p: Platform | undefined) => void
   shareList: (listId: string, keys: string[]) => Promise<void>
   exportLists: () => Promise<void>
   importLists: (text: string) => void
@@ -104,6 +109,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [refreshing, setRefreshing] = useState(false)
   const [fees, setFees] = useState<FeeRules>({})
   const [lists, setLists] = useState<ShoppingList[]>([])
+  const [listChecks, setListChecks] = useState<Record<string, { running: boolean; at?: number }>>({})
+  const listsRef = useRef(lists)
+  useEffect(() => { listsRef.current = lists }, [lists])
+  const checking = useRef(new Set<string>())
   const [accounts, setAccounts] = useState<Partial<Record<Platform, Account>>>({})
   const [instamartAddress, setInstamartAddress] = useState<SelectedAddress | null>(null)
   const [toast, setToast] = useState('')
@@ -240,6 +249,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return keys.length
   }, [lists])
 
+  const refreshList = useCallback(async (listId: string, opts: { force?: boolean } = {}) => {
+    const list = listsRef.current.find((l) => l.id === listId)
+    if (!list?.items.length || checking.current.has(listId)) return
+    checking.current.add(listId)
+    setListChecks((c) => ({ ...c, [listId]: { ...c[listId], running: true } }))
+    const started = Date.now()
+    try {
+      const fresh = await refreshCart(toCartItems(list, list.items.map((i) => i.key)), adapters, locationRef.current, new AbortController().signal, { force: !!opts.force })
+      setLists((ls) => updatePrices(ls, listId, fresh, started))
+    } finally {
+      checking.current.delete(listId)
+      setListChecks((c) => ({ ...c, [listId]: { running: false, at: Date.now() } }))
+    }
+  }, [])
+
   const importListsFn = useCallback((text: string) => {
     // Validate first: a bad file must show a message, never crash the app.
     let next: ShoppingList[]
@@ -365,7 +389,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setListQty: (l, k, q) => setLists((ls) => setItemQty(ls, l, k, q)),
     removeFromList: (l, k) => setLists((ls) => removeFromList(ls, l, k)),
     moveListItem: (f, t, k, c) => setLists((ls) => moveItem(ls, f, t, k, c)),
-    addListToCart,
+    addListToCart, refreshList, listChecks,
+    pinListItem: (id, k, p) => setLists((ls) => pinItem(ls, id, k, p)),
+    pinListTo: (id, p) => setLists((ls) => pinAllItems(ls, id, p)),
     shareList: async (listId, keys) => {
       const list = lists.find((l) => l.id === listId)
       if (list) await shareText(list.name, listText(list, keys)).catch(() => {})

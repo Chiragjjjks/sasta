@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
-  createList, deleteList, estimateTotal, exportLists, importLists, isSaved, listItemFromGroup, markPicked, moveItem,
-  priceDrop, renameList, sameAsLastTime, saveToList, setItemQty, shareText, sortItems, toCartItems,
+  chosenListOffer, createList, deleteList, estimateTotal, exportLists, importLists, isSaved, listItemFromGroup, listPlan, markPicked, moveItem,
+  pinAllItems, pinItem, priceDrop, rankedOffers, renameList, sameAsLastTime, saveToList, setItemQty, shareText, singleAppTotals, sortItems, toCartItems,
 } from './lists'
 import type { Offer, ProductGroup } from './types'
 
@@ -64,5 +64,53 @@ describe('lists', () => {
   })
   it('rejects duplicate list IDs in a backup', () => {
     expect(() => importLists(lists, exportLists([office, office]))).toThrow('duplicate list IDs')
+  })
+})
+
+describe('list plan: which app each item comes from', () => {
+  const eta = (offer: Offer, etaMinutes: number): Offer => ({ ...offer, etaMinutes })
+  const [base, list] = createList([], 'Monthly', '🛒', 1)
+  const lays = { ...listItemFromGroup(group('lays', [o('zepto', 19), o('blinkit', 20), eta(o('instamart', 20), 6), o('flipkart_minutes', 18, false), o('zepto', 25)]), 'lays', 10), qty: 5 }
+  const milk = { ...listItemFromGroup(group('milk', [eta(o('blinkit', 29), 9), eta(o('instamart', 29), 6)]), 'milk', 10), qty: 2 }
+  const bread = listItemFromGroup(group('bread', [o('zepto', 40, false)]), 'bread', 10)
+  let lists = [lays, milk, bread].reduce((ls, i) => saveToList(ls, list.id, i), base)
+  const items = () => lists[0].items
+
+  it('ranks one offer per app, cheapest then fastest, and lists apps that are out of stock', () => {
+    const r = rankedOffers(lays)
+    expect(r.inStock.map((x) => [x.platform, x.price])).toEqual([['zepto', 19], ['instamart', 20], ['blinkit', 20]])
+    expect(r.outOfStock).toEqual(['flipkart_minutes'])
+    expect(rankedOffers(milk).inStock[0].platform).toBe('instamart')
+  })
+  it('groups the cheapest mix by app and keeps unavailable items apart', () => {
+    const plan = listPlan(items())
+    expect(plan.total).toBe(19 * 5 + 29 * 2)
+    expect(plan.groups.map((g) => [g.platform, g.total, g.lines.length])).toEqual([['zepto', 95, 1], ['instamart', 58, 1]])
+    expect(plan.groups[1].etaMinutes).toBe(6)
+    expect(plan.missing.map((i) => i.key)).toEqual(['bread'])
+    expect(plan).toMatchObject({ available: 2, count: 3, pinned: false })
+  })
+  it("uses the user's app for an item while it is in stock, and the cheapest otherwise", () => {
+    lists = pinItem(lists, list.id, 'lays', 'blinkit')
+    expect(chosenListOffer(items()[0])).toMatchObject({ platform: 'blinkit', price: 20 })
+    expect(listPlan(items())).toMatchObject({ total: 100 + 58, pinned: true })
+    lists = pinItem(lists, list.id, 'lays', 'flipkart_minutes')
+    expect(chosenListOffer(items()[0])?.platform).toBe('zepto')
+    lists = pinAllItems(lists, list.id, undefined)
+    expect(listPlan(items()).pinned).toBe(false)
+  })
+  it('totals everything from one app, most items first, then cheapest', () => {
+    expect(singleAppTotals(items())).toEqual([
+      { platform: 'blinkit', covered: 2, total: 158 },
+      { platform: 'instamart', covered: 2, total: 158 },
+      { platform: 'zepto', covered: 1, total: 95 },
+    ])
+  })
+  it('carries the chosen app into the cart and survives a backup', () => {
+    lists = pinItem(lists, list.id, 'milk', 'blinkit')
+    expect(toCartItems(lists[0], ['milk'])[0].pinned).toBe('blinkit')
+    expect(importLists([], exportLists(lists))[0].items[1].pinned).toBe('blinkit')
+    const bad = exportLists(lists).replace('"pinned": "blinkit"', '"pinned": "swiggy-genie"')
+    expect(() => importLists([], bad)).toThrow()
   })
 })

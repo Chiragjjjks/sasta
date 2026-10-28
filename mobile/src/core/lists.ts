@@ -1,6 +1,8 @@
 import { fromGroup, type CartItem } from './cart'
+import { compareOffers } from './normalize'
 import { PLATFORMS } from './platforms'
-import type { Offer, ProductGroup } from './types'
+import type { Offer, Platform, ProductGroup } from './types'
+import { formatSize } from './utils'
 
 /** A saved product. Same identity as a cart item, so it can go straight into the cart. */
 export interface ListItem {
@@ -21,6 +23,8 @@ export interface ListItem {
   lastPickedAt?: number
   timesPicked: number
   note?: string
+  /** App the user chose for this item. Absent means "cheapest in stock". */
+  pinned?: Platform
 }
 
 export interface ShoppingList {
@@ -96,6 +100,67 @@ export function moveItem(lists: ShoppingList[], fromId: string, toId: string, ke
   return copy ? added : removeFromList(added, fromId, key)
 }
 
+export const itemTitle = (i: Pick<ListItem, 'brand' | 'variant'>) => `${i.brand !== 'Other' && !i.variant.startsWith(i.brand) ? `${i.brand} ` : ''}${i.variant}`
+export const itemPack = (i: Pick<ListItem, 'packLabel' | 'sizeGrams'>) => i.packLabel ?? formatSize(i.sizeGrams)
+
+/** One offer per app, cheapest first (ties: faster delivery), then the apps where it is out of stock. */
+export function rankedOffers(item: Pick<ListItem, 'lastOffers'>): { inStock: Offer[]; outOfStock: Platform[] } {
+  const best = new Map<Platform, Offer>()
+  for (const o of [...item.lastOffers].sort(compareOffers)) if (!best.has(o.platform)) best.set(o.platform, o)
+  const all = [...best.values()]
+  return { inStock: all.filter((o) => o.inStock && o.price > 0), outOfStock: all.filter((o) => !o.inStock).map((o) => o.platform) }
+}
+
+/** The app this item will be bought from: the user's pick while it is in stock, else the cheapest. */
+export function chosenListOffer(item: ListItem): Offer | undefined {
+  const { inStock } = rankedOffers(item)
+  return (item.pinned && inStock.find((o) => o.platform === item.pinned)) || inStock[0]
+}
+
+export interface PlanGroup { platform: Platform; lines: { item: ListItem; offer: Offer; total: number }[]; total: number; etaMinutes?: number }
+export interface ListPlan { total: number; groups: PlanGroup[]; missing: ListItem[]; available: number; count: number; pinned: boolean }
+
+/** What to order where: items grouped by the app each comes from, biggest spend first. */
+export function listPlan(items: ListItem[]): ListPlan {
+  const byApp = new Map<Platform, PlanGroup>()
+  const missing: ListItem[] = []
+  for (const item of items) {
+    const offer = chosenListOffer(item)
+    if (!offer) { missing.push(item); continue }
+    const g = byApp.get(offer.platform) ?? { platform: offer.platform, lines: [], total: 0 }
+    g.lines.push({ item, offer, total: offer.price * item.qty })
+    g.total += offer.price * item.qty
+    if (offer.etaMinutes) g.etaMinutes = Math.max(g.etaMinutes ?? 0, offer.etaMinutes)
+    byApp.set(offer.platform, g)
+  }
+  const groups = [...byApp.values()].sort((a, b) => b.total - a.total)
+  return { total: groups.reduce((s, g) => s + g.total, 0), groups, missing, available: items.length - missing.length, count: items.length, pinned: items.some((i) => !!i.pinned) }
+}
+
+export interface SingleAppTotal { platform: Platform; covered: number; total: number }
+
+/** Everything from one app: apps that have the most items first, then the cheapest. */
+export function singleAppTotals(items: ListItem[]): SingleAppTotal[] {
+  return PLATFORMS.map(({ id }) => {
+    let covered = 0, total = 0
+    for (const item of items) {
+      const offer = rankedOffers(item).inStock.find((o) => o.platform === id)
+      if (offer) { covered++; total += offer.price * item.qty }
+    }
+    return { platform: id, covered, total }
+  }).filter((x) => x.covered > 0).sort((a, b) => b.covered - a.covered || a.total - b.total)
+}
+
+/** Buy one item from a chosen app (or back to the cheapest with undefined). */
+export function pinItem(lists: ShoppingList[], listId: string, key: string, platform: Platform | undefined): ShoppingList[] {
+  return lists.map((l) => (l.id === listId ? touch({ ...l, items: l.items.map((i) => (i.key === key ? { ...i, pinned: platform } : i)) }) : l))
+}
+
+/** Buy every item from one app where it has it, or clear every choice with undefined. */
+export function pinAllItems(lists: ShoppingList[], listId: string, platform: Platform | undefined): ShoppingList[] {
+  return lists.map((l) => (l.id === listId ? touch({ ...l, items: l.items.map((i) => ({ ...i, pinned: platform })) }) : l))
+}
+
 export function currentPrice(item: ListItem): number | undefined {
   return item.lastOffers.filter((o) => o.inStock).sort((a, b) => a.price - b.price)[0]?.price
 }
@@ -131,6 +196,7 @@ export function toCartItems(list: ShoppingList, keys: string[], now = Date.now()
   return list.items.filter((i) => keys.includes(i.key)).map((i) => ({
     ...fromGroup({ key: i.key, brand: i.brand, variant: i.variant, variantKey: i.variantKey, sizeGrams: i.sizeGrams, packLabel: i.packLabel, offers: i.lastOffers, best: i.lastOffers[0] }, i.query),
     qty: i.qty,
+    pinned: i.pinned,
     updatedAt: i.lastSeenAt ?? now,
   }))
 }
@@ -182,6 +248,7 @@ export function isShoppingList(value: unknown): value is ShoppingList {
     && l.items.every((i) => i && ['key', 'brand', 'variant', 'variantKey', 'query'].every((k) => typeof i[k as keyof ListItem] === 'string')
       && Number.isInteger(i.qty) && i.qty > 0 && Number.isFinite(i.lastSeenAt) && Number.isFinite(i.addedAt)
       && Number.isFinite(i.timesPicked) && Array.isArray(i.lastOffers)
+      && (i.pinned === undefined || PLATFORMS.some((p) => p.id === i.pinned))
       && i.lastOffers.every((o) => o && PLATFORMS.some((p) => p.id === o.platform)
         && typeof o.title === 'string' && typeof o.deepLink === 'string' && typeof o.inStock === 'boolean'
         && Number.isFinite(o.price) && o.price >= 0 && Number.isFinite(o.fetchedAt)))

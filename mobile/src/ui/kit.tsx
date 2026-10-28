@@ -103,14 +103,14 @@ export function Badge({ label, tone }: { label: string; tone: 'good' | 'muted' |
   )
 }
 
-export function Segmented<V extends string | number>({ value, options, onChange }: { value: V; options: { value: V; label: string }[]; onChange: (v: V) => void }) {
+export function Segmented<V extends string | number>({ value, options, onChange, stretch }: { value: V; options: { value: V; label: string }[]; onChange: (v: V) => void; stretch?: boolean }) {
   const t = useTheme()
   return (
     <View style={[styles.seg, { backgroundColor: t.chip }]}>
       {options.map((o) => {
         const on = o.value === value
         return (
-          <Pressable key={String(o.value)} onPress={() => { tap(); onChange(o.value) }} style={[styles.segItem, on && { backgroundColor: t.surface }]} accessibilityState={{ selected: on }}>
+          <Pressable key={String(o.value)} onPress={() => { tap(); onChange(o.value) }} style={[styles.segItem, stretch && { flex: 1 }, on && { backgroundColor: t.surface }]} accessibilityRole="tab" accessibilityState={{ selected: on }}>
             <Text style={{ color: on ? t.ink : t.muted, fontFamily: t.fonts.bodyBold, fontSize: 13 }} numberOfLines={1}>{o.label}</Text>
           </Pressable>
         )
