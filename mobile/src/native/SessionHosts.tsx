@@ -4,6 +4,12 @@ import { BackHandler, Linking, Modal, Platform, Pressable, StyleSheet, Text, Toa
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { WebView as RNWebView, type WebViewMessageEvent, type WebViewProps } from 'react-native-webview'
 import SastaNative from '../../modules/sasta-native'
+import readerScripts from '@/core/adapters/readers.generated.json'
+import { routeOtp } from '@/core/otp'
+import { PLATFORM } from '@/core/platforms'
+import type { Platform as Shop } from '@/core/types'
+import { plural } from '@/core/utils'
+import { PlatformMark } from '@/ui/PlatformMark'
 import { useTheme } from '@/ui/theme'
 import { registerHosts, markHostsReady, type PageResult, type SignInOptions, type SignInResult } from './platformSession'
 
@@ -274,4 +280,191 @@ const styles = StyleSheet.create({
   title: { fontSize: 16 },
   hint: { fontSize: 12, marginTop: 2 },
   doneBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
+  autoRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 16 },
 })
+
+/* ------------------------------------------------------------------ auto sign-in */
+
+type AutoStatus = 'starting' | 'login-opened' | 'phone-filled' | 'waiting-otp' | 'otp-filled' | 'needs-you' | 'done'
+interface AutoSession {
+  id: number; platform: Shop; opts: SignInOptions; resolve: (r: SignInResult) => void
+  status: AutoStatus; done: string[]; otp: string | null; detail?: string; settled?: boolean
+}
+
+const HOST_PLATFORM: [RegExp, Shop][] = [
+  [/blinkit\.com/, 'blinkit'], [/swiggy\.com/, 'instamart'], [/zepto/, 'zepto'],
+  [/bigbasket\.com/, 'bigbasket'], [/flipkart\.com/, 'flipkart_minutes'], [/amazon\.in/, 'amazon_now'],
+]
+const platformFor = (url: string): Shop => HOST_PLATFORM.find(([re]) => re.test(url))?.[1] ?? 'blinkit'
+
+const AUTO_LABEL: Record<AutoStatus, string> = {
+  'starting': 'Opening sign-in…',
+  'login-opened': 'Opening sign-in…',
+  'phone-filled': 'Number entered · waiting for OTP',
+  'waiting-otp': 'Waiting for OTP',
+  'otp-filled': 'OTP entered · signing in…',
+  'needs-you': 'Needs you · tap to finish',
+  'done': 'Signed in',
+}
+
+/**
+ * Signs in to several apps at once on their own pages: types the number, requests the OTP, and types
+ * each OTP that arrives in a notification into the app it belongs to. Every page stays one tap away,
+ * so anything the script can't do (captcha, password) is finished by hand.
+ */
+export function AutoSignInHost() {
+  const t = useTheme()
+  const { width, height } = useWindowDimensions()
+  const [sessions, setSessions] = useState<AutoSession[]>([])
+  const [shown, setShown] = useState<number | null>(null)
+  const phone = useRef('')
+  const nextId = useRef(1)
+  const views = useRef(new Map<number, WebViewHandle | null>())
+  const list = useRef<AutoSession[]>([])
+  useEffect(() => { list.current = sessions }, [sessions])
+
+  const update = useCallback((id: number, patch: Partial<AutoSession>) => setSessions((all) => all.map((x) => (x.id === id ? { ...x, ...patch } : x))), [])
+  const settle = useCallback((id: number, r: SignInResult) => {
+    const s = list.current.find((x) => x.id === id)
+    if (!s || s.settled) return
+    SastaNative.flushCookies().catch(() => {})
+    s.settled = true
+    s.resolve(r)
+    setSessions((all) => {
+      const next = all.map((x) => (x.id === id ? { ...x, settled: true, status: r.kind === 'cancelled' ? x.status : 'done' as AutoStatus } : x))
+      return next.every((x) => x.settled) ? [] : next
+    })
+  }, [])
+
+  useEffect(() => {
+    registerHosts({ autoSignIn: (opts, number) => new Promise<SignInResult>((resolve) => {
+      phone.current = number
+      const id = nextId.current++
+      setSessions((all) => [...all, { id, platform: platformFor(opts.url), opts, resolve, status: 'starting', done: [], otp: null }])
+    }) })
+  }, [])
+
+  // OTPs from notifications go to the app the message names (or the only app still waiting).
+  useEffect(() => {
+    if (Platform.OS !== 'android' || !sessions.length) return
+    const sub = SastaNative.addListener('otp', (e) => {
+      const waiting = list.current.filter((x) => !x.settled && ['phone-filled', 'waiting-otp'].includes(x.status) && !x.otp)
+      const to = routeOtp(e.text, waiting.map((x) => x.platform))
+      const s = waiting.find((x) => x.platform === to)
+      if (s) update(s.id, { otp: e.code })
+    })
+    return () => sub.remove()
+  }, [sessions.length, update])
+
+  // Drive each page one step at a time, and watch for the signed-in signal each app gives.
+  useEffect(() => {
+    if (!sessions.length) return
+    const timer = setInterval(async () => {
+      for (const s of list.current) {
+        if (s.settled || s.status === 'needs-you' && s.id === shown) continue
+        const step = `(function(){try{var r=(${readerScripts.autofillStep})(${JSON.stringify(phone.current)},${JSON.stringify(s.otp)},${JSON.stringify(s.done)});window.ReactNativeWebView.postMessage(JSON.stringify({__auto:r}))}catch(e){}})();true;`
+        const doneCheck = s.opts.doneScript ? `(function(){try{if(${s.opts.doneScript})window.ReactNativeWebView.postMessage('__sasta_signed_in__')}catch(e){}})();true;` : ''
+        views.current.get(s.id)?.injectJavaScript(doneCheck + step)
+        const { doneCookies, doneOrigins } = s.opts
+        if (doneCookies?.length && doneOrigins?.length) {
+          const names = await SastaNative.cookieNames(doneOrigins).catch(() => [] as string[])
+          if (doneCookies.some((c) => names.includes(c))) settle(s.id, { kind: 'done' })
+        }
+      }
+    }, 1500)
+    return () => clearInterval(timer)
+  }, [sessions.length, shown, settle])
+
+  const onAutoMessage = (s: AutoSession, data: string) => {
+    if (data === '__sasta_signed_in__') return settle(s.id, { kind: 'done' })
+    let r: { step: AutoStatus | 'waiting'; detail?: string } | undefined
+    try { r = JSON.parse(data).__auto } catch { return }
+    if (!r) return
+    const done = [...s.done]
+    if (r.step === 'login-opened' && !done.includes('opener')) done.push('opener')
+    if (r.step === 'phone-filled' && !done.includes('phone')) done.push('phone')
+    if (r.step === 'otp-filled' && s.otp && !done.includes(`otp:${s.otp}`)) done.push(`otp:${s.otp}`)
+    // Apps without a sign-in signal (BigBasket, Flipkart): the OTP form going away means it worked.
+    if (r.step === 'waiting' && s.status === 'otp-filled' && !s.opts.doneScript && !s.opts.doneCookies?.length && !s.opts.interceptPrefix) {
+      if (done.filter((d) => d === 'gone').length >= 2) return settle(s.id, { kind: 'done' })
+      done.push('gone')
+    }
+    const status: AutoStatus = r.step === 'waiting' ? (s.status === 'starting' ? 'starting' : s.status) : r.step
+    if (status !== s.status || done.length !== s.done.length || r.detail !== s.detail) update(s.id, { status, done, detail: r.detail })
+  }
+
+  const intercept = (s: AutoSession, url?: string) => {
+    const prefix = s.opts.interceptPrefix
+    if (prefix && url?.startsWith(prefix)) { settle(s.id, { kind: 'redirect', redirectUrl: url }); return true }
+    return false
+  }
+
+  const open = sessions.filter((x) => !x.settled)
+  const current = sessions.find((x) => x.id === shown && !x.settled)
+  const cancelAll = () => list.current.forEach((x) => settle(x.id, { kind: 'cancelled' }))
+
+  return (
+    <Modal visible={sessions.length > 0} animationType="slide" onRequestClose={() => (current ? setShown(null) : cancelAll())} statusBarTranslucent>
+      <SafeAreaView style={{ flex: 1, backgroundColor: t.bg }} edges={['top', 'bottom']}>
+        <View style={[styles.bar, { borderBottomColor: t.line }]}>
+          <Pressable onPress={() => (current ? setShown(null) : cancelAll())} hitSlop={10} style={styles.barBtn} accessibilityLabel={current ? 'Back to all apps' : 'Cancel sign-in'}>
+            <X size={22} color={t.ink} />
+          </Pressable>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.title, { color: t.ink, fontFamily: t.fonts.display }]} numberOfLines={1}>
+              {current ? `Sign in to ${PLATFORM[current.platform].name}` : `Connecting ${plural(open.length, 'app')}`}
+            </Text>
+            <Text style={[styles.hint, { color: t.muted, fontFamily: t.fonts.body }]} numberOfLines={2}>
+              {current ? 'Finish here if the page needs you. Sasta fills the number and OTP.' : 'Sasta types your number and fills each OTP from your notifications.'}
+            </Text>
+          </View>
+          {current && (
+            <Pressable onPress={() => settle(current.id, { kind: 'done' })} style={[styles.doneBtn, { backgroundColor: t.ink }]}>
+              <Text style={{ color: t.bg, fontFamily: t.fonts.bodyBold, fontSize: 13 }}>{"I'm signed in"}</Text>
+            </Pressable>
+          )}
+        </View>
+        {!current && (
+          <View style={{ padding: 16, gap: 8 }}>
+            {sessions.map((x) => (
+              <Pressable key={x.id} onPress={() => !x.settled && setShown(x.id)} style={[styles.autoRow, { backgroundColor: t.surface }]} accessibilityRole="button">
+                <PlatformMark platform={x.platform} size={28} />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: t.ink, fontFamily: t.fonts.bodyBold, fontSize: 15 }}>{PLATFORM[x.platform].name}</Text>
+                  <Text style={{ color: x.status === 'needs-you' ? t.accentText : x.settled ? t.good : t.muted, fontFamily: t.fonts.body, fontSize: 12.5 }} numberOfLines={2}>
+                    {x.settled ? 'Signed in' : x.detail ? `${x.detail} · tap to finish` : AUTO_LABEL[x.status]}
+                  </Text>
+                </View>
+                {!x.settled && <Text style={{ color: t.ink, fontFamily: t.fonts.bodySemi, fontSize: 12.5 }}>View</Text>}
+              </Pressable>
+            ))}
+            <Text style={{ color: t.muted, fontFamily: t.fonts.body, fontSize: 12, textAlign: 'center', marginTop: 4 }}>
+              Your number and OTPs go only to each app&apos;s own page on this phone.
+            </Text>
+          </View>
+        )}
+        <View style={{ flex: current ? 1 : 0, height: current ? undefined : 0 }}>
+          {sessions.filter((x) => !x.settled).map((x) => (
+            <View key={x.id} pointerEvents={x.id === shown ? 'auto' : 'none'}
+              style={x.id === shown ? StyleSheet.absoluteFill : { position: 'absolute', top: 0, left: -width * 2, width, height: height * 0.8, opacity: 0 }}>
+              <WebView
+                ref={(v) => { views.current.set(x.id, v) }}
+                source={{ uri: x.opts.url }}
+                userAgent={browserUA}
+                onShouldStartLoadWithRequest={(r: { url: string }) => !intercept(x, r.url) && !NON_WEB.test(r.url)}
+                onNavigationStateChange={(st: { url?: string }) => { intercept(x, st.url) }}
+                onError={(e: { nativeEvent: { url?: string } }) => { intercept(x, e.nativeEvent.url) }}
+                onMessage={(e: WebViewMessageEvent) => onAutoMessage(x, e.nativeEvent.data)}
+                thirdPartyCookiesEnabled
+                domStorageEnabled
+                geolocationEnabled={false}
+                setSupportMultipleWindows={false}
+                style={{ flex: 1 }}
+              />
+            </View>
+          ))}
+        </View>
+      </SafeAreaView>
+    </Modal>
+  )
+}

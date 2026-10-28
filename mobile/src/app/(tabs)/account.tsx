@@ -1,7 +1,7 @@
 import { router } from 'expo-router'
-import { CheckCircle2, ChevronRight, MapPin, Palette, ShieldCheck } from 'lucide-react-native'
-import { useState } from 'react'
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { CheckCircle2, ChevronRight, MapPin, Palette, ShieldCheck, Smartphone } from 'lucide-react-native'
+import { useEffect, useState } from 'react'
+import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { canSearch, IS_NATIVE } from '@/core/adapters'
 import { searchLabel } from '@/core/capabilities'
@@ -9,7 +9,10 @@ import { ACCOUNT_CONFIG } from '@/core/accounts'
 import { PLATFORM, PLATFORMS } from '@/core/platforms'
 import type { SwiggyAddress } from '@/core/adapters/instamart'
 import type { Platform } from '@/core/types'
+import { tenDigits } from '@/core/otp'
+import { PlatformSession } from '@/native/platformSession'
 import { useStore } from '@/state/store'
+import SastaNative from '../../../modules/sasta-native'
 import { Badge, Button, Card, Divider, Segmented, T } from '@/ui/kit'
 import { setAppearance, useAppearance, useTheme } from '@/ui/theme'
 import { PlatformMark } from '@/ui/PlatformMark'
@@ -40,16 +43,29 @@ export default function AccountScreen() {
     return run(p, () => s.setupProvider(p))
   }
 
+  // One number for every app: saved on this phone only, in encrypted storage.
+  const [phone, setPhone] = useState('')
+  useEffect(() => { PlatformSession.secureGet({ key: 'phone' }).then((r) => { if (r.value) setPhone(r.value) }).catch(() => {}) }, [])
+  const remaining = PLATFORMS.length - connected
+
   async function connectAll() {
+    const number = tenDigits(phone)
+    if (!number) { Alert.alert('Check your number', 'Enter the 10-digit mobile number you use in these apps.'); return }
+    await PlatformSession.secureSet({ key: 'phone', value: number }).catch(() => {})
+    if (!SastaNative.hasNotificationAccess()) {
+      const go = await new Promise<'settings' | 'without' | 'cancel'>((resolve) => Alert.alert(
+        'Let Sasta read OTPs?',
+        'Allow Notification access for Sasta, then come back and tap Connect again. Sasta reads codes only while it is signing in, and only passes each code to the app it is for. Without it, Sasta still types your number and you type each OTP.',
+        [{ text: 'Cancel', style: 'cancel', onPress: () => resolve('cancel') }, { text: 'Without', onPress: () => resolve('without') }, { text: 'Open settings', onPress: () => resolve('settings') }],
+      ))
+      if (go === 'settings') { SastaNative.openNotificationAccess(); return }
+      if (go === 'cancel') return
+    }
     setAll(true)
     try {
-      for (const { id } of PLATFORMS) {
-        if (s.accounts[id]?.status === 'connected') continue
-        setBusy(id)
-        try { const acc = await s.connect(id); if (acc.status !== 'connected') break }
-        catch (e) { setErrors((x) => ({ ...x, [id]: (e as Error).message })) }
-      }
-    } finally { setBusy(null); setAll(false) }
+      const r = await s.connectAllWithOtp(number)
+      s.showToast(r.missed.length ? `Connected ${r.connected.length}. Finish ${r.missed.map((p) => PLATFORM[p].short).join(', ')} below.` : `All ${r.connected.length} apps connected`)
+    } finally { setAll(false) }
   }
 
   return (
@@ -86,7 +102,19 @@ export default function AccountScreen() {
           {connected} of {PLATFORMS.length} sessions connected. Test search checks real products separately from login. Choose the same delivery area in every app.
         </T>
         {IS_NATIVE && connected < PLATFORMS.length && (
-          <Button label={all ? 'Connecting one by one…' : connected ? `Connect the other ${PLATFORMS.length - connected}` : 'Connect all apps'} loading={all} disabled={busy !== null && !all} onPress={connectAll} />
+          <Card style={{ padding: 14, gap: 10 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <Smartphone size={18} color={t.ink} />
+              <View style={{ flex: 1 }}>
+                <T kind="bodyStrong">Connect {remaining === PLATFORMS.length ? 'all apps' : `the other ${remaining}`} at once</T>
+                <T kind="small">Sasta signs in to each app with this number and fills each OTP from your notifications.</T>
+              </View>
+            </View>
+            <TextInput value={phone} onChangeText={setPhone} placeholder="Mobile number" placeholderTextColor={t.faint} keyboardType="phone-pad"
+              autoComplete="tel" textContentType="telephoneNumber" maxLength={14} accessibilityLabel="Mobile number"
+              style={[styles.phone, { backgroundColor: t.chip, color: t.ink, fontFamily: t.fonts.bodyBold }]} />
+            <Button label={all ? 'Signing in…' : `Connect ${remaining} ${remaining === 1 ? 'app' : 'apps'}`} loading={all} disabled={busy !== null || all || !tenDigits(phone)} onPress={connectAll} />
+          </Card>
         )}
         {!IS_NATIVE && <T kind="small" style={{ color: t.accentText }}>Signing in works in the Android app.</T>}
 
@@ -182,5 +210,6 @@ const styles = StyleSheet.create({
   acct: { paddingHorizontal: 14, paddingVertical: 13 },
   dot: { width: 10, height: 10, borderRadius: 5 },
   privacy: { flexDirection: 'row', gap: 10, padding: 14, borderRadius: 18 },
+  phone: { height: 48, borderRadius: 12, paddingHorizontal: 14, fontSize: 16, letterSpacing: 0.5 },
   address: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8 },
 })

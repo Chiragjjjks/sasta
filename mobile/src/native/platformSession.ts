@@ -31,6 +31,8 @@ export interface PageResult { ok: boolean; value?: unknown; error?: string }
 
 interface Hosts {
   signIn?: (o: SignInOptions) => Promise<SignInResult>
+  /** Several sign-ins at once, with the number and OTPs filled in. */
+  autoSignIn?: (o: SignInOptions, phone: string) => Promise<SignInResult>
   pageRun?: (o: { origin: string; script: string; timeoutMs?: number; path?: string }) => Promise<PageResult>
   pageReset?: (origin: string) => void
 }
@@ -43,6 +45,11 @@ export function markHostsReady() { hostsReady() }
 
 const isWeb = Platform.OS === 'web'
 
+/** While set, every sign-in runs in the auto-fill host with this number instead of the one-at-a-time page. */
+let autoPhone: string | null = null
+export function beginAutoSignIn(phone: string) { autoPhone = phone }
+export function endAutoSignIn() { autoPhone = null }
+
 // SecureStore keys may only contain letters, digits, ".", "-" and "_".
 const secureKey = (k: string) => `sasta_${k.replace(/[^A-Za-z0-9._-]/g, '_')}`
 
@@ -50,6 +57,7 @@ export const PlatformSession = {
   async signIn(opts: SignInOptions): Promise<SignInResult> {
     if (isWeb) throw new Error('Sign-in only works in the Android app.')
     await ready
+    if (autoPhone && hosts.autoSignIn) return hosts.autoSignIn(opts, autoPhone)
     return hosts.signIn!(opts)
   },
   async cookieNames({ urls }: { urls: string[] }): Promise<{ names: string[] }> {

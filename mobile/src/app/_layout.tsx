@@ -6,7 +6,7 @@ import { StatusBar } from 'expo-status-bar'
 import { useEffect, useState } from 'react'
 import { View } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
-import { HiddenPages, SignInHost } from '@/native/SessionHosts'
+import { AutoSignInHost, HiddenPages, SignInHost } from '@/native/SessionHosts'
 import { StoreProvider } from '@/state/store'
 import { restoreAppearance, useTheme } from '@/ui/theme'
 import { Toast } from '@/ui/Toast'
@@ -41,6 +41,7 @@ export default function RootLayout() {
             </Stack>
             <HiddenPages />
             <SignInHost />
+            <AutoSignInHost />
             <Toast />
           </View>
         </StoreProvider>
