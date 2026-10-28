@@ -5,9 +5,12 @@ import { migrateLists } from '@/core/identity'
 import { PlatformSession } from '@/native/platformSession'
 import { blinkitIdentity, fetchBlinkitBill, openBlinkitWithCart, prepareBlinkitSignIn } from '@/core/adapters/blinkit'
 import {
-  ACCOUNT_CONFIG, connectSwiggyWebsite, connectWeb, disconnectWeb, loadAccounts, recheckWebSessions, saveAccounts,
+  ACCOUNT_CONFIG, connectWeb, connectWebsite, disconnectWeb, loadAccounts, recheckWebSessions, saveAccounts,
   testWebConnection, type Account,
 } from '@/core/accounts'
+import {
+  listSwiggyAddresses, loadInstamartAddress, resolveInstamartAddress, saveInstamartAddress, type SelectedAddress, type SwiggyAddress,
+} from '@/core/adapters/instamart'
 import { addItem, addItems, fromGroup, mergeRefreshedCart, pin, pinAll, refreshCart, setQty, summarize, type CartItem } from '@/core/cart'
 import { blinkitRuleFromBill, type FeeRules } from '@/core/fees'
 import {
@@ -22,7 +25,7 @@ import {
   DEFAULT_LOCATION, DEFAULT_RECENTS, loadCart, loadFees, loadLists, loadLocation, loadRecents, pushRecent, saveCart,
   saveFees, saveLists, saveLocation, saveRecents,
 } from '@/core/storage'
-import { connectSwiggy, disconnectSwiggy, swiggyClient } from '@/core/swiggy'
+import { connectMcp, disconnectMcp, isMcpPlatform, mcpClient } from '@/core/mcp-connect'
 import type { AdapterStatus, Location, Offer, Platform, ProductGroup } from '@/core/types'
 import { isReasonableQuery } from '@/core/utils'
 
@@ -73,6 +76,10 @@ interface Store {
   disconnect: (p: Platform) => Promise<void>
   testConnection: (p: Platform) => Promise<void>
   setupProvider: (p: Platform) => Promise<void>
+  /** Instamart searches one of the user's saved Swiggy addresses. */
+  instamartAddress: SelectedAddress | null
+  listInstamartAddresses: () => Promise<SwiggyAddress[]>
+  chooseInstamartAddress: (a: SwiggyAddress) => Promise<void>
   // feedback
   toast: string; showToast: (t: string) => void
 }
@@ -98,6 +105,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [fees, setFees] = useState<FeeRules>({})
   const [lists, setLists] = useState<ShoppingList[]>([])
   const [accounts, setAccounts] = useState<Partial<Record<Platform, Account>>>({})
+  const [instamartAddress, setInstamartAddress] = useState<SelectedAddress | null>(null)
   const [toast, setToast] = useState('')
   const loadedCart = useRef(false)
   const loadedLists = useRef(false)
@@ -112,6 +120,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     loadCart().then((c) => { setCart(c); loadedCart.current = true })
     loadLists().then((l) => { setLists(l); loadedLists.current = true })
     loadFees().then(setFees)
+    loadInstamartAddress().then(setInstamartAddress)
     loadAccounts().then(async (a) => {
       setAccounts(a)
       if (!IS_NATIVE) return
@@ -247,9 +256,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const testAccount = useCallback(async (p: Platform, acc: Account): Promise<{ ok: boolean; detail: string }> => {
-    if (p === 'instamart' && acc.via !== 'web') {
-      try { const tools = await swiggyClient().listTools(); return { ok: true, detail: `Swiggy answered with ${tools.length} actions` } }
-      catch (e) { return { ok: false, detail: `Swiggy didn't answer: ${(e as Error).message}` } }
+    if (isMcpPlatform(p) && acc.via !== 'web') {
+      const name = ACCOUNT_CONFIG[p].account
+      try { const tools = await mcpClient(p).listTools(); return { ok: true, detail: `${name} answered with ${tools.length} actions` } }
+      catch (e) { return { ok: false, detail: `${name} didn't answer: ${(e as Error).message}` } }
     }
     if (p === 'blinkit') {
       const who = await blinkitIdentity().catch(() => null)
@@ -268,6 +278,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return tested
     }
     const probe = await probeSearch(p, canSearch(p) ? adapters.find(a => a.platform === p) : undefined, submitted || 'milk', locationRef.current)
+    if (p === 'instamart') loadInstamartAddress().then(setInstamartAddress)
     const report = connectionReport(t, probe)
     const tested: Account = { ...acc, status: t.ok ? 'connected' : acc.status, connectedAt: t.ok ? acc.connectedAt ?? Date.now() : acc.connectedAt, lastTest: report, verified: t.ok }
     updateAccount(tested)
@@ -295,10 +306,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const connect = useCallback(async (p: Platform, opts: { website?: boolean } = {}): Promise<Account> => {
     let acc: Account
-    if (p === 'instamart' && !opts.website) {
-      try { acc = await connectSwiggy() }
-      catch (e) { throw new Error(`Swiggy's official sign-in didn't finish (${(e as Error).message}). Try "Sign in on Swiggy's website".`) }
-    } else if (p === 'instamart') acc = await connectSwiggyWebsite()
+    if (isMcpPlatform(p) && !opts.website) {
+      const name = ACCOUNT_CONFIG[p].account
+      try { acc = await connectMcp(p) }
+      catch (e) { throw new Error(`${name}'s official sign-in didn't finish (${(e as Error).message}). Try again, or use ${name}'s website.`) }
+      if (p === 'instamart' && acc.status === 'connected') {
+        // Show which saved address Instamart will search, so the user can change it.
+        await saveInstamartAddress(null)
+        setInstamartAddress(await resolveInstamartAddress(mcpClient('instamart')).catch(() => null))
+      }
+    } else if (isMcpPlatform(p)) acc = await connectWebsite(p)
     else {
       if (p === 'blinkit' && IS_NATIVE) await prepareBlinkitSignIn(locationRef.current).catch(() => {})
       acc = await connectWeb(p)
@@ -314,8 +331,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const disconnect = useCallback(async (p: Platform) => {
     const acc = accounts[p]
-    updateAccount(p === 'instamart' && acc?.via !== 'web' ? await disconnectSwiggy() : await disconnectWeb(p))
+    updateAccount(isMcpPlatform(p) && acc?.via !== 'web' ? await disconnectMcp(p) : await disconnectWeb(p))
+    if (p === 'instamart') { await saveInstamartAddress(null); setInstamartAddress(null) }
   }, [accounts, updateAccount])
+
+  const listInstamartAddresses = useCallback(async () => (await listSwiggyAddresses()).addresses, [])
+
+  const chooseInstamartAddress = useCallback(async (a: SwiggyAddress) => {
+    const chosen = { ...a, auto: false }
+    await saveInstamartAddress(chosen)
+    setInstamartAddress(chosen)
+    clearSearchCache()
+    await runTest('instamart', accounts.instamart ?? { platform: 'instamart', status: 'connected' }, true)
+  }, [accounts, runTest])
 
   const testConnection = useCallback(async (p: Platform) => {
     await runTest(p, accounts[p] ?? { platform: p, status: 'disconnected' })
@@ -344,7 +372,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     },
     exportLists: async () => { await shareFile(`sasta-lists-${new Date().toISOString().slice(0, 10)}.json`, exportLists(lists)).catch(() => setToast('Could not export')) },
     importLists: importListsFn,
-    accounts, connect, disconnect, testConnection, setupProvider,
+    accounts, connect, disconnect, testConnection, setupProvider, instamartAddress, listInstamartAddresses, chooseInstamartAddress,
     toast, showToast: setToast,
   }
 

@@ -5,7 +5,7 @@ import type { AdapterStatus, Platform } from './types'
 
 /**
  * How Sasta signs in to each platform.
- * - mcp: the platform's official MCP server with OAuth (only Swiggy Instamart today)
+ * - mcp: the platform's official MCP server with OAuth (Swiggy Instamart and Zepto)
  * - web: the platform's own website login inside the in-app browser; the session stays in cookies
  */
 export type ConnectMethod = 'mcp' | 'web'
@@ -30,8 +30,8 @@ export interface AccountConfig {
    * own storage. Used to close the sign-in screen right after the OTP and to test the connection.
    */
   signedInScript?: string
-  /** Swiggy: sign in on the website instead, if the official MCP connection fails. */
-  webFallback?: { loginUrl: string; origins: string[]; sessionCookies: string[] }
+  /** Sign in on the website instead, if the official MCP connection fails. */
+  webFallback?: { loginUrl: string; origins: string[]; sessionCookies: string[]; signedInScript?: string; enablesSearch: boolean }
 }
 
 export const ACCOUNT_CONFIG: Record<Platform, AccountConfig> = {
@@ -39,8 +39,8 @@ export const ACCOUNT_CONFIG: Record<Platform, AccountConfig> = {
     platform: 'instamart', method: 'mcp', account: 'Swiggy',
     loginUrl: 'https://mcp.swiggy.com/auth/authorize', origins: ['https://mcp.swiggy.com'],
     sessionCookies: [], mcpUrl: 'https://mcp.swiggy.com/im',
-    note: "Search requires the official Swiggy connection and an exact location in Sasta. Website login alone does not enable search.",
-    webFallback: { loginUrl: 'https://www.swiggy.com/instamart', origins: ['https://www.swiggy.com'], sessionCookies: ['_session_tid'] },
+    note: 'Official Swiggy connection. Instamart searches one of your saved Swiggy addresses, shown here after connecting.',
+    webFallback: { loginUrl: 'https://www.swiggy.com/instamart', origins: ['https://www.swiggy.com'], sessionCookies: ['_session_tid'], enablesSearch: false },
   },
   blinkit: {
     platform: 'blinkit', method: 'web', account: 'Blinkit',
@@ -49,12 +49,16 @@ export const ACCOUNT_CONFIG: Record<Platform, AccountConfig> = {
     signedInScript: "(function(){var a=JSON.parse(localStorage.getItem('auth')||'null');return !!(a&&a.accessToken)})()",
   },
   zepto: {
-    platform: 'zepto', method: 'web', account: 'Zepto',
-    // Not session_id: anonymous visits get one too.
-    // zeptonow.com now redirects to zepto.com; check both.
-    loginUrl: 'https://www.zepto.com/', origins: ['https://www.zepto.com', 'https://zepto.com', 'https://www.zeptonow.com'], sessionCookies: ['user_id'],
-    // zepto.com keeps { state: { user, isAuth } } under localStorage "user" (seen in its web bundle).
-    signedInScript: "(function(){var u=JSON.parse(localStorage.getItem('user')||'null');return !!(u&&u.state&&(u.state.isAuth||(u.state.user&&u.state.user.id)))})()",
+    platform: 'zepto', method: 'mcp', account: 'Zepto',
+    loginUrl: 'https://auth.zepto.co.in/authorize', origins: ['https://auth.zepto.co.in'], sessionCookies: [], mcpUrl: 'https://mcp.zepto.co.in/mcp',
+    note: "Official Zepto connection (read-only: search and prices). Uses Sasta's exact location.",
+    webFallback: {
+      // Not session_id: anonymous visits get one too. zeptonow.com now redirects to zepto.com; check both.
+      loginUrl: 'https://www.zepto.com/', origins: ['https://www.zepto.com', 'https://zepto.com', 'https://www.zeptonow.com'], sessionCookies: ['user_id'],
+      // zepto.com keeps { state: { user, isAuth } } under localStorage "user" (seen in its web bundle).
+      signedInScript: "(function(){var u=JSON.parse(localStorage.getItem('user')||'null');return !!(u&&u.state&&(u.state.isAuth||(u.state.user&&u.state.user.id)))})()",
+      enablesSearch: true,
+    },
   },
   bigbasket: {
     platform: 'bigbasket', method: 'web', account: 'BigBasket',
@@ -172,7 +176,7 @@ export async function testWebConnection(platform: Platform, acc: Account): Promi
   const cfg = ACCOUNT_CONFIG[platform]
   const target = cfg.method === 'web' ? cfg : acc.via === 'web' ? cfg.webFallback : undefined
   if (!target) return { ok: false, detail: 'Nothing to test' }
-  const script: string | undefined = cfg.method === 'web' ? cfg.signedInScript : undefined
+  const script: string | undefined = target.signedInScript
   if (script && (await checkInPage(target.origins[0], script).catch(() => false))) return { ok: true, detail: `${cfg.account} says you are signed in` }
   const { names } = await PlatformSession.cookieNames({ urls: target.origins })
   const judged = judgeWebSignIn(target, names, acc.learnedCookies)
@@ -185,10 +189,11 @@ export async function connectWeb(platform: Platform): Promise<Account> {
   return signInOnWeb(platform, ACCOUNT_CONFIG[platform])
 }
 
-/** Swiggy website sign-in, used when the official MCP connection does not work. */
-export async function connectSwiggyWebsite(): Promise<Account> {
-  const fb = ACCOUNT_CONFIG.instamart.webFallback!
-  return signInOnWeb('instamart', { ...fb, account: 'Swiggy' }, 'web')
+/** Website sign-in, used when the official MCP connection does not work. */
+export async function connectWebsite(platform: Platform): Promise<Account> {
+  const cfg = ACCOUNT_CONFIG[platform]
+  if (!cfg.webFallback) return connectWeb(platform)
+  return signInOnWeb(platform, { ...cfg.webFallback, account: cfg.account }, 'web')
 }
 
 /**

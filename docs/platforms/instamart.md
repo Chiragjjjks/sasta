@@ -1,31 +1,27 @@
 # Instamart
 
-The native app now calls Swiggy's official `search_products` MCP tool at
-`https://mcp.swiggy.com/im`. The previous `/instamart` URL was wrong, and the
-adapter registry previously had no Instamart search implementation.
+**Verdict:** official MCP. Verified end to end on 2026-10-28 with a real Swiggy sign-in: OAuth, `tools/list`, `get_addresses` and `search_products` returned 12 priced products for "amul milk" in about 1 s. The production adapter passed the same check (`SASTA_LIVE_TOKENS=… npm test -- live-mcp`).
 
-Sources checked 2026-10-24:
-- https://mcp.swiggy.com/builders/docs/reference/instamart/search_products/
-- https://mcp.swiggy.com/builders/docs/start/authenticate/
+| Item | Finding |
+|---|---|
+| Server | `https://mcp.swiggy.com/im` (Streamable HTTP, `Mcp-Session-Id`) |
+| Auth | `https://mcp.swiggy.com/auth`: dynamic registration (always returns `client_id: swiggy-mcp`), PKCE S256, JSON token body. Access token 5 days, refresh 30 days and rotates |
+| Redirect | `http://localhost/sasta/oauth/swiggy` works. The sign-in page names the client "Local Application". Production use outside localhost needs Builders Club approval |
+| Tools (16) | `get_addresses`, `create_address`, `delete_address`, `search_products`, `your_go_to_items`, `get_cart`, `update_cart`, `clear_cart`, `checkout`, `get_orders`, `track_order`, `get_delivery_status`, `report_error`, `get_payment_options`, `check_payment_status`, `confirm_order` |
+| Location | **A signed-in session must pass `addressId`.** Guest `latitude`/`longitude` are refused with `addressId is required`. `get_addresses` returns `addresses[] { id, addressLine, addressTag, addressCategory, phoneNumber }` (no coordinates) and `resolution.defaultAddressId` |
+| Search response | `structuredContent` is `{ nextOffset, products, similarProducts }`. **No `success`/`data` envelope**, unlike the docs. Each product: `displayName`, `brand`, `inStock`, `isAvail`, `isPromoted`, `variations[] { skuId, spinId, displayName, brandName, quantityDescription, price { mrp, offerPrice }, isInStockAndAvailable, imageUrl, sla { value, unit: "MINS" } }`. Prices in rupees |
+| Fixture | `mobile/fixtures/instamart/mcp-search.json` (catalog only) |
 
-Search uses the documented coordinate/guest-price mode (`query`, `latitude`,
-`longitude`), using the exact coordinates selected in Sasta. It never invents
-saved address IDs or selects an account's default address. A postcode alone
-returns `needs_location`. This mode does not promise account-specific offers.
+## Why Instamart showed nothing before v0.6.0
 
-The MCP transport still requires OAuth: an unauthenticated initialize against
-`/im` returned HTTP 401. Website cookies do not authenticate MCP. Account has a
-Reconnect Swiggy action for existing website sessions and expired/old tokens.
-Swiggy's documented JSON encoding is used for token exchange and refresh.
+1. The adapter sent only coordinates, which signed-in sessions refuse.
+2. The parser required `success: true` and `data.products`, which the live server does not send.
 
-The parser handles MCP text and structured content and maps each variation's
-`skuId`, `quantityDescription`, `price.offerPrice`, `price.mrp`, and
-`isInStockAndAvailable`. Prices use the published rupee fields. Deep links open
-the real Instamart search because the contract does not provide product URLs.
-No cart, address-creation, checkout, or ordering tool is called.
+## How Sasta uses it now
 
-Validation: production MCP client and adapter run against the local Postman
-simulation (synthetic values based on the official schema), including auth,
-variants, stock, malformed data, provider errors and cancellation. Positive live
-search and the full OTP flow remain unverified without an authenticated phone
-session. A mock pass is not a claim of live account access.
+- Instamart searches one saved Swiggy address: the one you chose in **Account → Delivery address**, else Swiggy's own `defaultAddressId`, else the only address. The row shows which one. Sasta never creates or deletes addresses.
+- ETA comes from `sla`. Deep links open Instamart's own search, because the contract has no product URL.
+- Cart, checkout, payment and order tools are never called.
+- Website sign-in (`www.swiggy.com`, cookie `_session_tid`) stays as a fallback but does not enable search.
+
+Sources: https://mcp.swiggy.com/builders/docs/reference/instamart/search_products/, https://mcp.swiggy.com/builders/docs/start/authenticate/

@@ -10,8 +10,8 @@ describe('accounts', () => {
   })
   it('knows the session cookies for Blinkit and Zepto', () => {
     expect(judgeWebSignIn(ACCOUNT_CONFIG.blinkit, ['gr_1_deviceId', 'gr_1_accessToken'])).toEqual({ status: 'connected', verified: true })
-    expect(judgeWebSignIn(ACCOUNT_CONFIG.zepto, ['session_id']).status).toBe('disconnected')
-    expect(judgeWebSignIn(ACCOUNT_CONFIG.zepto, ['session_id', 'user_id']).status).toBe('connected')
+    expect(judgeWebSignIn(ACCOUNT_CONFIG.zepto.webFallback!, ['session_id']).status).toBe('disconnected')
+    expect(judgeWebSignIn(ACCOUNT_CONFIG.zepto.webFallback!, ['session_id', 'user_id']).status).toBe('connected')
   })
   it('marks a cookie sign-in unverified until session cookie names are known', () => {
     expect(judgeWebSignIn({ ...ACCOUNT_CONFIG.blinkit, sessionCookies: [] }, ['x'])).toEqual({ status: 'connected', verified: false })
@@ -36,7 +36,7 @@ describe('learning session cookies on the phone', () => {
     expect(judgeWebSignIn(cfg, ['T'], ['at']).status).toBe('disconnected')
   })
   it('checks Zepto on its new domain and Amazon by its sign-in cookies', () => {
-    expect(ACCOUNT_CONFIG.zepto.origins).toContain('https://www.zepto.com')
+    expect(ACCOUNT_CONFIG.zepto.webFallback!.origins).toContain('https://www.zepto.com')
     expect(judgeWebSignIn(ACCOUNT_CONFIG.amazon_now, ['session-id', 'ubid-acbin']).status).toBe('disconnected')
     expect(judgeWebSignIn(ACCOUNT_CONFIG.amazon_now, ['session-id', 'at-acbin']).status).toBe('connected')
   })

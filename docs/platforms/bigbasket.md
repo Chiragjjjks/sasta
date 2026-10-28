@@ -20,3 +20,16 @@ Regression fixtures reconstruct the observed DOM structure using synthetic/simpl
 markup. They verify pack/price/stock extraction, location, blocking and scheduled
 item exclusion. The live page was inspected, but the new reader has not yet been
 verified end-to-end inside a signed Android WebView with a selected delivery area.
+
+## Listing API (verified 2026-10-28)
+
+`GET /listing-svc/v2/products?type=ps&slug=<query>&page=1` returns JSON when called with `fetch()` from inside `www.bigbasket.com` (real Chrome, logged out). Sasta now uses it first and keeps the card reader as a fallback.
+
+| Item | Finding |
+|---|---|
+| Products | `tabs[0].product_info.products[]`: `id`, `desc`, `brand.name`, `w` (pack), `pack_desc`, `absolute_url`, `images[].m`, `pricing.discount.prim_price.sp` (price), `pricing.discount.mrp`, `availability { avail_status: "001" in stock / "000" out, button: "Add" / "Notify Me", not_for_sale }`. Other pack sizes are in `children[]` with the same fields |
+| Selected area | Cookie `_bb_addressinfo`, base64 of `lat|lng|area|pincode|city|…`, and `_bb_pin_code`. Empty until the user picks an area; then prices change (Amul Gold 500 ml ₹32 → ₹34 at Rajajinagar) |
+| Quick delivery | Cookie `xentrycontext=bbnow` (`xentrycontextid=10`). `_bb_locSrc` and `_is_now_ec_serviceable` did **not** change after picking a serviceable area, so Sasta does not rely on them |
+| Choosing an area | `GET /places/v1/places/autocomplete/?inputText=…`, then the site writes the cookies. `GET /ui-svc/v2/header/` lists the area's stores (`sa_list`) but carries no ETA |
+| ETA | Not in the listing or header APIs. Left empty rather than guessed |
+| Fixture | `mobile/fixtures/bigbasket/listing.json` |

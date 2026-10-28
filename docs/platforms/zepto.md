@@ -1,6 +1,26 @@
 # zepto
 
-**Verdict:** B (provider storefront in WebView). Implemented in `mobile/src/core/adapters/zepto.ts`; the production reader returned 30 real product cards on 2026-10-24 after selecting a public delivery area.
+**Verdict:** official MCP first, storefront WebView as fallback. Implemented in `mobile/src/core/adapters/zepto.ts`.
+
+## Official MCP (verified 2026-10-28)
+
+Zepto publishes an MCP server ([github.com/zeptonow/mcp](https://github.com/zeptonow/mcp)). A real sign-in, `tools/list`, `get_location_serviceability` and `search_products` all worked, and the production adapter passed `npm test -- live-mcp` (10 products for "amul milk" in about 0.7 s).
+
+| Item | Finding |
+|---|---|
+| Server | `https://mcp.zepto.co.in/mcp`. Protected resource `https://mcp.zepto.co.in` |
+| Auth | `https://auth.zepto.co.in`: dynamic registration (real client ids), PKCE S256, form-encoded token body. Access token 7 days. Redirect allow-list includes `http://localhost/callback` |
+| Scopes Sasta asks for | Read only: `tools:read dev.ucp.shopping.catalog.search:read dev.ucp.shopping.catalog.lookup:read dev.ucp.common.location.search:read dev.ucp.common.location.lookup:read`. No cart, checkout or order scopes |
+| Tools (23) | `zepto_shop`, `search_products`, `search_multiple_products`, `get_product_details`, `get_location_serviceability`, `select_store`, `list_saved_addresses`, `select_saved_address`, `add_saved_address`, `update_drop_zone`, `get_user_details`, `update_user_name`, `view_cart`, `update_cart`, `get_payment_methods`, `create_order`, `create_online_payment_order`, `create_wallet_order`, `create_upi_reserve_pay_order`, `check_payment_status`, `get_order_detail`, `list_order_history`, `get_past_order_items` |
+| Location | `get_location_serviceability { latitude, longitude }` answers in text (store ids, `ETA: 10 minutes`) and **links the location to the MCP session**. Sasta calls it once per session and location |
+| Search | `search_products { query, pageNumber }`. `structuredContent.products[] { id, productVariantId, storeProductId, name, price, mrp, imageUrl, packSize, availableQuantity, isAd }`. **Prices in paise** (8800 = ₹88). Product URL `https://www.zepto.com/pn/<slug>/pvid/<productVariantId>` |
+| Fixtures | `mobile/fixtures/zepto/mcp-search.json`, `mcp-serviceability.txt` (store ids replaced) |
+
+Without the official connection, Sasta falls back to the storefront reader below.
+
+## Storefront fallback
+
+The production reader returned 30 real product cards on 2026-10-24 after selecting a public delivery area.
 
 | Item | Finding |
 |---|---|

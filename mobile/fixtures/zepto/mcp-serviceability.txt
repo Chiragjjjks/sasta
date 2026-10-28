@@ -1,0 +1,17 @@
+✅ Zepto delivers to your location!
+
+Primary store ID: 00000000-0000-4000-8000-000000000000
+ETA: 10 minutes
+Store Type: PRIMARY_STORE
+Nightly Store: No
+
+
+Secondary Store ID: 00000000-0000-4000-8000-000000000001
+Secondary ETA: 10 minutes
+
+Tertiary Store ID: 00000000-0000-4000-8000-000000000002
+Tertiary ETA: 10 minutes
+
+You can now search for products and place orders!
+
+This location has been linked to your current session for future requests.

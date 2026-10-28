@@ -1,0 +1,181 @@
+{
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "(trimmed)"
+      }
+    ],
+    "structuredContent": {
+      "nextOffset": "1",
+      "products": [
+        {
+          "displayName": "Amul Gold Pasteurised Full Cream Milk",
+          "brand": "Amul",
+          "inStock": true,
+          "isAvail": true,
+          "variations": [
+            {
+              "spinId": "W899J8TO1Z",
+              "skuId": "QC9SPC9KT4",
+              "quantityDescription": "500 ml x 4",
+              "displayName": "Amul Gold Pasteurised Full Cream Milk",
+              "brandName": "Amul",
+              "price": {
+                "mrp": 136,
+                "offerPrice": 136,
+                "unitLevelPrice": "6.8/100 ml"
+              },
+              "isInStockAndAvailable": true,
+              "imageUrl": "https://media-assets.swiggy.com/swiggy/image/upload/NI_CATALOG/IMAGES/ciw/2025/12/17/51a2cd89-2a42-4b2b-ac97-95288e02952d_TYF3262KU8_MN_16122025.png",
+              "sla": {
+                "value": "5",
+                "unit": "MINS"
+              },
+              "vegClassifier": "VEG_CLASSIFIER_INVALID",
+              "maxQuantity": 1,
+              "maxQuantityMessage": "Only 1 unit(s) of this item can be added per order."
+            },
+            {
+              "spinId": "TYF3262KU8",
+              "skuId": "OTYAKCITT5",
+              "quantityDescription": "500 ml",
+              "displayName": "Amul Gold Pasteurised Full Cream Milk",
+              "brandName": "Amul",
+              "price": {
+                "mrp": 34,
+                "offerPrice": 34,
+                "unitLevelPrice": "6.8/100 ml"
+              },
+              "isInStockAndAvailable": true,
+              "imageUrl": "https://media-assets.swiggy.com/swiggy/image/upload/NI_CATALOG/IMAGES/ciw/2025/12/17/51a2cd89-2a42-4b2b-ac97-95288e02952d_TYF3262KU8_MN_16122025.png",
+              "sla": {
+                "value": "5",
+                "unit": "MINS"
+              },
+              "vegClassifier": "VEG_CLASSIFIER_INVALID",
+              "maxQuantity": 20,
+              "maxQuantityMessage": "Only 20 unit(s) of this item can be added per order."
+            }
+          ],
+          "productId": "71KUIARPTF",
+          "parentProductId": "H9Z199XB5M",
+          "isPromoted": false
+        },
+        {
+          "displayName": "Amul Taaza Milky Milk",
+          "brand": "Amul",
+          "inStock": true,
+          "isAvail": true,
+          "variations": [
+            {
+              "spinId": "D9PNFAT8MI",
+              "skuId": "37SPASS3H7",
+              "quantityDescription": "500 ml x 4",
+              "displayName": "Amul Taaza Milky Milk",
+              "brandName": "Amul",
+              "price": {
+                "mrp": 116,
+                "offerPrice": 116,
+                "unitLevelPrice": "5.8/100 ml"
+              },
+              "isInStockAndAvailable": true,
+              "imageUrl": "https://media-assets.swiggy.com/swiggy/image/upload/NI_CATALOG/IMAGES/ciw/2025/12/17/b42b731e-b555-4536-913a-265af70ec9e4_SKS75T1GV1_MN_16122025.png",
+              "sla": {
+                "value": "5",
+                "unit": "MINS"
+              },
+              "vegClassifier": "VEG_CLASSIFIER_INVALID",
+              "maxQuantity": 1,
+              "maxQuantityMessage": "That’s all we have in stock at the moment!"
+            },
+            {
+              "spinId": "SKS75T1GV1",
+              "skuId": "TXBZLVPZT4",
+              "quantityDescription": "500 ml",
+              "displayName": "Amul Taaza Milky Milk",
+              "brandName": "Amul",
+              "price": {
+                "mrp": 29,
+                "offerPrice": 29,
+                "unitLevelPrice": "5.8/100 ml"
+              },
+              "isInStockAndAvailable": true,
+              "imageUrl": "https://media-assets.swiggy.com/swiggy/image/upload/NI_CATALOG/IMAGES/ciw/2025/12/17/b42b731e-b555-4536-913a-265af70ec9e4_SKS75T1GV1_MN_16122025.png",
+              "sla": {
+                "value": "5",
+                "unit": "MINS"
+              },
+              "vegClassifier": "VEG_CLASSIFIER_INVALID",
+              "maxQuantity": 7,
+              "maxQuantityMessage": "That’s all we have in stock at the moment!"
+            }
+          ],
+          "productId": "JKFJW8ZUYW",
+          "parentProductId": "A084ZS3NR9",
+          "isPromoted": false
+        },
+        {
+          "displayName": "Country Delight Cow Milk",
+          "brand": "Country Delight",
+          "inStock": true,
+          "isAvail": true,
+          "variations": [
+            {
+              "spinId": "TTIDETAU5J",
+              "skuId": "2CJ22KRS6U",
+              "quantityDescription": "450 ml x 2",
+              "displayName": "Country Delight Cow Milk",
+              "brandName": "Country Delight",
+              "price": {
+                "mrp": 96,
+                "offerPrice": 90,
+                "unitLevelPrice": "10/100 ml"
+              },
+              "isInStockAndAvailable": true,
+              "imageUrl": "https://media-assets.swiggy.com/swiggy/image/upload/NI_CATALOG/IMAGES/CIW/2025/12/26/e49443ac-1792-49a0-9330-6b90a4687027_381178_1.png",
+              "sla": {
+                "value": "5",
+                "unit": "MINS"
+              },
+              "vegClassifier": "VEG_CLASSIFIER_INVALID",
+              "maxQuantity": 1,
+              "maxQuantityMessage": "That’s all we have in stock at the moment!"
+            },
+            {
+              "spinId": "FJJPD63RDQ",
+              "skuId": "TQHUZY2PSX",
+              "quantityDescription": "450 ml",
+              "displayName": "Country Delight Cow Milk",
+              "brandName": "Country Delight",
+              "price": {
+                "mrp": 48,
+                "offerPrice": 45,
+                "unitLevelPrice": "10/100 ml"
+              },
+              "isInStockAndAvailable": true,
+              "imageUrl": "https://media-assets.swiggy.com/swiggy/image/upload/NI_CATALOG/IMAGES/CIW/2025/12/26/e49443ac-1792-49a0-9330-6b90a4687027_381178_1.png",
+              "sla": {
+                "value": "5",
+                "unit": "MINS"
+              },
+              "vegClassifier": "VEG_CLASSIFIER_INVALID",
+              "maxQuantity": 2,
+              "maxQuantityMessage": "That’s all we have in stock at the moment!"
+            }
+          ],
+          "productId": "59CM4UVLZS",
+          "parentProductId": "TO7H8QRY34",
+          "isPromoted": true,
+          "badges": [
+            {
+              "type": "BADGE_TYPE_AD",
+              "text": "Ad",
+              "backgroundColor": "rgba(2,6,12,0.05)"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

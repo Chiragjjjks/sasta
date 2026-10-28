@@ -1,0 +1,58 @@
+{
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "(trimmed)"
+      }
+    ],
+    "structuredContent": {
+      "products": [
+        {
+          "id": "51d55eac-ca29-4532-9b32-9b7d317f346a",
+          "productVariantId": "51d55eac-ca29-4532-9b32-9b7d317f346a",
+          "storeProductId": "b32a3532-8174-50c4-a3a6-791fb8ffffdd",
+          "cartProductId": "51d55eac-ca29-4532-9b32-9b7d317f346a",
+          "name": "Amul Gold Full Cream Fresh Milk | Pouch",
+          "price": 3400,
+          "mrp": 3400,
+          "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-470,ar-2400-2400,pr-true,f-auto,q-100,dpr-2/cms/product_variant/1c44f728-7e7e-4f59-9248-5569a3b36672/Amul%20Gold%20Full%20Cream%20Fresh%20Milk%20%7C%20Pouch.jpeg",
+          "packSize": "1 pack (500 ml)",
+          "availableQuantity": 5,
+          "isAd": false,
+          "variantId": "51d55eac-ca29-4532-9b32-9b7d317f346a"
+        },
+        {
+          "id": "9d447ba5-1d35-46e1-bc64-e932135d026f",
+          "productVariantId": "9d447ba5-1d35-46e1-bc64-e932135d026f",
+          "storeProductId": "2e8f3933-11c2-417a-a291-30811d22c591",
+          "cartProductId": "9d447ba5-1d35-46e1-bc64-e932135d026f",
+          "name": "Amul Taaza Toned Fresh Milk | Pouch",
+          "price": 2900,
+          "mrp": 2900,
+          "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-470,ar-2400-2400,pr-true,f-auto,q-100,dpr-2/cms/product_variant/2e8a0f88-1038-4fd3-8093-7085a49b473c/Amul%20Taaza%20Toned%20Fresh%20Milk%20%7C%20Pouch.jpeg",
+          "packSize": "1 pack (500 ml)",
+          "availableQuantity": 3,
+          "isAd": false,
+          "variantId": "9d447ba5-1d35-46e1-bc64-e932135d026f"
+        },
+        {
+          "id": "d317be73-b51d-4520-b916-ffc40eb64762",
+          "productVariantId": "d317be73-b51d-4520-b916-ffc40eb64762",
+          "storeProductId": "11991d4b-5525-564b-91c0-c80a05e66e64",
+          "cartProductId": "d317be73-b51d-4520-b916-ffc40eb64762",
+          "name": "Milky Mist Toned Milk",
+          "price": 8800,
+          "mrp": 9500,
+          "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-470,ar-2400-2400,pr-true,f-auto,q-100,dpr-2/cms/product_variant/47ec7a22-6a39-48cf-966a-490b028f20eb/Milky%20Mist%20Toned%20Milk.jpg",
+          "packSize": "1 L",
+          "availableQuantity": 3,
+          "isAd": false,
+          "variantId": "d317be73-b51d-4520-b916-ffc40eb64762"
+        }
+      ],
+      "query": "amul milk",
+      "totalCount": 3
+    }
+  }
+}
