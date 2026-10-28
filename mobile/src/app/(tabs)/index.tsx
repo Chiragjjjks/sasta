@@ -14,6 +14,7 @@ import { Button, Card, Chip, T, tap } from '@/ui/kit'
 import { flavorColor, PackIcon } from '@/ui/PackIcon'
 import { ProductCard } from '@/ui/ProductCard'
 import { useTheme } from '@/ui/theme'
+import { PlatformMark } from '@/ui/PlatformMark'
 
 export default function SearchScreen() {
   const t = useTheme()
@@ -114,7 +115,7 @@ export default function SearchScreen() {
               {PLATFORMS.map((p) => {
                 return (
                   <Pressable key={p.id} onPress={() => router.navigate('/account')} style={[styles.appTile, { backgroundColor: t.surface }]} accessibilityLabel={`${p.name}: ${searchLabel(p.id,s.accounts[p.id],s.statuses[p.id])}`}>
-                    <View style={[styles.dot, { backgroundColor: p.color }]} />
+                    <PlatformMark platform={p.id} size={20} />
                     <T kind="smallStrong" style={{ flex: 1 }} numberOfLines={1}>{p.short}</T>
                     <T kind="caption" numberOfLines={1}>{IS_SAMPLE_DATA ? 'Sample' : searchLabel(p.id,s.accounts[p.id],s.statuses[p.id])}</T>
                   </Pressable>

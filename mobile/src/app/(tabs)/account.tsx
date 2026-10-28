@@ -12,6 +12,7 @@ import type { Platform } from '@/core/types'
 import { useStore } from '@/state/store'
 import { Badge, Button, Card, Divider, T } from '@/ui/kit'
 import { useTheme } from '@/ui/theme'
+import { PlatformMark } from '@/ui/PlatformMark'
 
 export default function AccountScreen() {
   const t = useTheme()
@@ -87,7 +88,7 @@ export default function AccountScreen() {
                 {i > 0 && <Divider />}
                 <View style={styles.acct}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                    <View style={[styles.dot, { backgroundColor: PLATFORM[id].color }]} />
+                    <PlatformMark platform={id} size={24} />
                     <View style={{ flex: 1, minWidth: 0 }}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                         <T kind="bodyStrong">{PLATFORM[id].name}</T>

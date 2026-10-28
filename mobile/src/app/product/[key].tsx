@@ -8,6 +8,7 @@ import { useStore } from '@/state/store'
 import { Badge, Button, Card, Divider, T } from '@/ui/kit'
 import { PackIcon } from '@/ui/PackIcon'
 import { useTheme } from '@/ui/theme'
+import { PlatformMark } from '@/ui/PlatformMark'
 
 export default function CompareScreen() {
   const t = useTheme()
@@ -54,7 +55,7 @@ export default function CompareScreen() {
             <View key={o.productId}>
               {i > 0 && <Divider />}
               <View style={[styles.offer, { opacity: o.inStock ? 1 : 0.45 }]}>
-                <View style={[styles.dot, { backgroundColor: PLATFORM[o.platform].color }]} />
+                <PlatformMark platform={o.platform} size={26} />
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                     <T kind="bodyStrong">{PLATFORM[o.platform].name}</T>
