@@ -220,7 +220,9 @@ try:
     shot('06-network-restored')
     logs = adb('logcat', '-d')
     (OUT / 'logcat.txt').write_text(logs)
-    assert 'FATAL EXCEPTION' not in logs and 'JavascriptException' not in logs, 'Native or JavaScript crash; see logcat'
+    # Only Sasta's own crashes count: the uiautomator tool used by this test can crash on its own.
+    app_crash = any(f'Process: {APP}' in block for block in logs.split('FATAL EXCEPTION')[1:] if block[:2000])
+    assert not app_crash and 'JavascriptException' not in logs, 'Native or JavaScript crash; see logcat'
     (OUT / 'result.txt').write_text('PASS: signed upgrade, native startup, list/cart/location migration, creation, persistence, quantity editing, navigation, sign-in cancellation, offline timeout and clear-search recovery.\n')
     print((OUT / 'result.txt').read_text())
 except Exception:
