@@ -2,7 +2,9 @@
 
 An Android app for comparing quick-commerce prices and keeping reusable shopping lists. Built with React Native and Expo, with native inputs, navigation, scrolling and Android sharing.
 
-**Search adapters: Blinkit, Zepto, BigBasket, Instamart, Flipkart Minutes and guarded Amazon Now discovery.** Instamart requires the official Swiggy connection and exact coordinates in Sasta; website login alone does not enable its search. BigBasket reads displayed minute-delivery cards after selecting an area. Their new integrations have regression coverage but still need positive live Android/account verification. Minutes needs an exact provider delivery address. Amazon requires a verified Now web storefront; Fresh and regular marketplace listings are excluded. Account **Test search** reports product counts or failure reasons separately from login verification. Confirm prices, stock, offers and final fees in the shopping app before payment.
+**Live search:** Blinkit (hidden WebView on blinkit.com), Instamart and Zepto (their official MCP servers), BigBasket (its own listing API, inside its page), Flipkart Minutes (Hyperlocal page API, needs an exact Flipkart address) and Amazon Now (only when your Amazon web session offers a Now store). Instamart searches one of your saved Swiggy addresses, chosen in **Account → Delivery address**. Zepto uses Sasta's exact location. **Test search** in Account reports product counts or the exact reason a search could not complete, separately from login. Confirm prices, stock, offers and final fees in the shopping app before payment.
+
+How searches, prices and other actions are triggered and what metadata they return: `docs/ACTIONS.md`. Per-platform findings: `docs/platforms/`.
 
 ## Install
 

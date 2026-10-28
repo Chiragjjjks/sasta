@@ -21,27 +21,25 @@ The user types `lays`.
 
 `lays cream onion` runs the same flow, pre-filtered to Cream & Onion.
 
-## Current status (v0.3.2)
+## Current status (v0.6.0)
 
-| Area | Status |
-|---|---|
-| UI from the prototype, search, compare sheet | Done |
-| Cart: cheapest cart, one-app options, pins | Done (v0.2.0) |
-| Cheapest cart **after fees** | Done for Blinkit (real bill). Other apps' fees unknown until their adapters exist |
-| Lists: named lists, pick N, add to cart, share, back up | Done (v0.3.0). See `docs/LISTS_PLAN.md` |
-| Live search | **Blinkit live** in the Android app via a hidden WebView. Zepto spiked (signed requests, page capture works, location open). Instamart, BigBasket, Flipkart, Amazon not spiked |
-| Connected apps (beta) | Sign-in screen for all six, Swiggy Instamart over its official MCP server, Blinkit and Zepto session checks. Not yet tried on a real phone |
-| Blinkit checkout hand-off | Done: opens blinkit.com with your cart and location; UPI links open your UPI app |
-| Offers and personalization | Planned in `docs/OFFERS_PLAN.md` |
+The app now lives in `mobile/` (React Native + Expo). Root `src/` and `android/` are the old Capacitor app, kept for reference.
 
-**Sample data:** the browser preview (`npm run dev`) uses generated prices for every app and says so. The Android app never mixes them with live prices: apps without a live adapter show "Not live yet".
+| Platform | How Sasta searches | Verified |
+|---|---|---|
+| Blinkit | API inside a hidden WebView on blinkit.com | Live in Chrome, 2026-10-28 |
+| Instamart | Official Swiggy MCP, `search_products` at a saved `addressId` | Live sign-in and search, 2026-10-28 |
+| Zepto | Official Zepto MCP (read-only scopes); storefront WebView fallback | Live sign-in and search, 2026-10-28 |
+| BigBasket | `/listing-svc/v2/products` inside the page; card reader fallback | Live in Chrome, 2026-10-28 |
+| Flipkart Minutes | Hyperlocal page API inside the page | Address redirect only; no positive price list yet |
+| Amazon Now | Guarded Now storefront discovery | Fresh only in the tested session |
+
+Actions, lifecycles and the site index: `docs/ACTIONS.md`. The desktop Playwright toolkit and signed-in site index live in `automation/` once merged.
 
 **Next, in order:**
-1. Try Connected apps on a phone: Blinkit and Swiggy sign-in. Record Swiggy's MCP tool names.
-2. Zepto adapter: page-capture search plus a way to set the delivery location (see `docs/platforms/zepto.md`).
-3. Instamart via Swiggy MCP tools.
-4. Spike BigBasket, Flipkart Minutes, Amazon Now.
-5. Offers plan, step 1 onward.
+1. Merge the site index from `automation/` and fix Flipkart Minutes and Amazon Now from it.
+2. `cart.quote` for Instamart and Zepto over MCP. Their fee totals come from the real account cart (`update_cart`, `view_cart`), so put it behind an explicit setting and ask for write scopes only then.
+3. `orders.history` and `offers.list` per `docs/ACTIONS.md`.
 
 ## Reality check (read before building adapters)
 
@@ -134,9 +132,9 @@ Do not write any live adapter before its spike note exists.
 | Platform | Verdict | Notes |
 |---|---|---|
 | Blinkit | B | Live in the app via a hidden WebView on blinkit.com. Search works logged out; signed-in sessions are used automatically |
-| Zepto | B | Search works by capturing the page's own signed request. Location setting still open |
-| Instamart | ? | |
-| BigBasket | ? | |
+| Zepto | MCP | Official Zepto MCP; storefront WebView fallback |
+| Instamart | MCP | Official Swiggy MCP. See docs/platforms/instamart.md |
+| BigBasket | B | Listing API inside the page. See docs/platforms/bigbasket.md |
 | Flipkart Minutes | ? | |
 | Amazon Now | ? | |
 
