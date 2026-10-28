@@ -188,7 +188,7 @@ try:
     find('No results this time', timeout=50)
     shot('05-offline-recovery')
     tap('Clear search')
-    find('One search.')
+    find('Where is it cheapest?')
     assert not any('Browser preview' in n.get('text', '') for n in tree())
     adb('shell', 'svc', 'wifi', 'enable')
     adb('shell', 'svc', 'data', 'enable')
