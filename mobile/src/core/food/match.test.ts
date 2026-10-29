@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { mockDishes } from './adapters/mock'
-import { cheapestFirst, dishKey, dishRelevance, groupDishes, namesDish, namesRestaurant, portionsMatch, quoteOrder, relevantDishes, restaurantKey, savingsFirst } from './match'
+import { cheapestFirst, dishKey, usualWinner, dishRelevance, groupDishes, namesDish, namesRestaurant, portionsMatch, quoteOrder, relevantDishes, restaurantKey, savingsFirst } from './match'
 import type { Dish, FoodOutlet, FoodPlatform } from './types'
 
 const outlet = (platform: FoodPlatform, name: string, o: Partial<FoodOutlet> = {}): FoodOutlet =>
@@ -28,6 +28,8 @@ describe('food names', () => {
     expect(restaurantKey('Nagarjuna (Residency Road)')).toBe('nagarjuna')
     expect(restaurantKey("Leon's - Burgers & Wings")).toBe('leons')
     expect(restaurantKey('The Restaurant')).toBe('the restaurant')
+    expect(restaurantKey('Hotel Aditya- Mahalakshmipuram')).toBe(restaurantKey('Hotel Aditya (Mahalakshmipuram)'))
+    expect(restaurantKey('Al-Bek')).toBe('al bek')
   })
 
   it('matches queries against the dish first, then the restaurant', () => {
@@ -44,6 +46,14 @@ describe('food names', () => {
     expect(namesDish(d, 'behrouz')).toBe(false)
     expect(namesRestaurant('Meghana Foods - Rajajinagar', 'meghana')).toBe(true)
     expect(namesRestaurant('Meghana Foods', 'meghana biryani')).toBe(false)
+  })
+
+  it('drops dishes that match only through the restaurant name, unless the query names a restaurant', () => {
+    const water = dish('zomato', 'RNR Biryani', 'Kinley 500ml', 10)
+    const donne = dish('zomato', 'RNR Biryani', 'Donne Chicken Biryani', 359)
+    expect(relevantDishes([water, donne], 'biryani')).toEqual([donne])
+    expect(relevantDishes([water, donne], 'rnr')).toHaveLength(2)
+    expect(relevantDishes([water, donne], 'rnr biryani')).toEqual([donne])
   })
 
   it('keeps relevant dishes, orderable first', () => {
@@ -117,6 +127,19 @@ describe('quoting one order on each app', () => {
     const [dosa, idli] = r.dishes
     const quotes = quoteOrder(r, { [dosa.key]: 2, [idli.key]: 1 })
     expect(quotes.map((q) => [q.platform, q.total, q.missing.length])).toEqual([['zomato', 290, 0], ['ownly', 200, 1], ['swiggy_food', 0, 2]])
+  })
+})
+
+describe('ties', () => {
+  it('names a usual winner only from dishes whose price differs, and sends equal totals to the faster app', () => {
+    const fast = { deliveryFee: 30, etaMinutes: 20 }, slow = { deliveryFee: 30, etaMinutes: 35 }
+    const { restaurants } = groupDishes([
+      dish('zomato', 'A', 'Dosa', 100, { outlet: outlet('zomato', 'A', slow) }), dish('swiggy_food', 'A', 'Dosa', 100, { outlet: outlet('swiggy_food', 'A', fast) }),
+      dish('zomato', 'A', 'Idli', 60, { outlet: outlet('zomato', 'A', slow) }), dish('swiggy_food', 'A', 'Idli', 60, { outlet: outlet('swiggy_food', 'A', fast) }),
+    ])
+    const r = restaurants[0]
+    expect(usualWinner(r)).toEqual({ platform: undefined, wins: 0, differ: 0, same: 2 })
+    expect(quoteOrder(r, { [r.dishes[0].key]: 1 })[0].platform).toBe('swiggy_food')
   })
 })
 
