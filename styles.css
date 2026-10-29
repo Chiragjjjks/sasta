@@ -523,3 +523,16 @@ details[open] summary i::after { transform: rotate(0); }
 }
 .hv.is-sorted .orb--tie .orb__badge { opacity: 1; color: var(--low); }
 .replay, .tag { white-space: nowrap; }
+
+/* Coming soon: food delivery apps, shown as outlined tiles until they are live. */
+.soon { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 32px; align-items: center; margin-top: 28px; padding: 28px; border: 1px dashed rgba(243, 154, 64, .35); border-radius: 22px; background: radial-gradient(120% 140% at 0% 0%, rgba(243, 154, 64, .07), transparent 60%); }
+.soon h3 { margin: 14px 0 8px; font: 700 clamp(26px, 2.6vw, 36px)/1.05 var(--f-head); letter-spacing: -.03em; color: #fff; }
+.soon p { margin: 0; color: var(--mid); font-size: 15.5px; line-height: 1.55; max-width: 460px; }
+.tag--soon { display: inline-block; color: var(--acc); border: 1px solid rgba(243, 154, 64, .5); background: rgba(243, 154, 64, .08); }
+.soon__apps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.soon__apps li { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255, 255, 255, .02); }
+.soon__apps b { display: block; font-size: 14.5px; line-height: 1.2; }
+.soon__apps small { display: block; margin-top: 3px; font: 500 10.5px var(--f-mono); letter-spacing: .05em; color: var(--acc); }
+.pt--soon { --s: 40px; --tb: transparent; --tf: #ededed; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .28); border: 1px dashed transparent; }
+@media (max-width: 960px) { .soon { grid-template-columns: 1fr; padding: 22px; gap: 22px; } }
+@media (max-width: 480px) { .soon__apps { grid-template-columns: 1fr; } .soon__apps li { padding: 10px 12px; } }
