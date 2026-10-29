@@ -166,7 +166,8 @@ export function Headline({ lead, rest, size = 34, style }: { lead: string; rest?
   const t = useTheme()
   const line: TextStyle = { fontFamily: t.fonts.display, fontSize: size, lineHeight: Math.round(size * 1.04), letterSpacing: -size * 0.035 }
   return (
-    <Text accessibilityRole="header" style={[line, { color: t.ink }, style]}>
+    // One spoken sentence for TalkBack, instead of two lines with a break.
+    <Text accessibilityRole="header" accessibilityLabel={rest ? `${lead} ${rest}` : lead} style={[line, { color: t.ink }, style]}>
       {lead}{rest ? <Text style={{ color: t.muted }}>{'\n'}{rest}</Text> : null}
     </Text>
   )
