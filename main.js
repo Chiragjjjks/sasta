@@ -377,3 +377,16 @@
   };
   intro();
 })();
+
+/* Point every download button at the newest APK, so the page never needs editing after a release. */
+(() => {
+  fetch('https://api.github.com/repos/Chiragjjjks/sasta/releases/latest', { headers: { Accept: 'application/vnd.github+json' } })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((rel) => {
+      const apk = rel && rel.assets && rel.assets.find((a) => /\.apk$/i.test(a.name));
+      if (!apk) return;
+      document.querySelectorAll('[data-apk]').forEach((a) => { a.href = apk.browser_download_url; });
+      document.querySelectorAll('[data-apk-ver]').forEach((el) => { el.textContent = rel.tag_name; });
+    })
+    .catch(() => {});
+})();
