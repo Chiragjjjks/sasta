@@ -10,7 +10,7 @@ Sasta is a personal Android app (sideloaded APK, no backend, no Play Store) that
 - **Lists.** Reusable shopping lists. Opening a list re-checks every item on every app. Each item shows a ranked slot per app ("1. Blinkit ₹20 · 2. Zepto ₹22"), and the list shows the cheapest plan grouped by app. The user can pin an item to an app. The UI must make sense at a glance: the user sees it and understands it without reading.
 - **Cart.** Compares totals, then hands off to the real app to pay. **Sasta never places orders or pays.**
 - **Accounts.** Optional sign-in per app, kept only on the phone. It gives member prices and the right store. Instamart and Zepto use their official MCP servers; the other apps use their own website session inside a hidden WebView.
-- **Actions.** Every capability is a named action with a lifecycle (`session.*`, `location.sync`, `catalog.search`, `price.check`, `product.detail`, `cart.quote`, `cart.handoff`, `orders.history`, `offers.list`). See `docs/ACTIONS.md`. The same contract drives the phone and the desktop Playwright toolkit.
+- **Actions.** Every capability is a named action with a lifecycle (`session.*`, `location.sync`, `catalog.search`, `price.check`, `product.detail`, `cart.quote`, `cart.handoff`, `orders.history`, `offers.list`, and for food `food.search`, `food.menu`, `food.handoff`). See `docs/ACTIONS.md`. The same contract drives the phone and the desktop Playwright toolkit.
 
 Owner: Chirag (GitHub `Chiragjjjks`), Bengaluru. The test location is Rajajinagar 560010. The project is personal use only, at human-like request rates. Not affiliated with any platform.
 
@@ -51,7 +51,10 @@ Since v0.8.0 (on `main`, unreleased):
 - **Landing site** in `site/` (plain HTML/CSS/JS, no build step; preview with `npx serve site`). It is modelled on the Downmix Renderer page, with editorial touches from Kenpath's Svara page, and includes an interactive sample-price demo. It is live at https://chiragjjjks.github.io/sasta/. `.github/workflows/site.yml` publishes `site/` to the `gh-pages` branch on every change, and Pages serves that branch, the same way Downmix Renderer is hosted. Download buttons link straight to the APK, and `main.js` switches them to the newest release at load time. The site also announces food delivery as **coming soon** (Zomato, Swiggy food, Ownly by Rapido, Swish). None of these are in the app yet.
 - **App UI polish:** JetBrains Mono is now loaded (`fonts.mono`, `fonts.monoBold`), and the kit has `Eyebrow` (mono section label, optionally numbered or live), `Headline` (two-line display heading, second line muted) and `LiveDot`. They are used on the Search home, Lists, Cart, ranked rows and the plan card.
 
-- **Food sources (feature branch):** Swiggy Food now has a WebView search and menu source, with paise parsing and explicit location/WAF errors. Desktop logged-out search verified (289 Rajajinagar dishes); menu returned HTTP 403 and native verification remains pending; see `docs/platforms/swiggy_food.md`. Zomato has fixture-tested parsers and a registered source that returns `NeedsLocationError`: the logged-out picker was unreachable and no reliable delivery-location setter is known. Ownly and Swish remain not-live.
+- **Food section (branch `feat/food-compare`, not merged).** A new **Food** tab (the Search tab is now **Grocery**) compares one dish across Zomato, Swiggy, Ownly and Swish. Design spec: `docs/FOOD_UI.md`.
+  - Core in `src/core/food/`: `types.ts` (`FoodOutlet`, `Dish`, `DishGroup`, `RestaurantMatch`, `FoodSource`), `match.ts` (spellings, portions, veg, branch names; `groupDishes` matches the same dish at the same restaurant across apps; `quoteOrder` prices one order on every app), `adapters/` (`swiggy.ts`, `zomato.ts`, `mock.ts`, the `LIVE` map in `index.ts`). Store: `src/state/food.tsx` (`useFood`). `runSources` in `core/search.ts` is the shared parallel runner for groceries and food.
+  - Screens: `(tabs)/food.tsx` (results, gap hero, sort, veg filters, order bar) and `restaurant/[key].tsx` (order priced per app, menu with each app's price side by side, "Open in <app>"). UI pieces: `FoodSlots`, `DishCard`, `OrderBar`, `VegMark`, `SearchHeader` (shared with Grocery), `confirm.ts`.
+  - Live: **Swiggy** searches `/dapi/restaurants/search/v3` inside a hidden WebView, logged out at exact coordinates (verified in desktop Chrome: 289 Rajajinagar dishes). Its full menu (`/dapi/menu/pl`) returned 403, so the restaurant screen falls back to the dishes from search. **Zomato** sets its delivery area by writing the site's own `ltv`/`lty`/`locus` cookies from `/webroutes/location/get` (verified 2026-10-29: Rajajinagar results). The live adapter for this is in progress. **Ownly** and **Swish** are app-only (no website or API), so the app shows them as "App only" with an Open link. Nothing is verified on a phone yet.
 
 ## Next, in order
 
@@ -59,7 +62,7 @@ Since v0.8.0 (on `main`, unreleased):
 2. Wishlist and list follow-ups the owner asked for after the list redesign.
 3. `cart.quote` for Instamart and Zepto over MCP. This needs cart write scopes, so put it behind an explicit setting.
 4. `orders.history` and `offers.list` per `docs/ACTIONS.md`.
-5. Food delivery comparison: verify Swiggy Food on Android (desktop search works; menu blocked), then identify Zomato's delivery-location setter before enabling its source. Ownly and Swish remain app-only. Check official MCP/API routes before scraping; Swiggy Food MCP needs the owner's sign-in.
+5. Food: verify Swiggy and Zomato inside the Android WebView, then merge `feat/food-compare`. After that, Swiggy Food's official MCP (`https://mcp.swiggy.com/food`, needs the owner's sign-in) for signed-in prices and menus, and Zomato's MCP only if its consent page accepts Sasta's localhost redirect. Ownly and Swish stay app-only until they publish a web or API route.
 
 ## Repository map
 
@@ -83,6 +86,7 @@ The app is in **`mobile/`** (Expo SDK 58, React Native 0.88, expo-router, Hermes
 | `src/native/SessionHosts.tsx` | One invisible WebView per shopping site (`HiddenPages`) plus the sign-in host |
 | `modules/sasta-native/` | Local Expo module (Kotlin): shares WebView cookies, migrates old preferences, encrypted storage |
 | `plugins/withSastaAndroid.js` | Config plugin for Android settings (versionCode default, etc.) |
+| `src/core/food/`, `src/state/food.tsx` | The Food section: dish matching, food sources and its own store (see Current state) |
 | `src/ui/` | `kit.tsx` (Segmented, buttons, `Eyebrow`, `Headline`, `LiveDot`…), `PlatformMark.tsx` (coloured app monogram; use it wherever an app is named), `OfferSlots.tsx` (ranked app rows; use them wherever prices are compared), `PlanHero.tsx` (total split by app with alternative pills), `ProductCard`, `PackIcon`, `theme.ts` (light/dark tokens and the saved Appearance choice) |
 | `fixtures/<platform>/` | Trimmed real responses for parser tests |
 | `scripts/android-smoke.py` | Emulator smoke test run by CI |
