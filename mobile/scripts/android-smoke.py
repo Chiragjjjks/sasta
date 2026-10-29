@@ -125,15 +125,17 @@ try:
     adb('logcat', '-c')
     launch()
     find('Search any product', timeout=45)
-    find('Quick-delivery prices', contains=True)
     find('Upgrade area', contains=True)
-    zepto = find('Zepto:', contains=True)
-    assert 'Soon' not in zepto.get('content-desc', '') and 'soon' not in zepto.get('content-desc', '')
+    find('Where is it cheapest?')
     assert any(n.get('class') == 'android.widget.EditText' for n in tree()), 'Search is not a native text input'
     shot('01-native-home')
+    # The app tiles and the footnote sit below the how-it-works card.
+    zepto = find('Zepto:', contains=True, scroll=True)
+    assert 'Soon' not in zepto.get('content-desc', '') and 'soon' not in zepto.get('content-desc', '')
+    find('Quick-delivery prices', contains=True, scroll=True)
 
     tap_tab('Lists')
-    find('Your lists')
+    find('Your lists', contains=True)
     tap('Upgrade test list', contains=True)
     find('This list is empty.', contains=True)
     back()
