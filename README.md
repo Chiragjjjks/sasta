@@ -1,6 +1,8 @@
 # Sasta
 
-**Website:** https://chiragjjjks.github.io/sasta/ (source in `site/`, published to the `gh-pages` branch by `.github/workflows/site.yml`).
+### 🌐 [chiragjjjks.github.io/sasta](https://chiragjjjks.github.io/sasta/)
+
+**[Visit the website](https://chiragjjjks.github.io/sasta/)** · **[Download the APK for your phone](https://github.com/Chiragjjjks/sasta/releases/latest)**
 
 An Android app for comparing quick-commerce prices and keeping reusable shopping lists. Built with React Native and Expo, with native inputs, navigation, scrolling and Android sharing.
 
@@ -11,6 +13,10 @@ How searches, prices and other actions are triggered and what metadata they retu
 ## Install
 
 Download `Sasta-vX.Y.Z-android.apk` from [Releases](https://github.com/Chiragjjjks/sasta/releases/latest) and open it on your Android phone (Android 7 or newer; ARM64 or x86_64). Install over the previous release to keep your lists, cart and location. The rebuild migrates data from v0.3.2 on first launch.
+
+## Website
+
+The landing page at https://chiragjjjks.github.io/sasta/ is built from `site/` (plain HTML, CSS and JS). `.github/workflows/site.yml` publishes it to the `gh-pages` branch whenever `site/` changes on `main`, and GitHub Pages serves that branch.
 
 ## Develop
 
