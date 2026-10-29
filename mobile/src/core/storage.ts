@@ -54,3 +54,8 @@ export const loadAppearance = async (): Promise<AppearancePref> => {
   return v === 'light' || v === 'dark' ? v : 'system'
 }
 export const saveAppearance = (a: AppearancePref) => set(APPEARANCE, a)
+
+const FOOD_RECENTS = 'sasta.food.recents'
+export const DEFAULT_FOOD_RECENTS = ['biryani', 'masala dosa', 'butter chicken', 'burger', 'meghana']
+export const loadFoodRecents = () => get<string[]>(FOOD_RECENTS, DEFAULT_FOOD_RECENTS)
+export const saveFoodRecents = (r: string[]) => set(FOOD_RECENTS, r)

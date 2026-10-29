@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react'
 import { View } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { AutoSignInHost, HiddenPages, SignInHost } from '@/native/SessionHosts'
+import { FoodProvider } from '@/state/food'
 import { StoreProvider } from '@/state/store'
 import { restoreAppearance, useTheme } from '@/ui/theme'
 import { Toast } from '@/ui/Toast'
@@ -32,6 +33,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ThemeProvider value={{ ...nav, colors: { ...nav.colors, background: t.bg, card: t.surface, text: t.ink, border: t.line, primary: t.ink } }}>
         <StoreProvider>
+        <FoodProvider>
           <View style={{ flex: 1, backgroundColor: t.bg }}>
             <StatusBar style={t.dark ? 'light' : 'dark'} />
             <Stack screenOptions={{ headerShadowVisible: false, headerStyle: { backgroundColor: t.bg }, headerTitleStyle: { fontFamily: t.fonts.displayBold, color: t.ink }, headerTintColor: t.ink, contentStyle: { backgroundColor: t.bg } }}>
@@ -46,6 +48,7 @@ export default function RootLayout() {
             <AutoSignInHost />
             <Toast />
           </View>
+        </FoodProvider>
         </StoreProvider>
       </ThemeProvider>
     </SafeAreaProvider>
