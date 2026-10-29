@@ -47,6 +47,10 @@ v0.8.0 published (2026-10-29): **one-tap connect with OTP auto-fill**.
 - `OtpListenerService` (Kotlin, user-granted Notification access, armed only during sign-in) passes each code to `routeOtp` (`core/otp.ts`), which types it into the app the message names.
 - Not yet verified on a phone with real OTPs. Amazon may ask for a password; that app then shows "Needs you".
 
+Since v0.8.0 (on `main`, unreleased):
+- **Landing site** in `site/` (plain HTML/CSS/JS, no build step; preview with `npx serve site`). It is modelled on the Downmix Renderer page, with editorial touches from Kenpath's Svara page, and includes an interactive sample-price demo. It is **not deployed yet**: GitHub Pages needs the owner to enable it and approve a deploy workflow.
+- **App UI polish:** JetBrains Mono is now loaded (`fonts.mono`, `fonts.monoBold`), and the kit has `Eyebrow` (mono section label, optionally numbered or live), `Headline` (two-line display heading, second line muted) and `LiveDot`. They are used on the Search home, Lists, Cart, ranked rows and the plan card.
+
 ## Next, in order
 
 1. Finish and merge the `automation/` site index, then use it to fix Flipkart Minutes and Amazon Now.
@@ -76,9 +80,11 @@ The app is in **`mobile/`** (Expo SDK 58, React Native 0.88, expo-router, Hermes
 | `src/native/SessionHosts.tsx` | One invisible WebView per shopping site (`HiddenPages`) plus the sign-in host |
 | `modules/sasta-native/` | Local Expo module (Kotlin): shares WebView cookies, migrates old preferences, encrypted storage |
 | `plugins/withSastaAndroid.js` | Config plugin for Android settings (versionCode default, etc.) |
-| `src/ui/` | `kit.tsx` (Segmented, buttons…), `PlatformMark.tsx` (coloured app monogram; use it wherever an app is named), `OfferSlots.tsx` (ranked app rows; use them wherever prices are compared), `PlanHero.tsx` (total split by app with alternative pills), `ProductCard`, `PackIcon`, `theme.ts` (light/dark tokens and the saved Appearance choice) |
+| `src/ui/` | `kit.tsx` (Segmented, buttons, `Eyebrow`, `Headline`, `LiveDot`…), `PlatformMark.tsx` (coloured app monogram; use it wherever an app is named), `OfferSlots.tsx` (ranked app rows; use them wherever prices are compared), `PlanHero.tsx` (total split by app with alternative pills), `ProductCard`, `PackIcon`, `theme.ts` (light/dark tokens and the saved Appearance choice) |
 | `fixtures/<platform>/` | Trimmed real responses for parser tests |
 | `scripts/android-smoke.py` | Emulator smoke test run by CI |
+
+Outside `mobile/`: `site/` is the static landing page (see Current state).
 
 Other docs: `docs/ACTIONS.md` (actions contract), `docs/platforms/*.md` (per-platform endpoints, auth, gotchas; **read before touching an adapter**), `docs/releases/vX.Y.Z.md`, `postman/mocks/` (Instamart, Zepto and Flipkart mocks), `PLAN.md` (original phased plan and reality check).
 

@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Sasta — Where is it cheapest, delivered to you?</title>
+  <meta name="description" content="Sasta is a personal Android app that searches Blinkit, Zepto, Swiggy Instamart, BigBasket, Flipkart Minutes and Amazon Now at once, and shows the cheapest in-stock price at your delivery location.">
+  <meta name="theme-color" content="#000000">
+  <meta property="og:title" content="Sasta — Same chips. Six prices.">
+  <meta property="og:description" content="One search across six quick-commerce apps. Cheapest in-stock offer first. Sasta never places orders or pays.">
+  <meta property="og:type" content="website">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Figtree:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <noscript><style>.loader{display:none}[data-reveal],.line>span{opacity:1!important;transform:none!important}.screen:first-child{opacity:1}</style></noscript>
+</head>
+<body class="is-loading">
+  <!-- icon sprite -->
+  <svg width="0" height="0" aria-hidden="true" style="position:absolute">
+    <defs>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></symbol>
+      <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></symbol>
+      <symbol id="i-cart" viewBox="0 0 24 24"><path d="M3 4h2.2l2.3 10.5h10.4L20.4 7H6.1"/><circle cx="9" cy="19" r="1.3"/><circle cx="17" cy="19" r="1.3"/></symbol>
+      <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.8"/><path d="M4.5 20.5c.6-3.8 3.6-5.6 7.5-5.6s6.9 1.8 7.5 5.6"/></symbol>
+      <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6-7-11.2a7 7 0 0114 0C19 15 12 21 12 21z"/><circle cx="12" cy="9.8" r="2.4"/></symbol>
+      <symbol id="i-bm" viewBox="0 0 24 24"><path d="M7 4h10v16.5l-5-4-5 4z"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13.5 6.5L19 12l-5.5 5.5"/></symbol>
+      <symbol id="i-back" viewBox="0 0 24 24"><path d="M14.5 5.5L8 12l6.5 6.5"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7.5"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9.5" rx="2.2"/><path d="M8 11V8.2a4 4 0 018 0V11"/></symbol>
+      <symbol id="i-parallel" viewBox="0 0 24 24"><path d="M3 6h9M3 12h13M3 18h9"/><path d="M15 3.5l5 2.5-5 2.5M18.5 9.5l2.5 2.5-2.5 2.5M15 15.5l5 2.5-5 2.5" /></symbol>
+      <symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 3v5M15 3v5M6.5 8h11v3.5a5.5 5.5 0 01-11 0zM12 17v4"/></symbol>
+      <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3.5l8.5 4.5-8.5 4.5L3.5 8z"/><path d="M3.5 12.2L12 16.7l8.5-4.5M3.5 16.2L12 20.7l8.5-4.5"/></symbol>
+      <symbol id="i-phone" viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2.6"/><path d="M10.5 18.5h3"/></symbol>
+      <symbol id="i-msg" viewBox="0 0 24 24"><path d="M4 5.5h16v10H10l-4.5 3.5v-3.5H4z"/><path d="M8 9.5h8M8 12.5h5"/></symbol>
+      <symbol id="i-out" viewBox="0 0 24 24"><path d="M10 5H5.5v13.5H19V14M13.5 4H20v6.5M20 4l-9 9"/></symbol>
+      <symbol id="i-android" viewBox="0 4 24 16"><path d="M17.5 15.3a1 1 0 110-2 1 1 0 010 2m-11 0a1 1 0 110-2 1 1 0 010 2m11.4-6l2-3.5a.4.4 0 00-.15-.57.4.4 0 00-.57.15l-2.03 3.5a12.4 12.4 0 00-5.14-1.08c-1.85 0-3.6.38-5.14 1.08L4.84 5.4a.4.4 0 00-.57-.15.4.4 0 00-.15.57l2 3.46C2.69 11.2.34 14.66 0 18.76h24c-.34-4.1-2.69-7.56-6.12-9.44"/></symbol>
+    </defs>
+  </svg>
+
+  <a class="skip" href="#main">Skip to content</a>
+
+  <!-- intro -->
+  <div class="loader" data-loader aria-hidden="true">
+    <div class="loader__logo"><span class="wm">sasta<i>.</i></span></div>
+    <div class="loader__count"><span data-intro-count>00</span><em>/ 06 apps</em></div>
+  </div>
+
+  <div class="grain" aria-hidden="true"></div>
+  <canvas id="bg" aria-hidden="true"></canvas>
+
+  <!-- nav -->
+  <header class="nav" data-nav>
+    <a class="brand" href="#top" aria-label="Sasta, back to top"><img src="favicon.svg" width="28" height="28" alt=""><span class="wm">sasta<i>.</i></span></a>
+    <nav class="nav__links" aria-label="Sections">
+      <a href="#search">Search</a>
+      <a href="#lists">Lists</a>
+      <a href="#cart">Cart</a>
+      <a href="#accounts">Accounts</a>
+      <a href="#setup">Setup</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="nav__cta"><a class="btn btn--white btn--sm" data-magnetic href="https://github.com/Chiragjjjks/sasta/releases/latest"><span>Download</span></a></div>
+  </header>
+
+  <main id="main">
+    <!-- hero -->
+    <section class="hero" id="top">
+      <div class="hero__text">
+        <p class="chip chip--live" data-reveal><i class="dot"></i>6 apps · live prices</p>
+        <h1 class="hero__title" data-lines>
+          <span class="line"><span>Same chips.</span></span>
+          <span class="line line--dim"><span>Six prices.</span></span>
+        </h1>
+        <p class="lead" data-reveal>Type one product. Sasta asks Blinkit, Zepto, Instamart, BigBasket, Flipkart Minutes and Amazon Now at once, at your exact delivery pin, and puts the cheapest in-stock offer first.</p>
+        <div class="hero__cta" data-reveal>
+          <a class="btn btn--white" data-magnetic href="https://github.com/Chiragjjjks/sasta/releases/latest"><svg class="ico-fill" width="20" height="14" aria-hidden="true"><use href="#i-android"/></svg><span>Download APK</span></a>
+          <a class="btn btn--ghost" data-magnetic href="https://github.com/Chiragjjjks/sasta"><span>View on GitHub ↗</span></a>
+        </div>
+        <p class="meta" data-reveal>Android 7+ · arm64 · no account needed · no tracking · v0.8.0</p>
+      </div>
+
+      <div class="hv" data-hv aria-label="Animation: six apps drift, then sort into one cheapest result" role="img">
+        <div class="hv__stage" data-stage>
+          <svg class="hv__rings" viewBox="0 0 520 520" aria-hidden="true">
+            <circle cx="260" cy="260" r="70"/><circle cx="260" cy="260" r="140"/><circle cx="260" cy="260" r="215"/>
+          </svg>
+          <div class="core" data-core><svg width="15" height="15" aria-hidden="true"><use href="#i-search"/></svg><span>lays · 48 g</span></div>
+        </div>
+      </div>
+
+      <aside class="live" aria-label="Sample live card">
+        <div class="live__head"><span class="chip chip--live chip--sm"><i class="dot"></i>Live</span><span class="live__q">lays · 48 g</span></div>
+        <div class="live__bars" data-bars aria-hidden="true"></div>
+        <div class="live__foot"><span>cheapest</span><b>₹15</b></div>
+      </aside>
+
+      <div class="scrollcue" aria-hidden="true"><span>Scroll</span><i></i></div>
+    </section>
+
+    <!-- marquee -->
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee__track">
+        <div class="marquee__set">
+          <span>6 apps</span><i></i><span>1 search</span><i></i><span>₹ cheapest first</span><i></i><span>MCP official</span><i></i><span>no backend</span><i></i><span>on-device accounts</span><i></i><span>OTP auto-fill</span><i></i><span>pin 560010</span><i></i><span>brand → variant → pack</span><i></i><span>never pays</span><i></i><span>no tracking</span><i></i>
+        </div>
+        <div class="marquee__set">
+          <span>6 apps</span><i></i><span>1 search</span><i></i><span>₹ cheapest first</span><i></i><span>MCP official</span><i></i><span>no backend</span><i></i><span>on-device accounts</span><i></i><span>OTP auto-fill</span><i></i><span>pin 560010</span><i></i><span>brand → variant → pack</span><i></i><span>never pays</span><i></i><span>no tracking</span><i></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- 01 question -->
+    <section class="sec" id="question">
+      <div class="wrap">
+        <header class="sec__head">
+          <p class="eyebrow" data-reveal><span class="num">01</span>The question</p>
+          <h2 class="h2 h2--xl" data-lines>
+            <span class="line"><span>Where is it</span></span>
+            <span class="line"><span class="serif">cheapest?</span></span>
+          </h2>
+          <p class="sec__p" data-reveal>Every quick-commerce app prices and stocks per dark store, and the same pack of chips can differ by a few rupees on each. Checking six apps by hand, every time, is nobody's idea of fun. Sasta asks the one question for you, delivered to your door.</p>
+          <div class="progress" data-progress></div>
+        </header>
+
+        <div class="stats">
+          <div class="stat" data-reveal><b data-count="6">0</b><span>apps searched at once</span></div>
+          <div class="stat" data-reveal><b data-count="3">0</b><span>levels of grouping: brand, variant, pack size</span></div>
+          <div class="stat" data-reveal><b data-count="0">0</b><span>orders placed by Sasta. You pay in the real app</span></div>
+        </div>
+
+        <ul class="apps" aria-label="Supported apps">
+          <li data-reveal><span class="pt p-b">B</span><div><b>Blinkit</b><small>Live</small></div></li>
+          <li data-reveal><span class="pt p-z">Z</span><div><b>Zepto</b><small>Live · official MCP</small></div></li>
+          <li data-reveal><span class="pt p-i">I</span><div><b>Instamart</b><small>Live · official MCP</small></div></li>
+          <li data-reveal><span class="pt p-bb">bb</span><div><b>BigBasket</b><small>Live</small></div></li>
+          <li data-reveal><span class="pt p-f">F</span><div><b>Flipkart Minutes</b><small class="beta">Beta</small></div></li>
+          <li data-reveal><span class="pt p-a">a</span><div><b>Amazon Now</b><small class="beta">Beta</small></div></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 02 demo -->
+    <section class="sec" id="try">
+      <div class="wrap">
+        <header class="sec__head">
+          <p class="eyebrow" data-reveal><span class="num">02</span>Try it</p>
+          <h2 class="h2" data-lines>
+            <span class="line"><span>Pick a product.</span></span>
+            <span class="line"><span class="serif">Watch it sort.</span></span>
+          </h2>
+          <p class="sec__p" data-reveal>Choose something from the shelf and press play. Rows are ranked cheapest in stock first, ties are marked, and anything out of stock sinks to the bottom.</p>
+          <div class="progress" data-progress></div>
+        </header>
+
+        <div class="demo" data-reveal>
+          <div class="demo__tabs" role="group" aria-label="Pick a product">
+            <button type="button" class="tab-pill is-on" data-p="lays" aria-pressed="true">lays</button>
+            <button type="button" class="tab-pill" data-p="butter" aria-pressed="false">amul butter</button>
+            <button type="button" class="tab-pill" data-p="maggi" aria-pressed="false">maggi</button>
+            <button type="button" class="tab-pill" data-p="coke" aria-pressed="false">coca cola 750ml</button>
+            <button type="button" class="tab-pill" data-p="eggs" aria-pressed="false">eggs 6</button>
+          </div>
+          <div class="demo__panel">
+            <div class="demo__top">
+              <div><strong data-d-title>Lay's India's Magic Masala</strong><span data-d-sub>48 g · MRP ₹20</span></div>
+              <span class="tag tag--sample">Sample prices</span>
+            </div>
+            <ol class="demo__rows" data-d-rows aria-live="polite"></ol>
+            <div class="demo__foot"><span data-d-foot>&nbsp;</span><button type="button" class="replay" data-d-replay><span aria-hidden="true">↻</span> Run again</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 tour -->
+    <section class="sec sec--tour" id="tour">
+      <div class="wrap">
+        <header class="sec__head">
+          <p class="eyebrow" data-reveal><span class="num">03</span>The app</p>
+          <h2 class="h2" data-lines>
+            <span class="line"><span>Built for the way</span></span>
+            <span class="line"><span class="serif">you actually shop.</span></span>
+          </h2>
+          <div class="progress" data-progress></div>
+        </header>
+      </div>
+
+      <div class="wrap tour" data-tour>
+        <div class="tour__steps">
+          <article class="step" id="search" data-step="0">
+            <p class="step__k"><span class="num">01</span>Search</p>
+            <h3 class="h3">Type one product.<br><span class="serif">Six answers.</span></h3>
+            <p>Type "lays" once. Sasta queries all six apps in parallel at your delivery pin, then groups results by brand, variant and pack size so you compare like with like.</p>
+            <ul class="ticks"><li>Cheapest in-stock offer first</li><li>Flavour filters, one card per pack</li></ul>
+            <div class="step__phone"></div>
+          </article>
+          <article class="step" id="compare" data-step="1">
+            <p class="step__k"><span class="num">02</span>Compare</p>
+            <h3 class="h3">Every app's price,<br><span class="serif">one tap away.</span></h3>
+            <p>Open any result to see price, MRP, ETA and stock for each app. Ties read "same", gaps read "+₹2", so you never do the sums.</p>
+            <ul class="ticks"><li>Ranked rows, coloured by app</li><li>Out of stock never wins</li></ul>
+            <div class="step__phone"></div>
+          </article>
+          <article class="step" id="lists" data-step="2">
+            <p class="step__k"><span class="num">03</span>Lists</p>
+            <h3 class="h3">Lists that re-check<br><span class="serif">themselves.</span></h3>
+            <p>Open "Monthly groceries" and every item is priced again on every app. Each item shows its ranked apps; the list shows the cheapest plan split by app. Pin an item to an app when you have a favourite.</p>
+            <ul class="ticks"><li>Cheapest plan, split by app</li><li>"All on one app" alternatives</li></ul>
+            <div class="step__phone"></div>
+          </article>
+          <article class="step" id="cart" data-step="3">
+            <p class="step__k"><span class="num">04</span>Cart</p>
+            <h3 class="h3">Compare totals.<br><span class="serif">Then you pay.</span></h3>
+            <p>See what the basket costs on one app against a split across several. When you are happy, hand off to the real app with one tap. Sasta never places an order and never touches payment.</p>
+            <ul class="ticks"><li>Saves ₹58 vs one app, in this sample</li><li>Open in Blinkit, Zepto or any app</li></ul>
+            <div class="step__phone"></div>
+          </article>
+          <article class="step" id="accounts" data-step="4">
+            <p class="step__k"><span class="num">05</span>Accounts</p>
+            <h3 class="h3">One number.<br><span class="serif">Every app.</span></h3>
+            <p>Optional. Enter your mobile once; Sasta signs in to each app's own page in parallel and types the OTP from your notifications. It gives member prices and the right dark store, and it all stays on the phone.</p>
+            <ul class="ticks"><li>Notification access is yours to grant, armed only during sign-in</li><li>Instamart and Zepto use official, read-only MCP</li></ul>
+            <div class="step__phone"></div>
+          </article>
+        </div>
+
+        <div class="tour__stick" aria-hidden="true">
+          <div class="tour__phonewrap" data-phonewrap>
+            <div class="phone" data-phone>
+              <div class="phone__screen" data-screens>
+
+                <!-- SEARCH -->
+                <div class="screen is-on" data-screen="0">
+                  <div class="sb"><span>9:41</span><span class="sb__r"><i></i><i></i><i></i></span></div>
+                  <div class="sbody">
+                    <div class="ah"><b class="wm">sasta<i>.</i></b><span class="loc"><svg width="12" height="12"><use href="#i-pin"/></svg>Rajajinagar · 560010</span></div>
+                    <div class="sbar"><svg width="16" height="16"><use href="#i-search"/></svg><span>lays</span><b>Compare</b></div>
+                    <div class="smeta"><span>10 products from 6 apps · 1.2 s</span><span class="tiles"><i class="pt p-b">B</i><i class="pt p-z">Z</i><i class="pt p-i">I</i><i class="pt p-bb">bb</i><i class="pt p-f">F</i><i class="pt p-a">a</i></span></div>
+                    <div class="pills"><span class="sp on">All 5 flavours</span><span class="sp">India's Magic Masala</span><span class="sp">Cream &amp; Onion</span></div>
+                    <div class="card">
+                      <div class="card__top"><span class="pack"><i></i></span><div><b>Lay's India's Magic Masala</b><small>48 g · on 6 of 6 apps</small></div></div>
+                      <div class="rk rk--best"><em>1</em><span class="pt p-bb">bb</span><b>BigBasket</b><small>6 min</small><u>Cheapest</u><strong>₹15</strong></div>
+                      <div class="rk"><em>2</em><span class="pt p-z">Z</span><b>Zepto</b><small>16 min</small><u class="m">same</u><strong>₹15</strong></div>
+                      <div class="rk"><em>3</em><span class="pt p-b">B</span><b>Blinkit</b><small>13 min</small><u class="m">+₹2</u><strong>₹17</strong></div>
+                      <div class="card__foot"><span class="bm"><svg width="14" height="14"><use href="#i-bm"/></svg></span><small>+3 more apps</small><b class="add"><svg width="11" height="11"><use href="#i-plus"/></svg>Add · BigBasket</b></div>
+                    </div>
+                    <div class="card card--peek">
+                      <div class="card__top"><span class="pack pack--g"><i></i></span><div><b>Lay's Cream &amp; Onion</b><small>48 g · on 6 of 6 apps</small></div></div>
+                      <div class="rk"><em>1</em><span class="pt p-z">Z</span><b>Zepto</b><small>9 min</small><u>Cheapest</u><strong>₹15</strong></div>
+                    </div>
+                  </div>
+                  <div class="tabbar"><span class="tab on"><svg><use href="#i-search"/></svg>Search</span><span class="tab"><svg><use href="#i-list"/></svg>Lists</span><span class="tab"><svg><use href="#i-cart"/></svg>Cart</span><span class="tab"><svg><use href="#i-user"/></svg>Account</span></div>
+                </div>
+
+                <!-- COMPARE -->
+                <div class="screen" data-screen="1">
+                  <div class="sb"><span>9:41</span><span class="sb__r"><i></i><i></i><i></i></span></div>
+                  <div class="sbody">
+                    <div class="ah ah--back"><span class="bk"><svg width="16" height="16"><use href="#i-back"/></svg></span><b>Compare</b><span class="loc"><svg width="12" height="12"><use href="#i-pin"/></svg>560010</span></div>
+                    <div class="phead"><span class="pack pack--l"><i></i></span><div><b>Lay's India's Magic Masala</b><small>48 g · 6 apps checked · MRP ₹20</small></div></div>
+                    <div class="card card--list">
+                      <div class="rk rk--big rk--best"><em>1</em><span class="pt p-bb">bb</span><div class="rk__n"><b>BigBasket</b><small>6 min · in stock</small></div><u>Cheapest</u><strong>₹15</strong></div>
+                      <div class="rk rk--big"><em>2</em><span class="pt p-z">Z</span><div class="rk__n"><b>Zepto</b><small>16 min · in stock</small></div><u class="m">same</u><strong>₹15</strong></div>
+                      <div class="rk rk--big"><em>3</em><span class="pt p-b">B</span><div class="rk__n"><b>Blinkit</b><small>13 min · in stock</small></div><u class="m">+₹2</u><strong>₹17</strong></div>
+                      <div class="rk rk--big"><em>4</em><span class="pt p-i">I</span><div class="rk__n"><b>Instamart</b><small>22 min · in stock</small></div><u class="m">+₹3</u><strong>₹18</strong></div>
+                      <div class="rk rk--big"><em>5</em><span class="pt p-f">F</span><div class="rk__n"><b>Flipkart Minutes</b><small>18 min · in stock</small></div><u class="m">+₹4</u><strong>₹19</strong></div>
+                      <div class="rk rk--big rk--oos"><em>6</em><span class="pt p-a">a</span><div class="rk__n"><b>Amazon Now</b><small>No Now store offered</small></div><u class="m">out</u><strong>—</strong></div>
+                    </div>
+                    <div class="cta-row"><b class="add add--lg"><svg width="12" height="12"><use href="#i-plus"/></svg>Add · BigBasket</b><span class="bm"><svg width="15" height="15"><use href="#i-bm"/></svg></span></div>
+                  </div>
+                  <div class="tabbar"><span class="tab on"><svg><use href="#i-search"/></svg>Search</span><span class="tab"><svg><use href="#i-list"/></svg>Lists</span><span class="tab"><svg><use href="#i-cart"/></svg>Cart</span><span class="tab"><svg><use href="#i-user"/></svg>Account</span></div>
+                </div>
+
+                <!-- LISTS -->
+                <div class="screen" data-screen="2">
+                  <div class="sb"><span>9:41</span><span class="sb__r"><i></i><i></i><i></i></span></div>
+                  <div class="sbody">
+                    <div class="ah ah--back"><span class="bk"><svg width="16" height="16"><use href="#i-back"/></svg></span><b>Monthly groceries</b><span class="loc">12 items</span></div>
+                    <div class="plan">
+                      <p class="plan__k">Cheapest plan <em>re-checked just now</em></p>
+                      <p class="plan__v"><b>₹1,284</b><span>3 apps</span></p>
+                      <div class="split"><i style="flex:46;background:#f8cb46"></i><i style="flex:33;background:#7a3cc0"></i><i style="flex:21;background:#84c225"></i></div>
+                      <div class="plan__leg"><span><i class="pt p-b">B</i>₹590</span><span><i class="pt p-z">Z</i>₹424</span><span><i class="pt p-bb">bb</i>₹270</span></div>
+                      <div class="alts"><span class="alt">All on Blinkit <b>₹1,342</b></span><span class="alt">All on Zepto <b>₹1,361</b></span></div>
+                    </div>
+                    <div class="li">
+                      <div class="li__t"><b>Lay's Magic Masala · 48 g</b><span class="pinned"><svg width="11" height="11"><use href="#i-pin"/></svg>Zepto</span></div>
+                      <div class="slots"><span class="sl sl--b"><em>1</em><i class="pt p-z">Z</i>₹15</span><span class="sl"><em>2</em><i class="pt p-bb">bb</i>₹15</span><span class="sl"><em>3</em><i class="pt p-b">B</i>₹17</span></div>
+                    </div>
+                    <div class="li">
+                      <div class="li__t"><b>Amul Butter · 100 g</b></div>
+                      <div class="slots"><span class="sl sl--b"><em>1</em><i class="pt p-bb">bb</i>₹57</span><span class="sl"><em>2</em><i class="pt p-z">Z</i>₹58</span><span class="sl"><em>3</em><i class="pt p-b">B</i>₹60</span></div>
+                    </div>
+                    <div class="li">
+                      <div class="li__t"><b>Farm Eggs · 6 pcs</b></div>
+                      <div class="slots"><span class="sl sl--b"><em>1</em><i class="pt p-z">Z</i>₹52</span><span class="sl"><em>2</em><i class="pt p-b">B</i>₹54</span></div>
+                    </div>
+                    <div class="li li--peek">
+                      <div class="li__t"><b>Maggi Masala · 280 g</b></div>
+                      <div class="slots"><span class="sl sl--b"><em>1</em><i class="pt p-bb">bb</i>₹59</span><span class="sl"><em>2</em><i class="pt p-z">Z</i>₹60</span></div>
+                    </div>
+                  </div>
+                  <div class="tabbar"><span class="tab"><svg><use href="#i-search"/></svg>Search</span><span class="tab on"><svg><use href="#i-list"/></svg>Lists</span><span class="tab"><svg><use href="#i-cart"/></svg>Cart</span><span class="tab"><svg><use href="#i-user"/></svg>Account</span></div>
+                </div>
+
+                <!-- CART -->
+                <div class="screen" data-screen="3">
+                  <div class="sb"><span>9:41</span><span class="sb__r"><i></i><i></i><i></i></span></div>
+                  <div class="sbody">
+                    <div class="ah"><b class="ttl">Cart</b><span class="loc">12 items</span></div>
+                    <div class="plan plan--cart">
+                      <p class="plan__k">Best split <em>3 apps</em></p>
+                      <p class="plan__v"><b>₹1,284</b><span class="save">Saves ₹58 vs one app</span></p>
+                      <div class="split"><i style="flex:46;background:#f8cb46"></i><i style="flex:33;background:#7a3cc0"></i><i style="flex:21;background:#84c225"></i></div>
+                    </div>
+                    <div class="tot">
+                      <div class="tot__r"><span class="pt p-b">B</span><div><b>Blinkit</b><small>6 items</small></div><strong>₹590</strong><u>Open in Blinkit <svg width="11" height="11"><use href="#i-arrow"/></svg></u></div>
+                      <div class="tot__r"><span class="pt p-z">Z</span><div><b>Zepto</b><small>4 items</small></div><strong>₹424</strong><u>Open in Zepto <svg width="11" height="11"><use href="#i-arrow"/></svg></u></div>
+                      <div class="tot__r"><span class="pt p-bb">bb</span><div><b>BigBasket</b><small>2 items</small></div><strong>₹270</strong><u>Open in BigBasket <svg width="11" height="11"><use href="#i-arrow"/></svg></u></div>
+                    </div>
+                    <p class="note"><svg width="12" height="12"><use href="#i-lock"/></svg>Sasta never places orders. You pay inside each app.</p>
+                  </div>
+                  <div class="tabbar"><span class="tab"><svg><use href="#i-search"/></svg>Search</span><span class="tab"><svg><use href="#i-list"/></svg>Lists</span><span class="tab on"><svg><use href="#i-cart"/></svg>Cart</span><span class="tab"><svg><use href="#i-user"/></svg>Account</span></div>
+                </div>
+
+                <!-- ACCOUNTS -->
+                <div class="screen" data-screen="4">
+                  <div class="sb"><span>9:41</span><span class="sb__r"><i></i><i></i><i></i></span></div>
+                  <div class="sbody">
+                    <div class="ah"><b class="ttl">Account</b><span class="loc"><svg width="12" height="12"><use href="#i-lock"/></svg>On this phone</span></div>
+                    <div class="card connect">
+                      <b>Connect every app with one number</b>
+                      <div class="field"><span>+91 ••••• ••210</span><i class="ok"><svg width="12" height="12"><use href="#i-check"/></svg></i></div>
+                      <div class="otp"><svg width="13" height="13"><use href="#i-msg"/></svg>OTP auto-filled · Zepto</div>
+                    </div>
+                    <div class="card card--list acc">
+                      <div class="ar"><span class="pt p-b">B</span><b>Blinkit</b><u class="st ok">Connected</u></div>
+                      <div class="ar"><span class="pt p-z">Z</span><b>Zepto</b><u class="st ok">Connected</u></div>
+                      <div class="ar"><span class="pt p-i">I</span><b>Instamart</b><u class="st ok">Connected</u></div>
+                      <div class="ar"><span class="pt p-bb">bb</span><b>BigBasket</b><u class="st ok">Connected</u></div>
+                      <div class="ar"><span class="pt p-f">F</span><b>Flipkart Minutes</b><u class="st ok">Connected</u></div>
+                      <div class="ar"><span class="pt p-a">a</span><b>Amazon Now</b><u class="st need">Needs you</u></div>
+                    </div>
+                  </div>
+                  <div class="tabbar"><span class="tab"><svg><use href="#i-search"/></svg>Search</span><span class="tab"><svg><use href="#i-list"/></svg>Lists</span><span class="tab"><svg><use href="#i-cart"/></svg>Cart</span><span class="tab on"><svg><use href="#i-user"/></svg>Account</span></div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+          <div class="dots" data-dots>
+            <button type="button" aria-label="Show step 1, Search" class="is-on"></button>
+            <button type="button" aria-label="Show step 2, Compare"></button>
+            <button type="button" aria-label="Show step 3, Lists"></button>
+            <button type="button" aria-label="Show step 4, Cart"></button>
+            <button type="button" aria-label="Show step 5, Accounts"></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 hood -->
+    <section class="sec" id="hood">
+      <div class="wrap">
+        <header class="sec__head">
+          <p class="eyebrow" data-reveal><span class="num">04</span>Under the hood</p>
+          <h2 class="h2" data-lines>
+            <span class="line"><span>Careful about prices.</span></span>
+            <span class="line"><span class="serif">Careful about you.</span></span>
+          </h2>
+          <div class="progress" data-progress></div>
+        </header>
+
+        <div class="grid">
+          <article class="gcard" data-reveal data-spotlight>
+            <svg class="gcard__i" width="26" height="26"><use href="#i-parallel"/></svg>
+            <h3>Six apps, in parallel</h3>
+            <p>Each app is queried at once with timeouts, retries and a short cache. One slow app never holds up the other five.</p>
+          </article>
+          <article class="gcard" data-reveal data-spotlight>
+            <svg class="gcard__i" width="26" height="26"><use href="#i-plug"/></svg>
+            <h3>Official MCP where it exists</h3>
+            <p>Instamart and Zepto are read through their official MCP servers, with read-only scopes. The rest run on their own website, inside a hidden page on your phone.</p>
+          </article>
+          <article class="gcard" data-reveal data-spotlight>
+            <svg class="gcard__i" width="26" height="26"><use href="#i-layers"/></svg>
+            <h3>Brand, variant, pack</h3>
+            <p>Titles are cleaned and sizes parsed, with brand and flavour synonyms, so "48g" and "48 gm" land on one card.</p>
+          </article>
+          <article class="gcard" data-reveal data-spotlight>
+            <svg class="gcard__i" width="26" height="26"><use href="#i-phone"/></svg>
+            <h3>No backend</h3>
+            <p>Your number, sessions and lists live only on the phone, in encrypted storage. There is no Sasta server to leak from or to track you.</p>
+          </article>
+          <article class="gcard" data-reveal data-spotlight>
+            <svg class="gcard__i" width="26" height="26"><use href="#i-msg"/></svg>
+            <h3>OTP auto-fill, on your terms</h3>
+            <p>With notification access you grant yourself, Sasta reads the sign-in code and types it into the app the message names. It listens only while you are signing in.</p>
+          </article>
+          <article class="gcard" data-reveal data-spotlight>
+            <svg class="gcard__i" width="26" height="26"><use href="#i-out"/></svg>
+            <h3>Never pays, never orders</h3>
+            <p>Sasta compares, then hands off to the real app. No checkout, no payment, no creating or deleting addresses. Ever.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 chain -->
+    <section class="sec" id="how">
+      <div class="wrap">
+        <header class="sec__head">
+          <p class="eyebrow" data-reveal><span class="num">05</span>How a search runs</p>
+          <h2 class="h2" data-lines>
+            <span class="line"><span>From one word to</span></span>
+            <span class="line"><span class="serif">one answer.</span></span>
+          </h2>
+          <div class="progress" data-progress></div>
+        </header>
+        <ol class="chain">
+          <li data-reveal><span class="chain__n">01</span><h3>Location set</h3><p>Your exact pin picks the dark store each app uses. Nothing is searched without it.</p></li>
+          <li data-reveal><span class="chain__n">02</span><h3>Six apps queried in parallel</h3><p>Official MCP or a hidden page per app, each with its own timeout and retry.</p></li>
+          <li data-reveal><span class="chain__n">03</span><h3>Titles normalised</h3><p>Brand, flavour and size synonyms are cleaned so the same pack matches everywhere.</p></li>
+          <li data-reveal><span class="chain__n">04</span><h3>Grouped</h3><p>Brand, then variant, then pack size. Like is compared with like.</p></li>
+          <li data-reveal><span class="chain__n">05</span><h3>Ranked cheapest in stock</h3><p>Out of stock never wins. Ties are marked "same", gaps "+₹2".</p></li>
+          <li data-reveal><span class="chain__n">06</span><h3>Hand-off to pay</h3><p>Open the real app and pay there. Sasta never places the order.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 06 setup -->
+    <section class="sec" id="setup">
+      <div class="wrap">
+        <header class="sec__head">
+          <p class="eyebrow" data-reveal><span class="num">06</span>Setup</p>
+          <h2 class="h2" data-lines>
+            <span class="line"><span>Three steps.</span></span>
+            <span class="line"><span class="serif">Two minutes.</span></span>
+          </h2>
+          <div class="progress" data-progress></div>
+        </header>
+        <div class="setup">
+          <article class="scard" data-reveal data-spotlight>
+            <span class="scard__n">1</span>
+            <h3>Download the APK</h3>
+            <p>Grab the latest release from GitHub and allow install from unknown sources when Android asks. Every release ships a SHA256SUMS.txt to check it against.</p>
+            <a class="link" href="https://github.com/Chiragjjjks/sasta/releases/latest">Open releases ↗</a>
+          </article>
+          <article class="scard" data-reveal data-spotlight>
+            <span class="scard__n">2</span>
+            <h3>Set your delivery location</h3>
+            <p>Drop your exact pin. Every app prices and stocks per dark store, so a close guess can mean the wrong prices.</p>
+          </article>
+          <article class="scard" data-reveal data-spotlight>
+            <span class="scard__n">3</span>
+            <h3>Connect, then search</h3>
+            <p>Optionally add your mobile number to connect every app at once for member prices. Or skip it and search logged out. Then type a product.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 07 faq -->
+    <section class="sec" id="faq">
+      <div class="wrap faq">
+        <header class="sec__head">
+          <p class="eyebrow" data-reveal><span class="num">07</span>FAQ</p>
+          <h2 class="h2" data-lines>
+            <span class="line"><span>Questions,</span></span>
+            <span class="line"><span class="serif">answered.</span></span>
+          </h2>
+          <div class="progress" data-progress></div>
+        </header>
+        <div class="faq__list" data-reveal>
+          <details>
+            <summary>Does Sasta place orders or pay for me?<i aria-hidden="true"></i></summary>
+            <div class="faq__a"><p>No, never. Sasta compares prices and then opens the real app, where you check out and pay yourself. It does not automate checkout, payment, or creating and deleting addresses.</p></div>
+          </details>
+          <details>
+            <summary>Do all six apps work today?<i aria-hidden="true"></i></summary>
+            <div class="faq__a"><p>Blinkit, Instamart, Zepto and BigBasket are verified live. Flipkart Minutes and Amazon Now are in beta: Flipkart needs an exact address on its side, and Amazon only works if your session is offered a Now store. They show their own state in the app instead of guessing.</p></div>
+          </details>
+          <details>
+            <summary>Where do my number, sessions and lists go?<i aria-hidden="true"></i></summary>
+            <div class="faq__a"><p>Nowhere. There is no backend. Your number is encrypted on the phone and sessions are kept only on the phone. Instamart and Zepto sign in through their official OAuth flow with read-only scopes; the others use their own website session inside a hidden page.</p></div>
+          </details>
+          <details>
+            <summary>Why does it ask for notification access?<i aria-hidden="true"></i></summary>
+            <div class="faq__a"><p>Only to auto-fill sign-in codes. You grant it yourself, it is armed only while you are connecting apps, and the code is passed straight to the app the message names. Skip it and type the OTPs yourself.</p></div>
+          </details>
+          <details>
+            <summary>Why is it not on the Play Store?<i aria-hidden="true"></i></summary>
+            <div class="faq__a"><p>Sasta is a personal project for one person's use at human-like request rates, shared as a sideloaded APK with the source on GitHub. It is not affiliated with any of the platforms.</p></div>
+          </details>
+          <details>
+            <summary>What does it cost? Is there iOS?<i aria-hidden="true"></i></summary>
+            <div class="faq__a"><p>It is free and Android only, for now. You can read the whole thing on GitHub.</p></div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- closing -->
+    <section class="closing" id="download">
+      <p class="eyebrow eyebrow--c" data-reveal><span class="num">08</span>Get Sasta</p>
+      <h2 class="closing__t" data-lines>
+        <span class="line"><span>Pay less.</span></span>
+      </h2>
+      <p class="sec__p sec__p--c" data-reveal>Free, open source, and on your phone in two minutes.</p>
+      <div class="closing__cta" data-reveal>
+        <a class="btn btn--white btn--lg" data-magnetic href="https://github.com/Chiragjjjks/sasta/releases/latest"><svg class="ico-fill" width="22" height="15" aria-hidden="true"><use href="#i-android"/></svg><span>Download APK · v0.8.0</span></a>
+        <a class="btn btn--ghost btn--lg" data-magnetic href="https://github.com/Chiragjjjks/sasta"><span>Source ↗</span></a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="foot__in">
+      <a class="brand" href="#top" aria-label="Sasta, back to top"><img src="favicon.svg" width="24" height="24" alt=""><span class="wm">sasta<i>.</i></span></a>
+      <p>© 2026 Sasta · personal project · not affiliated with Blinkit, Zepto, Swiggy, BigBasket, Flipkart or Amazon.</p>
+      <a class="link" href="https://github.com/Chiragjjjks/sasta">GitHub ↗</a>
+    </div>
+  </footer>
+
+  <script src="main.js" defer></script>
+</body>
+</html>
