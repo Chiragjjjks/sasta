@@ -34,7 +34,7 @@ export function foodWords(text: string): string[] {
 }
 
 const PORTIONS: [RegExp, (m: RegExpMatchArray) => string][] = [
-  [/\bserves?\s*(\d+)\b/, (m) => `serves ${m[1]}`],
+  [/\bserves?\s*(\d+)(?:\s+(\d+))?\b/, (m) => `serves ${m[1]}${m[2] ? `-${m[2]}` : ''}`],
   [/\b(\d+)\s*(?:pcs?|pieces?|piece|nos?)\b/, (m) => `${m[1]} pc`],
   [/\b(\d+(?:\.\d+)?)\s*(ml|ltr?|litres?|liters?|gms?|grams?|g|kg)\b/, (m) => `${m[1]} ${m[2].startsWith('l') ? 'l' : m[2].startsWith('k') ? 'kg' : m[2] === 'ml' ? 'ml' : 'g'}`],
   [/\b(\d+)\s*(?:inch|inches|in)\b/, (m) => `${m[1]} inch`],
@@ -177,7 +177,9 @@ export function groupDishes(dishes: Dish[]): { groups: DishGroup[]; restaurants:
     }
     const first = [...outlets.values()].sort((a, b) => ORDER.get(a.platform)! - ORDER.get(b.platform)!)[0]
     const name = restaurantName(first.name)
-    const area = [...outlets.values()].find((o) => o.area)?.area
+    const raw = [...outlets.values()].find((o) => o.area)?.area
+    // Some apps shout the locality ("RAJAJI NAGAR").
+    const area = raw && raw === raw.toUpperCase() ? raw.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()) : raw
     const own = clusters.map((c): DishGroup => {
       const offers = [...c.members].sort(compareDishes)
       const prices = offers.filter(orderable).map((o) => o.price)
