@@ -1,7 +1,7 @@
-import type { Platform } from './types'
+import type { AnyPlatform, FoodPlatform, Platform } from './types'
 
-export interface PlatformMeta {
-  id: Platform
+export interface PlatformMeta<P extends AnyPlatform = Platform> {
+  id: P
   name: string
   short: string
   color: string
@@ -25,3 +25,18 @@ export const PLATFORMS: PlatformMeta[] = [
 export const PLATFORM: Record<Platform, PlatformMeta> = Object.fromEntries(
   PLATFORMS.map((p) => [p.id, p]),
 ) as Record<Platform, PlatformMeta>
+
+/** Food delivery apps, in the order the Food section lists them. Marks and URLs: docs/platforms/<id>.md. */
+export const FOOD_PLATFORMS: PlatformMeta<FoodPlatform>[] = [
+  { id: 'zomato', name: 'Zomato', short: 'Zomato', color: '#e23744', mark: { text: 'z', bg: '#e23744', fg: '#ffffff' }, searchUrl: (q) => `https://www.zomato.com/bangalore/delivery?query=${enc(q)}` },
+  { id: 'swiggy_food', name: 'Swiggy', short: 'Swiggy', color: '#fc8019', mark: { text: 'S', bg: '#fc8019', fg: '#ffffff' }, searchUrl: (q) => `https://www.swiggy.com/search?query=${enc(q)}` },
+  { id: 'ownly', name: 'Ownly', short: 'Ownly', color: '#1f8a5b', mark: { text: 'O', bg: '#1f8a5b', fg: '#ffffff' }, searchUrl: () => 'https://www.ownly.app/' },
+  { id: 'swish', name: 'Swish', short: 'Swish', color: '#ff5a5f', mark: { text: 'Sw', bg: '#111111', fg: '#ffffff' }, searchUrl: () => 'https://www.swishapp.in/' },
+]
+
+export const FOOD_PLATFORM: Record<FoodPlatform, PlatformMeta<FoodPlatform>> = Object.fromEntries(
+  FOOD_PLATFORMS.map((p) => [p.id, p]),
+) as Record<FoodPlatform, PlatformMeta<FoodPlatform>>
+
+/** Any app's name, colour and mark, grocery or food. */
+export const APP: Record<AnyPlatform, PlatformMeta<AnyPlatform>> = { ...PLATFORM, ...FOOD_PLATFORM }
