@@ -99,6 +99,20 @@ export function dishRelevance(d: Dish, query: string): number {
   return score + (dish.slice(0, terms.length).join(' ') === terms.join(' ') ? 1 : 0)
 }
 
+/** True when every query word is in the dish's own name, not just its restaurant's. */
+export function namesDish(d: Dish, query: string): boolean {
+  const terms = foodWords(query).filter((w) => !STOP.has(w) && w.length > 1)
+  const dish = foodWords(d.name)
+  return terms.every((t) => hasWord(dish, t))
+}
+
+/** True when every query word is in the restaurant's name: the user searched for a place. */
+export function namesRestaurant(name: string, query: string): boolean {
+  const terms = foodWords(query).filter((w) => !STOP.has(w) && w.length > 1)
+  const place = foodWords(name)
+  return terms.length > 0 && terms.every((t) => hasWord(place, t))
+}
+
 /** Keeps dishes that answer the query, orderable and most relevant first. */
 export function relevantDishes(dishes: Dish[], query: string): Dish[] {
   return dishes

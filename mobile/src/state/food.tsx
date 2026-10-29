@@ -30,7 +30,7 @@ interface FoodStore {
   /** The restaurant from the last search, with every menu read since merged in. */
   restaurant: (key: string) => RestaurantMatch | undefined
   /** Reads each app's whole menu for this restaurant (`food.menu`), so more dishes line up across apps. */
-  loadMenu: (key: string) => Promise<void>
+  loadMenu: (key: string, opts?: { force?: boolean }) => Promise<void>
   menuChecks: Record<string, MenuCheck>
   order: FoodOrder | null
   /** Sets one dish's quantity. Picking from another restaurant starts a new order. */
@@ -98,16 +98,19 @@ export function FoodProvider({ children }: { children: ReactNode }) {
   const all = useMemo(() => Object.values(dishes).flat() as Dish[], [dishes])
   const { groups, restaurants } = useMemo(() => groupDishes(all), [all])
 
+  // The order outlives a new search: keep the last dishes seen for each restaurant.
+  const seen = useRef(new Map<string, Dish[]>())
   const restaurant = useCallback((key: string) => {
     const found = all.filter((d) => restaurantKey(d.outlet.name) === key)
     const ids = new Set(found.map((d) => d.id))
     const merged = [...found, ...(menus[key] ?? []).filter((d) => !ids.has(d.id))]
-    return groupDishes(merged).restaurants.find((r) => r.key === key)
+    if (merged.length) seen.current.set(key, merged)
+    return groupDishes(merged.length ? merged : seen.current.get(key) ?? []).restaurants.find((r) => r.key === key)
   }, [all, menus])
 
-  const loadMenu = useCallback(async (key: string) => {
+  const loadMenu = useCallback(async (key: string, opts: { force?: boolean } = {}) => {
     const r = restaurants.find((x) => x.key === key)
-    if (!r || menuChecks[key]?.running) return
+    if (!r || menuChecks[key]?.running || (menuChecks[key] && !opts.force)) return
     const ctrl = abortRef.current
     setMenuChecks((m) => ({ ...m, [key]: { running: true, failed: [] } }))
     const failed: FoodPlatform[] = []
