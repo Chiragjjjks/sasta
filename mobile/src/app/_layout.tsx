@@ -41,6 +41,7 @@ export default function RootLayout() {
               <Stack.Screen name="product/[key]" options={{ presentation: 'modal', title: 'Compare prices', animation: 'slide_from_bottom' }} />
               <Stack.Screen name="save/[key]" options={{ presentation: 'modal', title: 'Save to list', animation: 'slide_from_bottom' }} />
               <Stack.Screen name="list/[id]" options={{ title: '' }} />
+              <Stack.Screen name="restaurant/[key]" options={{ title: '' }} />
               <Stack.Screen name="location" options={{ presentation: 'modal', title: 'Delivery location', animation: 'slide_from_bottom' }} />
             </Stack>
             <HiddenPages />

@@ -73,7 +73,7 @@ const PLACES: Place[] = [
 /** Menu markup over the dine-in price, fee, ETA and the headline offer each app shows. */
 const APP: Record<FoodPlatform, { markup: [number, number]; fee?: [number, number]; eta: number; offers: string[] }> = {
   zomato: { markup: [1.08, 1.18], fee: [25, 45], eta: 34, offers: ['50% off up to ₹100', 'Flat ₹125 off above ₹499', ''] },
-  swiggy_food: { markup: [1.1, 1.2], fee: [30, 49], eta: 31, offers: ['60% off up to ₹120', 'Items at ₹129', 'Free delivery'] },
+  swiggy_food: { markup: [1.1, 1.2], fee: [30, 49], eta: 31, offers: ['60% off up to ₹120', 'Items at ₹129', 'Free delivery over ₹299'] },
   ownly: { markup: [1, 1.03], fee: [19, 29], eta: 38, offers: ['No platform fee', ''] },
   swish: { markup: [1, 1], fee: [0, 0], eta: 12, offers: ['Free delivery'] },
 }

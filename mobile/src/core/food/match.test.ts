@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { mockDishes } from './adapters/mock'
-import { cheapestFirst, dishKey, dishRelevance, groupDishes, portionsMatch, quoteOrder, relevantDishes, restaurantKey, savingsFirst } from './match'
+import { cheapestFirst, dishKey, dishRelevance, groupDishes, namesDish, namesRestaurant, portionsMatch, quoteOrder, relevantDishes, restaurantKey, savingsFirst } from './match'
 import type { Dish, FoodOutlet, FoodPlatform } from './types'
 
 const outlet = (platform: FoodPlatform, name: string, o: Partial<FoodOutlet> = {}): FoodOutlet =>
@@ -35,6 +35,14 @@ describe('food names', () => {
     expect(dishRelevance(d, 'meghana biryani')).toBeGreaterThan(dishRelevance(d, 'meghana'))
     expect(dishRelevance(d, 'pizza')).toBe(-1)
     expect(dishRelevance(dish('swiggy_food', 'X', 'Chicken Momos', 150), 'momo')).toBeGreaterThan(0)
+  })
+
+  it('tells a dish query from a restaurant query', () => {
+    const d = dish('zomato', 'Behrouz Biryani', 'Murgh Makhani Biryani', 449)
+    expect(namesDish(d, 'biryani')).toBe(true)
+    expect(namesDish(d, 'behrouz')).toBe(false)
+    expect(namesRestaurant('Meghana Foods - Rajajinagar', 'meghana')).toBe(true)
+    expect(namesRestaurant('Meghana Foods', 'meghana biryani')).toBe(false)
   })
 
   it('keeps relevant dishes, orderable first', () => {
