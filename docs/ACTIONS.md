@@ -35,8 +35,11 @@ Each action has an id, a trigger, preconditions, per-platform strategies, and a 
 | `cart.handoff` | **Open in <app> with these items** (explicit tap only) | session, location | platform cart filled, platform opened for the user to pay |
 | `orders.history` | Account → History, "reorder my usual" | session | past orders, read only |
 | `offers.list` | Cart screen | session | coupons and member prices |
+| `food.search` | Food tab search box | exact location | `Dish[]` per food app (dish, price, veg, availability, plus the outlet's rating, ETA, distance, fee and offer), matched across apps by `groupDishes` |
+| `food.menu` | Open a restaurant | exact location, the outlet from `food.search` | that outlet's whole menu as `Dish[]`, merged so more dishes line up across apps |
+| `food.handoff` | **Open in <app>** on the restaurant screen (explicit tap only) | none | the app opened on that restaurant; the user adds the dishes and pays there |
 
-**Never automated:** placing an order, paying, confirming checkout, deleting or creating addresses, changing account details. `cart.handoff` stops at the platform's own cart screen.
+**Never automated:** placing an order, paying, confirming checkout, deleting or creating addresses, changing account details. `cart.handoff` stops at the platform's own cart screen. `food.handoff` only opens the restaurant: Sasta never builds a food cart.
 
 ### Example: `price.check`
 
