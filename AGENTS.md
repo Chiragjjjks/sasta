@@ -21,7 +21,7 @@ Owner: Chirag (GitHub `Chiragjjjks`), Bengaluru. The test location is Rajajinaga
 - They care a lot about UI clarity ("instinct-to-UI"). Before declaring UI work done, check it visually. The browser preview with sample data is fine for that.
 - When a delegated agent asks a question meant for the owner (for example a login prompt), tell the owner. Never answer it on their behalf.
 
-## Current state: v0.7.0 published (tag on 44aa30a)
+## Current state: v0.8.0 published (tag on fea695f)
 
 | Platform | How Sasta searches | Status |
 |---|---|---|
@@ -41,7 +41,7 @@ Releases: v0.6.0 is published (live Instamart and Zepto). v0.7.0 is published (2
 Open work outside main:
 - **Site index toolkit (Codex).** Branch `t3/research-site-index-toolkit`, worktree `~/.t3/worktrees/sasta/t3-5eeaf107`, folder `automation/`. It is Playwright + TypeScript (`npm run login|crawl|action|verify-readers|inspect`) with a persistent profile at `~/.sasta/automation-profile`. It is not merged and the crawl is unfinished: no logins persisted yet, and each login needs the owner in that window.
 
-v0.8.0 prepared on main (not yet published): **one-tap connect with OTP auto-fill**.
+v0.8.0 published (2026-10-29): **one-tap connect with OTP auto-fill**.
 - Account takes one mobile number (encrypted on the phone) and connects every app at once.
 - `AutoSignInHost` (`native/SessionHosts.tsx`) runs each app's own sign-in page in parallel. `autofillStep` (`core/adapters/autofill.ts`) types the number once and requests the OTP.
 - `OtpListenerService` (Kotlin, user-granted Notification access, armed only during sign-in) passes each code to `routeOtp` (`core/otp.ts`), which types it into the app the message names.
