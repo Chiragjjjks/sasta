@@ -48,7 +48,7 @@ v0.8.0 published (2026-10-29): **one-tap connect with OTP auto-fill**.
 - Not yet verified on a phone with real OTPs. Amazon may ask for a password; that app then shows "Needs you".
 
 Since v0.8.0 (on `main`, unreleased):
-- **Landing site** in `site/` (plain HTML/CSS/JS, no build step; preview with `npx serve site`). It is modelled on the Downmix Renderer page, with editorial touches from Kenpath's Svara page, and includes an interactive sample-price demo. It is **not deployed yet**: GitHub Pages needs the owner to enable it and approve a deploy workflow.
+- **Landing site** in `site/` (plain HTML/CSS/JS, no build step; preview with `npx serve site`). It is modelled on the Downmix Renderer page, with editorial touches from Kenpath's Svara page, and includes an interactive sample-price demo. It is live at https://chiragjjjks.github.io/sasta/. `.github/workflows/site.yml` publishes `site/` to the `gh-pages` branch on every change, and Pages serves that branch, the same way Downmix Renderer is hosted. Download buttons link straight to the APK, and `main.js` switches them to the newest release at load time.
 - **App UI polish:** JetBrains Mono is now loaded (`fonts.mono`, `fonts.monoBold`), and the kit has `Eyebrow` (mono section label, optionally numbered or live), `Headline` (two-line display heading, second line muted) and `LiveDot`. They are used on the Search home, Lists, Cart, ranked rows and the plan card.
 
 ## Next, in order

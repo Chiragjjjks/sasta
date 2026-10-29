@@ -1,0 +1,30 @@
+name: Landing site
+
+# Publishes site/ to the gh-pages branch, which GitHub Pages serves at
+# https://chiragjjjks.github.io/sasta/ (the same setup as other Pages sites in this account).
+on:
+  push:
+    branches: [main]
+    paths: ['site/**', '.github/workflows/site.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: site
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Push site/ to gh-pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git subtree split --prefix site -b site-publish
+          git push --force origin site-publish:gh-pages

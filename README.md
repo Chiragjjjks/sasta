@@ -1,5 +1,7 @@
 # Sasta
 
+**Website:** https://chiragjjjks.github.io/sasta/ (source in `site/`, published to the `gh-pages` branch by `.github/workflows/site.yml`).
+
 An Android app for comparing quick-commerce prices and keeping reusable shopping lists. Built with React Native and Expo, with native inputs, navigation, scrolling and Android sharing.
 
 **Live search:** Blinkit (hidden WebView on blinkit.com), Instamart and Zepto (their official MCP servers), BigBasket (its own listing API, inside its page), Flipkart Minutes (Hyperlocal page API, needs an exact Flipkart address) and Amazon Now (only when your Amazon web session offers a Now store). Instamart searches one of your saved Swiggy addresses, chosen in **Account → Delivery address**. Zepto uses Sasta's exact location. **Test search** in Account reports product counts or the exact reason a search could not complete, separately from login. Confirm prices, stock, offers and final fees in the shopping app before payment.
