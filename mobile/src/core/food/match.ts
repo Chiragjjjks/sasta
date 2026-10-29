@@ -65,18 +65,21 @@ export function portionsMatch(a?: string, b?: string): boolean {
   return false
 }
 
+/** Where the branch starts: "Empire - Malleshwaram", "Aditya- Mahalakshmipuram", "Nagarjuna (Residency Road)". "Al-Bek" stays whole. */
+const BRANCH = /\s+-\s*|\s*-\s+|\s*[|–—]\s*|\s*\(/
+
 const GENERIC = new Set(['the', 'restaurant', 'restaurants', 'hotel', 'pvt', 'ltd', 'and'])
 
 /** Restaurant name without the branch: "Hotel Empire - Rajajinagar" and "Empire Restaurant" → "empire". */
 export function restaurantKey(name: string): string {
-  const head = name.split(/\s+[-|–—]\s+|\s*\(/)[0]
+  const head = name.split(BRANCH)[0]
   const words = normalizeText(head).replace(/'/g, '').split(' ').filter(Boolean)
   return words.filter((w) => !GENERIC.has(w)).join(' ') || words.join(' ')
 }
 
 /** The restaurant name as people say it, without the branch. */
 export function restaurantName(name: string): string {
-  return name.split(/\s+[-|–—]\s+|\s*\(/)[0].trim() || name
+  return name.split(BRANCH)[0].trim() || name
 }
 
 export const orderable = (d: Dish) => d.available && d.outlet.open
@@ -113,11 +116,19 @@ export function namesRestaurant(name: string, query: string): boolean {
   return terms.length > 0 && terms.every((t) => hasWord(place, t))
 }
 
-/** Keeps dishes that answer the query, orderable and most relevant first. */
+/**
+ * Keeps dishes that answer the query, orderable and most relevant first. A dish that matches only
+ * through its restaurant's name ("water" at "RNR Biryani") is kept only when no dish names the query
+ * itself, which is what a restaurant search ("meghana") looks like.
+ */
 export function relevantDishes(dishes: Dish[], query: string): Dish[] {
-  return dishes
-    .map((d) => ({ d, r: Number.isFinite(d.price) && d.price > 0 ? dishRelevance(d, query) : -1 }))
+  const terms = foodWords(query).filter((w) => !STOP.has(w) && w.length > 1)
+  const scored = dishes
+    .map((d) => ({ d, r: Number.isFinite(d.price) && d.price > 0 ? dishRelevance(d, query) : -1, own: terms.filter((t) => hasWord(foodWords(d.name), t)).length }))
     .filter((x) => x.r >= 0)
+  const named = scored.some((x) => x.own > 0)
+  return scored
+    .filter((x) => !named || x.own > 0)
     .sort((a, b) => Number(orderable(b.d)) - Number(orderable(a.d)) || b.r - a.r || a.d.price - b.d.price)
     .map((x) => x.d)
 }
@@ -196,6 +207,16 @@ export function groupDishes(dishes: Dish[]): { groups: DishGroup[]; restaurants:
   return { groups, restaurants }
 }
 
+/** Which app is cheapest for most of a restaurant's dishes, counting only dishes whose price differs. */
+export function usualWinner(r: RestaurantMatch): { platform?: FoodPlatform; wins: number; differ: number; same: number } {
+  const shared = r.dishes.filter((g) => g.offers.filter(orderable).length > 1)
+  const differ = shared.filter((g) => g.saving > 0)
+  const wins = new Map<FoodPlatform, number>()
+  for (const g of differ) wins.set(g.best.platform, (wins.get(g.best.platform) ?? 0) + 1)
+  const [platform, n] = [...wins].sort((a, b) => b[1] - a[1])[0] ?? []
+  return { platform, wins: n ?? 0, differ: differ.length, same: shared.length - differ.length }
+}
+
 /** Same restaurant on two or more apps, biggest saving first. */
 export function savingsFirst(groups: DishGroup[]): DishGroup[] {
   return groups.filter((g) => g.saving > 0).sort((a, b) => b.saving - a.saving || a.best.price - b.best.price)
@@ -232,5 +253,6 @@ export function quoteOrder(r: RestaurantMatch, qty: Record<string, number>): Ord
       else missing.push(g.key)
     }
     return [{ platform: id, outlet, itemTotal, deliveryFee: outlet.deliveryFee, total: itemTotal + (outlet.deliveryFee ?? 0), missing }]
-  }).sort((a, b) => Number(!a.outlet.open) - Number(!b.outlet.open) || a.missing.length - b.missing.length || a.total - b.total)
+  }).sort((a, b) => Number(!a.outlet.open) - Number(!b.outlet.open) || a.missing.length - b.missing.length || a.total - b.total
+    || (a.outlet.etaMinutes ?? 99) - (b.outlet.etaMinutes ?? 99))
 }

@@ -5,10 +5,10 @@ import { ActivityIndicator, FlatList, Keyboard, Pressable, ScrollView, StyleShee
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { IS_SAMPLE_DATA } from '@/core/adapters'
 import { canSearchFood } from '@/core/food/adapters'
-import { namesDish, namesRestaurant, orderable, quoteOrder } from '@/core/food/match'
+import { namesDish, namesRestaurant, orderable, quoteOrder, usualWinner } from '@/core/food/match'
 import type { DishGroup, FoodOutlet, FoodPlatform, FoodStatus, RestaurantMatch } from '@/core/food/types'
 import { FOOD_PLATFORM, FOOD_PLATFORMS } from '@/core/platforms'
-import { plural, rupee } from '@/core/utils'
+import { listNames, plural, rupee } from '@/core/utils'
 import { useFood } from '@/state/food'
 import { useStore } from '@/state/store'
 import { confirm } from '@/ui/confirm'
@@ -70,6 +70,12 @@ export default function FoodScreen() {
   // "meghana" names a restaurant; "biryani" names dishes, even though Behrouz Biryani matches it too.
   const dishQuery = f.groups.filter((g) => namesDish(g.best, f.submitted)).length * 2 > f.groups.length
   const places = dishQuery ? [] : f.restaurants.filter((r) => namesRestaurant(r.name, f.submitted)).slice(0, 2)
+
+  const shared = f.groups.filter((g) => g.offers.filter(orderable).length > 1)
+  const gapCount = shared.filter((g) => g.saving > 0).length
+  const sameCount = shared.length - gapCount
+  const sharedApps = FOOD_PLATFORMS.filter((p) => shared.some((g) => g.offers.some((o) => o.platform === p.id))).map((p) => p.short)
+  const sharedNames = listNames(sharedApps)
 
   const orderPlace = f.order ? f.restaurant(f.order.restaurantKey) : undefined
   const orderQuote = orderPlace && f.order ? quoteOrder(orderPlace, f.order.qty).find((q) => !q.missing.length && q.outlet.open) : undefined
@@ -158,6 +164,12 @@ export default function FoodScreen() {
           </View>
         </View>
 
+        {!searching && sameCount > 0 && gapCount === 0 && (
+          <T kind="small" style={{ color: t.ink }}>
+            Same menu price on {sharedNames} for {plural(sameCount, 'dish', 'dishes')}. Fees, offers and delivery time differ.
+          </T>
+        )}
+
         {problems.length > 0 && !searching && (
           <Card style={{ padding: 14, gap: 10 }}>
             {problems.map((p) => (
@@ -198,7 +210,7 @@ export default function FoodScreen() {
 
   const footer = !searching && appOnly.length > 0 && !IS_SAMPLE_DATA ? (
     <View style={[styles.appOnly, { borderColor: t.line }]}>
-      <T kind="small">{appOnly.map((p) => p.name).join(' and ')} {appOnly.length === 1 ? 'is' : 'are'} app-only, so Sasta can’t read prices there yet.</T>
+      <T kind="small">{listNames(appOnly.map((p) => p.name))} {appOnly.length === 1 ? 'is' : 'are'} app-only, so Sasta can’t read prices there yet.</T>
       <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
         {appOnly.map((p) => (
           <Pressable key={p.id} onPress={() => { tap(); f.openApp(p.searchUrl(f.submitted)) }} style={[styles.openPill, { backgroundColor: t.chip }]} accessibilityRole="link">
@@ -276,10 +288,7 @@ function GapHero({ g, onPress }: { g: DishGroup; onPress: () => void }) {
 function PlaceCard({ r, onOpen }: { r: RestaurantMatch; onOpen: () => void }) {
   const t = useTheme()
   const apps = FOOD_PLATFORMS.filter((p) => r.outlets[p.id])
-  const shared = r.dishes.filter((g) => g.offers.filter(orderable).length > 1)
-  const wins = new Map<FoodPlatform, number>()
-  for (const g of shared) wins.set(g.best.platform, (wins.get(g.best.platform) ?? 0) + 1)
-  const [top, n] = [...wins].sort((a, b) => b[1] - a[1])[0] ?? []
+  const { platform: top, wins, differ, same } = usualWinner(r)
   return (
     <Pressable onPress={() => { tap(); onOpen() }} style={[styles.place, { backgroundColor: t.surface }]} accessibilityRole="button" accessibilityLabel={`${r.name}: compare the menu on every app`}>
       <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
@@ -288,8 +297,9 @@ function PlaceCard({ r, onOpen }: { r: RestaurantMatch; onOpen: () => void }) {
           {apps.map((p) => <PlatformMark key={p.id} platform={p.id} size={16} />)}
           <T kind="caption" style={{ marginLeft: 4 }} numberOfLines={1}>{r.area ? `${r.area} · ` : ''}on {plural(apps.length, 'app')}</T>
         </View>
-        <T kind="small" style={{ color: top ? t.good : t.muted, fontFamily: t.fonts.bodySemi }} numberOfLines={1}>
-          {top ? `Cheapest on ${FOOD_PLATFORM[top].short} for ${n} of ${plural(shared.length, 'shared dish', 'shared dishes')}` : `${plural(r.dishes.length, 'dish', 'dishes')} found`}
+        <T kind="small" style={{ color: top ? t.good : t.ink, fontFamily: t.fonts.bodySemi }} numberOfLines={1}>
+          {top ? `Cheaper on ${FOOD_PLATFORM[top].short} for ${wins} of ${plural(differ + same, 'shared dish', 'shared dishes')}`
+            : same ? `Same price on every app for ${plural(same, 'dish', 'dishes')}` : `${plural(r.dishes.length, 'dish', 'dishes')} found`}
         </T>
       </View>
       <View style={[styles.placeBtn, { backgroundColor: t.chip }]}>

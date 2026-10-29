@@ -3,7 +3,7 @@ import { Plus } from 'lucide-react-native'
 import { useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { namesDish, orderable, quoteOrder } from '@/core/food/match'
+import { namesDish, orderable, quoteOrder, usualWinner } from '@/core/food/match'
 import type { DishGroup, FoodPlatform, RestaurantMatch } from '@/core/food/types'
 import { FOOD_PLATFORM, FOOD_PLATFORMS } from '@/core/platforms'
 import { plural, rupee } from '@/core/utils'
@@ -93,7 +93,7 @@ export default function RestaurantScreen() {
 
         {picks ? (
           <PlanHero
-            label={complete.length > 1 ? 'Cheapest for your order' : 'Your order'}
+            label={complete.length < 2 ? 'Your order' : priciest.total > cheapest.total ? 'Cheapest for your order' : 'Same total on every app'}
             total={cheapest?.total}
             sub={cheapest ? `on ${FOOD_PLATFORM[cheapest.platform].name} · ${plural(count, 'item')}${cheapest.deliveryFee === undefined ? ' + fees' : ''}` : 'No app has all of these'}
             groups={[]}
@@ -147,22 +147,18 @@ export default function RestaurantScreen() {
 /** Before anything is picked: which app wins most of the dishes listed on more than one app. */
 function Verdict({ r }: { r: RestaurantMatch }) {
   const t = useTheme()
-  const shared = r.dishes.filter((g) => g.offers.filter(orderable).length > 1)
-  const wins = new Map<FoodPlatform, number>()
-  for (const g of shared) wins.set(g.best.platform, (wins.get(g.best.platform) ?? 0) + 1)
-  const [top, n] = [...wins].sort((a, b) => b[1] - a[1])[0] ?? []
-  const most = Math.max(0, ...shared.map((g) => g.saving))
+  const { platform: top, wins, differ, same } = usualWinner(r)
+  const most = Math.max(0, ...r.dishes.map((g) => g.saving))
+  const title = top ? `${FOOD_PLATFORM[top].name}, for ${wins} of ${plural(differ + same, 'dish', 'dishes')}`
+    : same ? 'Same menu price on every app' : `${plural(r.dishes.length, 'dish', 'dishes')} to compare`
+  const note = top ? `Up to ${rupee(most)} less on one dish. ` : same ? 'Fees, offers and delivery time still differ. ' : ''
   return (
     <View style={[styles.verdict, { backgroundColor: t.hero }]}>
       {top && <PlatformMark platform={top} size={40} />}
       <View style={{ flex: 1 }}>
-        <Text style={{ color: t.heroMuted, fontFamily: t.fonts.mono, fontSize: 11, letterSpacing: 1.3 }}>{top ? 'CHEAPEST HERE, MOSTLY' : 'ONE APP ONLY'}</Text>
-        <Text style={{ color: t.heroText, fontFamily: t.fonts.displayBold, fontSize: 18, marginTop: 3 }}>
-          {top ? `${FOOD_PLATFORM[top].name}, for ${n} of ${plural(shared.length, 'dish', 'dishes')}` : `${plural(r.dishes.length, 'dish', 'dishes')} to compare`}
-        </Text>
-        <Text style={{ color: t.heroMuted, fontFamily: t.fonts.body, fontSize: 12.5, marginTop: 3 }}>
-          {most > 0 ? `Up to ${rupee(most)} less on one dish. ` : ''}Add dishes to price your order on every app.
-        </Text>
+        <Text style={{ color: t.heroMuted, fontFamily: t.fonts.mono, fontSize: 11, letterSpacing: 1.3 }}>{top ? 'CHEAPER HERE, MOSTLY' : same ? `${plural(same, 'DISH', 'DISHES')} ON MORE THAN ONE APP` : 'ONE APP ONLY'}</Text>
+        <Text style={{ color: t.heroText, fontFamily: t.fonts.displayBold, fontSize: 18, marginTop: 3 }}>{title}</Text>
+        <Text style={{ color: t.heroMuted, fontFamily: t.fonts.body, fontSize: 12.5, marginTop: 3 }}>{note}Add dishes to price your order on every app.</Text>
       </View>
     </View>
   )
@@ -196,7 +192,8 @@ function MenuRow({ g, r, apps, qty, onQty, first }: { g: DishGroup; r: Restauran
         {apps.map((p) => {
           const d = g.offers.find((o) => o.platform === p.id)
           const ok = !!d && orderable(d)
-          const best = ok && d.price === cheapest && g.offers.filter(orderable).length > 1
+          // Green only when another app charges more; equal prices stay neutral.
+          const best = ok && d.price === cheapest && g.saving > 0
           const note = !d ? 'Not listed' : !r.outlets[p.id]?.open ? 'Closed' : !d.available ? 'Sold out' : ''
           return (
             <View key={p.id} style={[styles.cell, { backgroundColor: best ? t.goodBg : t.chip }]}

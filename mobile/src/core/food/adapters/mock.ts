@@ -103,7 +103,10 @@ function dishesAt(place: Place, platform: FoodPlatform, loc: Location, now = Dat
     const seed = hash(`${platform}|${place.name}|${item.name}|${loc.pincode}`)
     // About 1 in 8 dishes is missing on an app, 1 in 10 is sold out right now.
     if (platform !== 'swish' && seed % 8 === 0) return []
-    const price = Math.round((item.price * pick(seed >>> 3, APP[platform].markup)) / 5) * 5
+    // Live data (2026-10-29): most restaurants charge Zomato and Swiggy the same menu price. Here two in three do.
+    const same = (platform === 'zomato' || platform === 'swiggy_food') && hash(place.name) % 3 !== 0
+    const price = same ? Math.round((item.price * pick(hash(`menu|${place.name}|${item.name}`) >>> 3, [1.05, 1.15])) / 5) * 5
+      : Math.round((item.price * pick(seed >>> 3, APP[platform].markup)) / 5) * 5
     const strike = platform === 'swiggy_food' && seed % 5 === 0 ? Math.round(price * 1.25 / 5) * 5 : undefined
     return [{
       platform, id: `${outlet.id}-${seed.toString(36)}`, name: item.names?.[platform] ?? item.name, price, strikePrice: strike,

@@ -43,18 +43,22 @@ export function FoodSlots({ rows, chosen, pinned, onPick, showOffer, limit, pric
   const t = useTheme()
   const ranked = rows.filter((r) => !r.reason)
   const cheapest = ranked[0]?.price ?? 0
+  // Same price on the next app: the first row is only faster (rows tie-break on ETA), not cheaper.
+  const tie = ranked.length > 1 && ranked[1].price === cheapest
+  const faster = tie && (ranked[0].outlet.etaMinutes ?? 99) < (ranked[1].outlet.etaMinutes ?? 99)
   const shown = limit === undefined ? rows : rows.filter((r, n) => n < limit || r.platform === chosen)
   return (
     <View>
       {shown.map((r) => {
         const rank = r.reason || !priced ? -1 : ranked.indexOf(r)
         const isChosen = chosen === r.platform && rank >= 0
+        const win = rank === 0 && !tie
         const name = FOOD_PLATFORM[r.platform].short
         const o = r.outlet
-        const label = `${FOOD_PLATFORM[r.platform].name} ${r.reason ?? (priced ? `${rupee(r.price)}${rank === 0 ? ', cheapest' : ''}` : '')}`
+        const label = `${FOOD_PLATFORM[r.platform].name} ${r.reason ?? (priced ? `${rupee(r.price)}${rank === 0 && !tie ? ', cheapest' : ''}` : '')}`
         const body = (
           <>
-            <Text style={[styles.rank, { color: rank === 0 ? t.good : t.muted, fontFamily: t.fonts.monoBold }]}>{rank >= 0 ? rank + 1 : priced ? '–' : ''}</Text>
+            <Text style={[styles.rank, { color: win ? t.good : t.muted, fontFamily: t.fonts.monoBold }]}>{rank >= 0 ? rank + 1 : priced ? '–' : ''}</Text>
             <PlatformMark platform={r.platform} size={22} style={[{ marginTop: 1 }, r.reason ? { opacity: 0.5 } : null]} />
             <View style={{ flex: 1, minWidth: 0 }}>
               <View style={styles.line}>
@@ -62,23 +66,23 @@ export function FoodSlots({ rows, chosen, pinned, onPick, showOffer, limit, pric
                   {name}
                   {o.rating ? <Text style={{ color: t.muted, fontFamily: t.fonts.body, fontSize: 12 }}>{`  ★ ${o.rating.toFixed(1)}`}</Text> : null}
                 </Text>
-                {rank === 0 && ranked.length > 1 && <Badge label="Cheapest" tone="good" />}
+                {rank === 0 && ranked.length > 1 && (!tie ? <Badge label="Cheapest" tone="good" /> : faster ? <Badge label="Faster" tone="muted" /> : null)}
                 {isChosen && !!pinned && rank > 0 && <Badge label="Your pick" tone="muted" />}
               </View>
               <Text style={{ color: t.muted, fontFamily: t.fonts.body, fontSize: 12, marginTop: 1 }} numberOfLines={1}>
                 {r.reason ?? [o.etaMinutes ? `${o.etaMinutes} min` : '', feeLabel(o.deliveryFee)].filter(Boolean).join(' · ')}
               </Text>
-              {showOffer && !r.reason && !!o.offer && (
+              {showOffer && !r.reason && !!o.offer && o.offer.toLowerCase() !== feeLabel(o.deliveryFee).toLowerCase() && (
                 <Text style={{ color: t.accentText, fontFamily: t.fonts.bodySemi, fontSize: 12, marginTop: 1 }} numberOfLines={1}>{o.offer}</Text>
               )}
             </View>
             {rank > 0 && <Text style={[styles.diff, { color: t.muted, fontFamily: t.fonts.mono }]}>{r.price > cheapest ? `+${rupee(r.price - cheapest)}` : 'same'}</Text>}
             {rank >= 0 && (
-              <Text style={[styles.price, { color: rank === 0 ? t.good : t.ink, fontFamily: t.fonts.bodyBold }]}>{rupee(r.price)}{r.plus ? '+' : ''}</Text>
+              <Text style={[styles.price, { color: win ? t.good : t.ink, fontFamily: t.fonts.bodyBold }]}>{rupee(r.price)}{r.plus ? '+' : ''}</Text>
             )}
           </>
         )
-        const style = [styles.slot, isChosen && { backgroundColor: rank === 0 ? t.goodBg : t.chip }]
+        const style = [styles.slot, isChosen && { backgroundColor: win ? t.goodBg : t.chip }]
         return onPick && rank >= 0 ? (
           <Pressable key={r.platform} onPress={() => { tap(); onPick(rank === 0 || pinned === r.platform ? undefined : r.platform) }}
             accessibilityRole="radio" accessibilityState={{ selected: isChosen }} accessibilityLabel={label} style={style}>{body}</Pressable>

@@ -95,3 +95,4 @@ Below grocery: `T h2` "Food apps" + Badge `Beta`, sub "Same sign-in as grocery. 
 - Every price sits beside its app mark. One primary action per screen: `Add · Ownly`, `Open in Ownly`, `Connect`.
 - Prices are menu prices; fees only when the app states them; offers never subtracted; never claim a final bill.
 - No new colours except the four marks.
+- **Ties (added after live data, 2026-10-29).** Zomato and Swiggy usually charge a restaurant's same menu price. Equal prices are never called "Cheapest" or painted green: the card shows a muted `Same price` badge, rows tie-break on ETA with a `Faster` badge, offers show on every row, results say "Same menu price on Zomato and Swiggy for N dishes. Fees, offers and delivery time differ.", and the restaurant verdict and order total say "Same … on every app".

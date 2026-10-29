@@ -41,11 +41,11 @@ function DishCardImpl({ group, qty, multiApp, onOpen, onAdd, onQty }: {
             {best.bestseller ? <Text style={{ color: t.accentText, fontFamily: t.fonts.bodySemi }}>{' · Bestseller'}</Text> : null}
           </Text>
         </View>
-        {group.saving > 0
-          ? <Badge label={`Save ${rupee(group.saving)}`} tone="good" />
+        {group.saving > 0 ? <Badge label={`Save ${rupee(group.saving)}`} tone="good" />
+          : group.offers.filter(orderable).length > 1 ? <Badge label="Same price" tone="muted" />
           : multiApp && group.offers.length === 1 ? <Badge label={`Only on ${FOOD_PLATFORM[best.platform].short}`} tone="muted" /> : null}
       </View>
-      <FoodSlots rows={rows} chosen={canOrder ? best.platform : undefined} limit={ROWS} />
+      <FoodSlots rows={rows} chosen={canOrder ? best.platform : undefined} limit={ROWS} showOffer />
       <View style={styles.footer}>
         <Pressable hitSlop={6} onPress={() => { tap(); onOpen(group) }} style={styles.menu} accessibilityRole="button" accessibilityLabel={`${group.restaurant} menu on every app`}>
           <T kind="smallStrong" style={{ color: t.muted }}>{hidden > 0 ? `+${hidden} more · ` : ''}Whole menu</T>
