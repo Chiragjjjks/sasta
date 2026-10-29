@@ -51,7 +51,7 @@ Since v0.8.0 (on `main`, unreleased):
 - **Landing site** in `site/` (plain HTML/CSS/JS, no build step; preview with `npx serve site`). It is modelled on the Downmix Renderer page, with editorial touches from Kenpath's Svara page, and includes an interactive sample-price demo. It is live at https://chiragjjjks.github.io/sasta/. `.github/workflows/site.yml` publishes `site/` to the `gh-pages` branch on every change, and Pages serves that branch, the same way Downmix Renderer is hosted. Download buttons link straight to the APK, and `main.js` switches them to the newest release at load time. The site also announces food delivery as **coming soon** (Zomato, Swiggy food, Ownly by Rapido, Swish). None of these are in the app yet.
 - **App UI polish:** JetBrains Mono is now loaded (`fonts.mono`, `fonts.monoBold`), and the kit has `Eyebrow` (mono section label, optionally numbered or live), `Headline` (two-line display heading, second line muted) and `LiveDot`. They are used on the Search home, Lists, Cart, ranked rows and the plan card.
 
-- **Food sources (feature branch):** Swiggy Food now has a WebView search and menu source, with paise parsing and explicit location/WAF errors. Desktop logged-out search verified (289 Rajajinagar dishes); menu returned HTTP 403 and native verification remains pending; see `docs/platforms/swiggy_food.md`.
+- **Food sources (feature branch):** Swiggy Food now has a WebView search and menu source, with paise parsing and explicit location/WAF errors. Desktop logged-out search verified (289 Rajajinagar dishes); menu returned HTTP 403 and native verification remains pending; see `docs/platforms/swiggy_food.md`. Zomato has fixture-tested parsers and a registered source that returns `NeedsLocationError`: the logged-out picker was unreachable and no reliable delivery-location setter is known. Ownly and Swish remain not-live.
 
 ## Next, in order
 
@@ -59,7 +59,7 @@ Since v0.8.0 (on `main`, unreleased):
 2. Wishlist and list follow-ups the owner asked for after the list redesign.
 3. `cart.quote` for Instamart and Zepto over MCP. This needs cart write scopes, so put it behind an explicit setting.
 4. `orders.history` and `offers.list` per `docs/ACTIONS.md`.
-5. Food delivery comparison (Zomato, Swiggy food, Ownly by Rapido, Swish), already announced as coming soon on the site. Check each for an official MCP or API before scraping.
+5. Food delivery comparison: verify Swiggy Food on Android (desktop search works; menu blocked), then identify Zomato's delivery-location setter before enabling its source. Ownly and Swish remain app-only. Check official MCP/API routes before scraping; Swiggy Food MCP needs the owner's sign-in.
 
 ## Repository map
 
