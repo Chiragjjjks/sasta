@@ -14,6 +14,7 @@ describe('food names', () => {
     expect(dishKey({ name: 'Half Chicken Biriyani' })).toEqual({ base: 'chicken biryani', portion: 'half' })
     expect(dishKey({ name: 'Ghee Podi Masale Dose' }).base).toBe('ghee podi masala dosa')
     expect(dishKey({ name: 'Chicken Wings', portion: '6 Pcs' })).toEqual({ base: 'chicken wing', portion: '6 pc' })
+    expect(dishKey({ name: 'Chicken Dum Biryani (Serves 1-2)' }).portion).toBe('serves 1-2')
   })
 
   it('treats a plain dish as the default plate only', () => {
