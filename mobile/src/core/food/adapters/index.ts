@@ -3,13 +3,18 @@ import { FOOD_PLATFORMS } from '@/core/platforms'
 import { NotLiveError, type FoodPlatform } from '@/core/types'
 import type { FoodSource } from '../types'
 import { mockFoodSources } from './mock'
+import { createSwiggyFoodSource } from './swiggy'
+import { createZomatoSource } from './zomato'
 
 /**
  * Food apps with a live source. The others say "Not live yet" in the app rather than mixing sample
  * prices with real ones; the browser preview uses sample data for all of them.
  * Strategy per app: docs/platforms/<id>.md.
  */
-const LIVE: Partial<Record<FoodPlatform, () => FoodSource>> = {}
+const LIVE: Partial<Record<FoodPlatform, () => FoodSource>> = {
+  swiggy_food: createSwiggyFoodSource,
+  zomato: createZomatoSource,
+}
 
 function notLive(platform: FoodPlatform): FoodSource {
   return { platform, async setLocation() {}, async search() { throw new NotLiveError(platform) } }
