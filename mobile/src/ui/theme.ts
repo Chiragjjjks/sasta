@@ -29,6 +29,9 @@ export const fonts = {
   bodyRegular: 'Figtree_400Regular',
   bodyBold: 'Figtree_700Bold',
   bodySemi: 'Figtree_600SemiBold',
+  /** Labels, counts and timings: small uppercase eyebrows and numbers that line up. */
+  mono: 'JetBrainsMono_500Medium',
+  monoBold: 'JetBrainsMono_700Bold',
 }
 
 export type Theme = typeof light & { fonts: typeof fonts }

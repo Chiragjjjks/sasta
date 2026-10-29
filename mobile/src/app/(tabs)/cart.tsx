@@ -12,7 +12,7 @@ import { PLATFORM } from '@/core/platforms'
 import type { Platform } from '@/core/types'
 import { plural, rupee } from '@/core/utils'
 import { useStore } from '@/state/store'
-import { Button, Card, Stepper, T, tap } from '@/ui/kit'
+import { Button, Card, Headline, LiveDot, Stepper, T, tap } from '@/ui/kit'
 import { OfferSlots } from '@/ui/OfferSlots'
 import { PackIcon } from '@/ui/PackIcon'
 import { PlanHero, type HeroChoice } from '@/ui/PlanHero'
@@ -61,7 +61,7 @@ export default function CartScreen() {
       <SafeAreaView style={{ flex: 1, backgroundColor: t.bg }} edges={['top']}>
         <View style={styles.empty}>
           <ShoppingBag size={40} color={t.faint} />
-          <T kind="h2">Your cart is empty</T>
+          <Headline lead="Your cart is empty." rest="Nothing to compare yet." size={26} style={{ textAlign: 'center', marginTop: 4 }} />
           <T kind="small" style={{ textAlign: 'center' }}>Search a product and tap Add, or add a whole list. Sasta then shows the cheapest way to buy everything.</T>
           <View style={{ flexDirection: 'row', gap: 10, marginTop: 8 }}>
             <Button small label="Search" onPress={() => router.navigate('/')} />
@@ -120,7 +120,7 @@ export default function CartScreen() {
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 32 }}>
         <T kind="title" style={{ fontSize: 26 }}>Your cart</T>
         <View style={styles.status}>
-          {s.refreshing ? <ActivityIndicator size="small" color={t.muted} /> : <View style={[styles.liveDot, { backgroundColor: t.good }]} />}
+          {s.refreshing ? <ActivityIndicator size="small" color={t.muted} /> : <LiveDot />}
           <T kind="small" style={{ flex: 1 }}>
             {s.refreshing ? `Checking ${plural(items.length, 'item')} on every app…` : `${plural(summary.itemCount, 'item')} · prices from ${ago(pricedAt)}`}
           </T>
@@ -280,7 +280,6 @@ function CartRow({ line, change, expanded, onExpand, onQty, onPin, onOpen }: {
 const styles = StyleSheet.create({
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10, padding: 32 },
   status: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 22, marginTop: -6 },
-  liveDot: { width: 8, height: 8, borderRadius: 4 },
   refresh: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   banner: { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12 },
   app: { borderLeftWidth: 5 },

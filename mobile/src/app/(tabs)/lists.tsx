@@ -8,7 +8,7 @@ import { PLATFORM } from '@/core/platforms'
 import { plural, rupee } from '@/core/utils'
 import { pickJsonText } from '@/native/pickFile'
 import { useStore } from '@/state/store'
-import { Button, Card, Chip, T } from '@/ui/kit'
+import { Button, Card, Chip, Eyebrow, Headline, T } from '@/ui/kit'
 import { PlatformMark } from '@/ui/PlatformMark'
 import { useTheme } from '@/ui/theme'
 
@@ -22,8 +22,8 @@ export default function ListsScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: t.bg }} edges={['top']}>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }} keyboardShouldPersistTaps="handled">
-        <T kind="title" style={{ fontSize: 26 }}>Your lists</T>
-        <T kind="small" style={{ marginTop: -6 }}>Open a list to see every item on every app, and the cheapest way to buy it all.</T>
+        <Headline lead="Your lists" rest="Always re-checked." size={30} style={{ marginTop: 6 }} />
+        <T kind="small" style={{ marginTop: -2, marginBottom: 4, lineHeight: 19 }}>Open a list to see every item on every app, and the cheapest way to buy it all.</T>
 
         {s.lists.map((l) => {
           const drops = l.items.filter((i) => priceDrop(i) > 0).length
@@ -66,11 +66,28 @@ export default function ListsScreen() {
           )
         })}
 
-        {s.lists.length === 0 && (
-          <T kind="small" style={{ textAlign: 'center', paddingVertical: 16 }}>No lists yet. Make one below, then tap the bookmark on any product.</T>
+        {s.lists.length === 0 && starters.length > 0 && (
+          <>
+            <Eyebrow label="Start from a template" style={{ marginTop: 6 }} />
+            <Card>
+              {starters.map((x, n) => (
+                <Pressable key={x.name} onPress={() => create(x.name, x.emoji)} accessibilityRole="button" accessibilityLabel={`Start ${x.name}`}
+                  style={[styles.template, n > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: t.line }]}>
+                  <View style={[styles.emoji, { backgroundColor: t.chip }]}><Text style={{ fontSize: 20 }}>{x.emoji}</Text></View>
+                  <View style={{ flex: 1 }}>
+                    <T kind="h3">{x.name}</T>
+                    <T kind="small">Empty list, ready for items</T>
+                  </View>
+                  <Plus size={18} color={t.muted} />
+                </Pressable>
+              ))}
+            </Card>
+            <T kind="small" style={{ lineHeight: 19 }}>Then tap the bookmark on any product to add it.</T>
+          </>
         )}
 
-        <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+        {s.lists.length === 0 && <Eyebrow label="Or name your own" style={{ marginTop: 10 }} />}
+        <View style={{ flexDirection: 'row', gap: 8, marginTop: s.lists.length ? 4 : 0 }}>
           <TextInput
             value={name}
             onChangeText={setName}
@@ -82,7 +99,7 @@ export default function ListsScreen() {
           />
           <Button label="Create" icon={<Plus size={16} color={t.bg} />} disabled={!name.trim()} onPress={() => create(name, '🛍️')} />
         </View>
-        {starters.length > 0 && (
+        {starters.length > 0 && s.lists.length > 0 && (
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {starters.map((x) => <Chip key={x.name} label={`${x.emoji} ${x.name}`} onPress={() => create(x.name, x.emoji)} />)}
           </View>
@@ -110,6 +127,7 @@ const styles = StyleSheet.create({
   legend: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 12 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   emoji: { width: 44, height: 44, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  template: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 12 },
   input: { flex: 1, height: 50, borderRadius: 14, paddingHorizontal: 14, fontSize: 15 },
   link: { flexDirection: 'row', alignItems: 'center', gap: 6, padding: 6 },
 })

@@ -1,4 +1,5 @@
 import { BricolageGrotesque_700Bold, BricolageGrotesque_800ExtraBold } from '@expo-google-fonts/bricolage-grotesque'
+import { JetBrainsMono_500Medium, JetBrainsMono_700Bold } from '@expo-google-fonts/jetbrains-mono'
 import { Figtree_400Regular, Figtree_500Medium, Figtree_600SemiBold, Figtree_700Bold, useFonts } from '@expo-google-fonts/figtree'
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
@@ -17,6 +18,7 @@ export default function RootLayout() {
   const [loaded, fontError] = useFonts({
     BricolageGrotesque_700Bold, BricolageGrotesque_800ExtraBold,
     Figtree_400Regular, Figtree_500Medium, Figtree_600SemiBold, Figtree_700Bold,
+    JetBrainsMono_500Medium, JetBrainsMono_700Bold,
   })
   const [themed, setThemed] = useState(false)
   const t = useTheme()

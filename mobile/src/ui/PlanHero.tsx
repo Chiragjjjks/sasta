@@ -22,9 +22,9 @@ export function PlanHero({ label, total, sub, groups, saving, choices }: {
   const t = useTheme()
   return (
     <View style={[styles.hero, { backgroundColor: t.hero }]}>
-      <Text style={[styles.label, { color: t.heroMuted, fontFamily: t.fonts.bodySemi }]}>{label}</Text>
+      <Text style={[styles.label, { color: t.heroMuted, fontFamily: t.fonts.mono }]}>{label}</Text>
       <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
-        <Text style={{ color: t.heroText, fontFamily: t.fonts.display, fontSize: 32, letterSpacing: -0.6 }}>{total !== undefined ? rupee(total) : '—'}</Text>
+        <Text style={{ color: t.heroText, fontFamily: t.fonts.display, fontSize: 34, letterSpacing: -1, fontVariant: ['tabular-nums'] }}>{total !== undefined ? rupee(total) : '—'}</Text>
         <Text style={{ color: t.heroMuted, fontFamily: t.fonts.bodySemi, fontSize: 12.5 }}>{sub}</Text>
       </View>
       {groups.length > 0 && (
@@ -59,7 +59,7 @@ export function PlanHero({ label, total, sub, groups, saving, choices }: {
 
 const styles = StyleSheet.create({
   hero: { borderRadius: 20, padding: 16 },
-  label: { fontSize: 11, letterSpacing: 0.6, textTransform: 'uppercase' },
+  label: { fontSize: 11, letterSpacing: 1.3, textTransform: 'uppercase' },
   bar: { flexDirection: 'row', height: 10, borderRadius: 5, overflow: 'hidden', gap: 2, marginTop: 12, marginBottom: 10 },
   // The outline keeps dark app colours (Amazon) visible on the dark card.
   segment: { borderRadius: 3, borderWidth: 1, borderColor: '#ffffff30' },

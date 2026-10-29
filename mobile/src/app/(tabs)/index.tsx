@@ -10,11 +10,17 @@ import { PLATFORM, PLATFORMS } from '@/core/platforms'
 import type { AdapterStatus, ProductGroup } from '@/core/types'
 import { formatSize, plural, rupee } from '@/core/utils'
 import { useStore } from '@/state/store'
-import { Button, Card, Chip, T, tap } from '@/ui/kit'
+import { Button, Card, Chip, Eyebrow, Headline, T, tap } from '@/ui/kit'
 import { flavorColor, PackIcon } from '@/ui/PackIcon'
 import { ProductCard } from '@/ui/ProductCard'
 import { useTheme } from '@/ui/theme'
 import { PlatformMark } from '@/ui/PlatformMark'
+
+const HOW = [
+  ['Search once', 'One product, like “lays” or “amul butter”.'],
+  ['Compare every app', 'Price, delivery time and stock, cheapest first.'],
+  ['Order in the app', 'The cart splits by app. You pay in each one.'],
+] as const
 
 export default function SearchScreen() {
   const t = useTheme()
@@ -106,23 +112,24 @@ export default function SearchScreen() {
       <SafeAreaView style={{ flex: 1, backgroundColor: t.bg }} edges={['top']}>
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 24 }}>
           {header}
-          <View style={{ paddingHorizontal: 16, paddingTop: 18 }}>
-            <T kind="title">Where is it cheapest?</T>
-            <T kind="small" style={{ marginTop: 8, fontSize: 14, lineHeight: 20 }}>
-              Type any product. Sasta checks {PLATFORMS.length} apps that deliver to {s.location.pincode} and shows the cheapest first.
+          <View style={{ paddingHorizontal: 16, paddingTop: 22 }}>
+            <Eyebrow live label={`${PLATFORMS.length} apps · delivering to ${s.location.pincode}`} />
+            <Headline lead="Where is it" rest="cheapest?" style={{ marginTop: 12 }} />
+            <T kind="small" style={{ marginTop: 10, fontSize: 14.5, lineHeight: 21 }}>
+              Type any product. Sasta checks every app at once and shows the cheapest first.
             </T>
-            <View style={[styles.steps, { backgroundColor: t.surface }]}>
-              {['Search', 'Compare apps', 'Add to cart'].map((label, n) => (
-                <View key={label} style={styles.step}>
-                  <View style={[styles.stepNum, { backgroundColor: t.ink }]}>
-                    <Text style={{ color: t.bg, fontFamily: t.fonts.bodyBold, fontSize: 12 }}>{n + 1}</Text>
+            <Card style={{ marginTop: 20 }}>
+              {HOW.map(([title, detail], n) => (
+                <View key={title} style={[styles.how, n > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: t.line }]}>
+                  <Text style={{ color: n === 0 ? t.accentText : t.muted, fontFamily: t.fonts.monoBold, fontSize: 12, width: 22 }}>{String(n + 1).padStart(2, '0')}</Text>
+                  <View style={{ flex: 1 }}>
+                    <T kind="bodyStrong">{title}</T>
+                    <T kind="small" style={{ marginTop: 1 }}>{detail}</T>
                   </View>
-                  <T kind="smallStrong" numberOfLines={1} style={{ flexShrink: 1 }}>{label}</T>
                 </View>
               ))}
-            </View>
-            <T kind="caption" style={{ marginTop: 8 }}>The cart splits your order by app. You order and pay in each app.</T>
-            <T kind="smallStrong" style={{ marginTop: 22, color: t.muted }}>Apps Sasta checks</T>
+            </Card>
+            <Eyebrow label="Apps Sasta checks" style={{ marginTop: 26 }} />
             <View style={styles.appGrid}>
               {PLATFORMS.map((p) => {
                 return (
@@ -189,7 +196,7 @@ export default function SearchScreen() {
           <Pressable onPress={() => open(bestValue)} style={[styles.hero, { backgroundColor: t.hero }]} accessibilityRole="button">
             <PackIcon variantKey={bestValue.variantKey} imageUrl={bestValue.best.imageUrl} size={48} />
             <View style={{ flex: 1 }}>
-              <Text style={{ color: t.heroMuted, fontFamily: t.fonts.bodyBold, fontSize: 11, letterSpacing: 1.5 }}>BEST VALUE RIGHT NOW</Text>
+              <Text style={{ color: t.heroMuted, fontFamily: t.fonts.mono, fontSize: 11, letterSpacing: 1.3 }}>BEST VALUE RIGHT NOW</Text>
               <Text style={{ color: t.heroText, fontFamily: t.fonts.displayBold, fontSize: 17, marginTop: 3 }} numberOfLines={2}>
                 {bestValue.variant}{bestValue.sizeGrams ? `, ${formatSize(bestValue.sizeGrams)}` : ''}
               </Text>
@@ -219,7 +226,7 @@ export default function SearchScreen() {
           </ScrollView>
         )}
 
-        {visible.length > 0 && <T kind="caption">Best matches · cheapest first</T>}
+        {visible.length > 0 && <Eyebrow label="Best matches · cheapest first" style={{ marginTop: 4, marginBottom: 10 }} />}
       </View>
     </View>
   )
@@ -283,9 +290,7 @@ const styles = StyleSheet.create({
   recents: { gap: 8, paddingRight: 16 },
   recent: { borderWidth: 1, borderRadius: 17, height: 34, paddingHorizontal: 13, justifyContent: 'center', maxWidth: 220 },
   appGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
-  steps: { flexDirection: 'row', justifyContent: 'space-between', gap: 6, borderRadius: 16, padding: 12, marginTop: 16 },
-  step: { flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 7 },
-  stepNum: { width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  how: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingHorizontal: 16, paddingVertical: 13 },
   appTile: { width: '48.5%', flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, height: 48, borderRadius: 16 },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   hero: { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 22, padding: 16 },

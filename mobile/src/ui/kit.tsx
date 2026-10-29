@@ -1,6 +1,6 @@
 import * as Haptics from 'expo-haptics'
-import type { ReactNode } from 'react'
-import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native'
+import { useEffect, useState, type ReactNode } from 'react'
+import { AccessibilityInfo, ActivityIndicator, Animated, Platform, Pressable, StyleSheet, Text, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native'
 import { useTheme } from './theme'
 
 export const tap = () => { if (Platform.OS !== 'web') Haptics.selectionAsync().catch(() => {}) }
@@ -98,7 +98,7 @@ export function Badge({ label, tone }: { label: string; tone: 'good' | 'muted' |
   const fg = { good: t.good, muted: t.muted, warn: t.accentText }[tone]
   return (
     <View style={[styles.badge, { backgroundColor: bg }]}>
-      <Text style={{ color: fg, fontFamily: t.fonts.bodyBold, fontSize: 11, letterSpacing: 0.4 }}>{label.toUpperCase()}</Text>
+      <Text style={{ color: fg, fontFamily: t.fonts.monoBold, fontSize: 10.5, letterSpacing: 0.8 }}>{label.toUpperCase()}</Text>
     </View>
   )
 }
@@ -119,6 +119,59 @@ export function Segmented<V extends string | number>({ value, options, onChange,
   )
 }
 
+/** Green dot that breathes while something is live. Still when the phone asks for less motion. */
+export function LiveDot({ color, size = 8 }: { color?: string; size?: number }) {
+  const t = useTheme()
+  const [glow] = useState(() => new Animated.Value(0))
+  useEffect(() => {
+    let loop: Animated.CompositeAnimation | undefined
+    let cancelled = false
+    AccessibilityInfo.isReduceMotionEnabled().then((reduce) => {
+      if (reduce || cancelled) return
+      loop = Animated.loop(Animated.sequence([
+        Animated.timing(glow, { toValue: 1, duration: 900, useNativeDriver: true }),
+        Animated.timing(glow, { toValue: 0, duration: 900, useNativeDriver: true }),
+      ]))
+      loop.start()
+    }).catch(() => {})
+    return () => { cancelled = true; loop?.stop() }
+  }, [glow])
+  const c = color ?? t.good
+  return (
+    <View style={{ width: size * 2, height: size * 2, alignItems: 'center', justifyContent: 'center' }}>
+      <Animated.View style={{ position: 'absolute', width: size * 2, height: size * 2, borderRadius: size, backgroundColor: c, opacity: glow.interpolate({ inputRange: [0, 1], outputRange: [0.12, 0.32] }), transform: [{ scale: glow.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1] }) }] }} />
+      <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: c }} />
+    </View>
+  )
+}
+
+/** Small uppercase mono label above a section, optionally numbered ("01") or live. */
+export function Eyebrow({ label, n, live, tone, style }: { label: string; n?: number; live?: boolean; tone?: string; style?: StyleProp<ViewStyle> }) {
+  const t = useTheme()
+  return (
+    <View style={[styles.eyebrow, style]}>
+      {live && <LiveDot size={7} />}
+      {n !== undefined && (
+        <View style={[styles.eyebrowNum, { borderColor: t.lineStrong }]}>
+          <Text style={{ color: t.ink, fontFamily: t.fonts.monoBold, fontSize: 10 }}>{String(n).padStart(2, '0')}</Text>
+        </View>
+      )}
+      <Text style={{ color: tone ?? t.muted, fontFamily: t.fonts.mono, fontSize: 11, letterSpacing: 1.1, flexShrink: 1 }} numberOfLines={1}>{label.toUpperCase()}</Text>
+    </View>
+  )
+}
+
+/** Big two-line heading: the statement in ink, the follow-up line quieter. */
+export function Headline({ lead, rest, size = 34, style }: { lead: string; rest?: string; size?: number; style?: StyleProp<TextStyle> }) {
+  const t = useTheme()
+  const line: TextStyle = { fontFamily: t.fonts.display, fontSize: size, lineHeight: Math.round(size * 1.04), letterSpacing: -size * 0.035 }
+  return (
+    <Text accessibilityRole="header" style={[line, { color: t.ink }, style]}>
+      {lead}{rest ? <Text style={{ color: t.muted }}>{'\n'}{rest}</Text> : null}
+    </Text>
+  )
+}
+
 export function Divider() {
   const t = useTheme()
   return <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: t.line }} />
@@ -134,6 +187,8 @@ const styles = StyleSheet.create({
   stepTxt: { fontSize: 18, fontWeight: '700', marginTop: -2 },
   card: { borderRadius: 20, overflow: 'hidden' },
   badge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
+  eyebrow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  eyebrowNum: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 6, height: 20, alignItems: 'center', justifyContent: 'center' },
   seg: { flexDirection: 'row', borderRadius: 13, padding: 3 },
   segItem: { paddingHorizontal: 14, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
 })

@@ -46,7 +46,7 @@ export function OfferSlots({ offers, qty = 1, chosen, pinned, limit, onPick, onM
         const total = o.price * qty
         const body = (
           <>
-            <Text style={[styles.rank, { color: t.muted, fontFamily: t.fonts.bodyBold }]}>{rank + 1}</Text>
+            <Text style={[styles.rank, { color: rank === 0 ? t.good : t.muted, fontFamily: t.fonts.monoBold }]}>{rank + 1}</Text>
             <PlatformMark platform={o.platform} size={22} />
             <Text style={{ flex: 1, color: t.ink, fontFamily: t.fonts.bodySemi, fontSize: 13.5 }} numberOfLines={1}>
               {PLATFORM[o.platform].short}
@@ -56,8 +56,8 @@ export function OfferSlots({ offers, qty = 1, chosen, pinned, limit, onPick, onM
             </Text>
             {rank === 0 && <Badge label="Cheapest" tone="good" />}
             {yours && <Badge label="Your pick" tone="muted" />}
-            {rank > 0 && <Text style={{ color: t.muted, fontFamily: t.fonts.bodySemi, fontSize: 12, minWidth: 38, textAlign: 'right' }}>{total > cheapest ? `+${rupee(total - cheapest)}` : 'same'}</Text>}
-            <Text style={{ color: rank === 0 ? t.good : t.ink, fontFamily: t.fonts.bodyBold, fontSize: 14, minWidth: 46, textAlign: 'right' }}>{rupee(total)}</Text>
+            {rank > 0 && <Text style={{ color: t.muted, fontFamily: t.fonts.mono, fontSize: 11.5, minWidth: 40, textAlign: 'right' }}>{total > cheapest ? `+${rupee(total - cheapest)}` : 'same'}</Text>}
+            <Text style={{ color: rank === 0 ? t.good : t.ink, fontFamily: t.fonts.bodyBold, fontSize: 14, minWidth: 46, textAlign: 'right', fontVariant: ['tabular-nums'] }}>{rupee(total)}</Text>
           </>
         )
         const rowStyle = [styles.slot, isChosen && { backgroundColor: rank === 0 ? t.goodBg : t.chip }]
