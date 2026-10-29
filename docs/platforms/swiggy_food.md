@@ -1,6 +1,6 @@
 # Swiggy Food
 
-**Verdict:** two usable routes, both on `swiggy.com`'s side of the fence.
+**Verdict:** WebView dish search is implemented and verified logged out. Menus remain blocked; official MCP still needs the owner's sign-in.
 
 1. **Official MCP (preferred, not yet signed in).** `https://mcp.swiggy.com/food` shares Instamart's auth server, so the existing Swiggy OAuth flow should carry over. Tool names and response schemas are public in the docs (read 2026-10-29). Nothing was called signed in, so field shapes below marked *docs* are unverified.
 2. **Website JSON (verified logged out).** `GET https://www.swiggy.com/dapi/restaurants/search/v3` returned real dish and restaurant prices for Rajajinagar with plain curl on 2026-10-29. The restaurant **menu** endpoint (`/dapi/menu/pl`) sits behind an AWS WAF challenge, so it needs the hidden WebView.
@@ -98,3 +98,15 @@ Restaurant tab: `data.cards[0].groupedCard.cardGroupMap.RESTAURANT.cards[].card.
 - The next-page offset parameter.
 
 Sources: https://mcp.swiggy.com/builders/docs/reference/food/index.md, `.../food/search_restaurants.md`, `.../food/search_menu.md`, `.../food/get_restaurant_menu.md`, `.../food/get_addresses.md`, https://mcp.swiggy.com/builders/docs/start/authenticate.md, https://mcp.swiggy.com/builders/llms.txt, https://mcp.swiggy.com/.well-known/oauth-protected-resource, https://mcp.swiggy.com/.well-known/oauth-authorization-server
+
+## Source implementation (2026-10-29)
+
+**Live browser check:** desktop Playwright with installed Chrome, fresh logged-out context, `https://www.swiggy.com/search` loaded HTTP 200. The actual generated `swiggySearchScript` and `parseSwiggySearch` returned **289 dishes** for `biryani` at `12.9915, 77.5544`. First results included Narmada Chain of Restaurant, Rajajinagar (1.8 km, 20 min), Paneer Biryani ₹345 and Box Paneer Biryani ₹224. The actual generated menu script for that outlet returned **HTTP 403** and stopped with `blocked:403`; no retry or challenge solving was attempted. No response tracking fields, cookies or session identifiers were saved. This verifies desktop in-page search, **not Android WebView execution**.
+
+`mobile/src/core/food/adapters/swiggy.ts` runs one dish-tab request per search inside the Swiggy WebView, serialized with other work on that origin. It requires finite, in-range latitude and longitude; a postcode alone is insufficient. Coordinates are sent as `lat` and `lng` on both search and menu requests, rather than changing or creating a saved address. No cart or account writes are performed. Search prices are divided by 100, preserving the provider's default item price rather than choosing a variant minimum. Closed restaurants and out-of-stock dishes remain labelled as such. Fees and unobserved item discounts stay unknown.
+
+Parser checks cover both existing logged-out search fixtures. `menu(outlet, loc, signal)` requests `/dapi/menu/pl` and reads `itemCards` and nested `categories` from the regular menu cards, with duplicate suppression and restaurant-id checking. **No live menu fixture exists**: its envelope is tested synthetically using real search item records; the category nesting and `defaultPrice` fallback are provisional until a real menu response can be captured. HTTP 202/403/429 and WAF challenge pages stop immediately with `ProviderBlockedError`. Other invalid responses are unavailable, never guessed prices.
+
+Restaurant-tab parsing is available and fixture-tested, but search deliberately uses only the dish tab (one request). Restaurant-name queries therefore depend on what Swiggy returns on that tab; the source does not fan out to restaurant menus automatically.
+
+**Next:** test the official `https://mcp.swiggy.com/food` with the owner's sign-in and capture trimmed read-only replies. MCP is not implemented by this source; no sign-in was attempted.

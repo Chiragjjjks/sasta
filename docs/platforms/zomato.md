@@ -1,6 +1,6 @@
 # Zomato
 
-**Verdict:** the website JSON works logged out and gives prices, but **location cannot be set from the URL**; the official MCP is gated by policy. Neither route is ready to build against without one more spike with the owner.
+**Verdict:** fixture parsers and a source are implemented, but live search and menus deliberately raise `NeedsLocationError`. **The delivery location is still unverified**; the site's picker could not be reached during the implementation spike. The source never returns the default UB City prices.
 
 1. **Official MCP, `https://mcp-server.zomato.com/mcp`.** Real OAuth server with dynamic registration. Zomato's manifest says third-party apps are **not allowed** and the access is "personal use only", "only for testing". But the server **accepted a `http://localhost/callback` client and redirect** at registration and at `/authorize` (it issued a login challenge instead of a redirect error). Whether the sign-in, consent or token step later rejects it is unknown without a real sign-in, which the owner has to do. Tool schemas are not public.
 2. **Website JSON, `/webroutes/getPage`.** Plain curl returned restaurant lists and a full restaurant menu with rupee prices, no cookies, no login. The delivery area stayed on Zomato's default point (Table Space UB City) whatever we passed, so distances, ETAs and offers are for the wrong place.
@@ -80,8 +80,8 @@ Menu page: `page_data.order.menuList.menus[].menu.categories[].category.items[].
 
 ## How Sasta should use it
 
-- Do not build either route yet. Next step is one spike, in a WebView on `www.zomato.com`: pick Rajajinagar in the site's own location picker, then log the network calls and cookies to find what writes the delivery location. If `getPage` then returns Rajajinagar distances, a WebView adapter that calls `getPage` from inside the page is feasible; dish-level comparison needs one menu fetch per candidate restaurant (800 KB each), which is heavy.
-- Separately, ask the owner whether to try one sign-in against the MCP server with a localhost redirect. If Zomato refuses it, record that here and stay on the WebView route.
+- The registered source currently returns `NeedsLocationError` before opening a page. Next step is a browser where the site's own picker loads: choose Rajajinagar, inspect location-only request/cookie fields without saving authentication data, then verify the returned coordinates. Only then add an in-page location setter and `getPage` search, fetching at most four matching restaurant menus sequentially.
+- MCP remains unimplemented. Any future signed-in investigation needs the owner; no sign-in was attempted in this task.
 - Cart, order and payment tools are never called.
 
 ## Not verified
@@ -92,3 +92,18 @@ Menu page: `page_data.order.menuList.menus[].menu.categories[].category.items[].
 - Delivery fee, closed states, per-item discounts.
 
 Sources: https://github.com/Zomato/mcp-server-manifest, https://claude.com/connectors/zomato, https://mcp-server.zomato.com/.well-known/oauth-authorization-server, https://www.zomato.com/webroutes/getPage (live probes). Tool list: https://claude.com/connectors/zomato, https://manufact.com/mcp-catalog/zomato. Neither page gives schemas; https://agnost.ai/blog/zomato-mcp-server-order-food-claude-desktop/ names `get_all_restaurants` and says the server wants latitude, longitude and a formatted address, with no field names.
+
+
+## Implementation spike (2026-10-29)
+
+Desktop Playwright used the installed Google Chrome in a fresh, logged-out, temporary context. There were **three Zomato navigations** (four page navigations total including Swiggy), well below the 40-load limit:
+
+1. `https://www.zomato.com/bangalore/delivery`: `page.goto: net::ERR_HTTP2_PROTOCOL_ERROR`; Chrome showed `chrome-error://chromewebdata/`.
+2. Same delivery URL with Chrome's HTTP/2 disabled to check a transport issue: `page.goto: Timeout 45000ms exceeded.` No body loaded; reading it also timed out.
+3. `https://www.zomato.com/` in that context: `page.goto: Timeout 15000ms exceeded.`
+
+The location picker never loaded, so **Rajajinagar could not be selected** and no location-setting request, cookie name or localStorage key was identified. No location/cookie values were dumped or saved. These were transport failures, not an observed CAPTCHA/WAF page; no challenge solving or further retries were attempted. The previously observed `/webroutes/location/get` resolver and URL location parameters do not establish that delivery location has been selected. No unverified cookie or storage writes were invented.
+
+`mobile/src/core/food/adapters/zomato.ts` exports pure restaurant-list and menu parsers, verified against the existing **UB City** fixtures only. They parse rupees directly, use the upper ETA bound, convert metres to km, preserve unavailable/closed rows, reject invalid ids/prices/restaurant URLs, and drop unsafe image URLs. The menu parser verifies the restaurant id and reads nested categories (synthetic nesting test; the real fixture is flat). Fees, unobserved discounts and unknown dietary flags remain unknown.
+
+`createZomatoSource` is registered in the native source map but always raises `NeedsLocationError` for search and menu until location mechanics are verified, even when Sasta has valid coordinates. It performs zero requests, so it cannot leak default-area prices. There is no working live Zomato search in this change, no menu fan-out and no fresh Rajajinagar fixture. Ownly and Swish remain not-live. Android execution and all signed-in flows remain untested.
