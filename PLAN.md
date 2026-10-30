@@ -21,7 +21,7 @@ The user types `lays`.
 
 `lays cream onion` runs the same flow, pre-filtered to Cream & Onion.
 
-## Current status (v0.7.0)
+## Current status (v0.9.0)
 
 The app now lives in `mobile/` (React Native + Expo). Root `src/` and `android/` are the old Capacitor app, kept for reference.
 
@@ -37,6 +37,14 @@ The app now lives in `mobile/` (React Native + Expo). Root `src/` and `android/`
 UI (v0.7.0): light/dark with an Appearance switch; every price is shown as a ranked app row with its mark (results, compare, lists, cart); the cart re-checks itself and shows the cheapest way first.
 
 Lists (v0.7.0): opening a list checks every item on every app, ranks apps per item, lets you pick an app per item, and shows the cheapest plan by app (`core/lists.ts` `listPlan`, `rankedOffers`, `singleAppTotals`).
+
+Food (v0.9.0): a Food tab compares one dish or restaurant across Zomato and Swiggy (live, inside hidden WebViews), with Ownly and Swish shown as app-only. See `docs/FOOD_UI.md` and `docs/platforms/{zomato,swiggy_food,ownly,swish}.md`.
+
+| Food app | How Sasta searches | Verified |
+|---|---|---|
+| Zomato | Dish page or autosuggest inside zomato.com, after setting its own location cookies | Live in Chrome, 2026-10-29 |
+| Swiggy | `/dapi/restaurants/search/v3` inside swiggy.com, logged out | Live in Chrome, 2026-10-29 |
+| Ownly, Swish | No website or API; app link only | — |
 
 Actions, lifecycles and the site index: `docs/ACTIONS.md`. The desktop Playwright toolkit and signed-in site index live in `automation/` once merged.
 
