@@ -12,7 +12,6 @@ import type { Platform } from '@/core/types'
 import { tenDigits } from '@/core/otp'
 import { PlatformSession } from '@/native/platformSession'
 import { useStore } from '@/state/store'
-import SastaNative from '../../../modules/sasta-native'
 import { Badge, Button, Card, Divider, Segmented, T } from '@/ui/kit'
 import { setAppearance, useAppearance, useTheme } from '@/ui/theme'
 import { PlatformMark } from '@/ui/PlatformMark'
@@ -52,18 +51,9 @@ export default function AccountScreen() {
     const number = tenDigits(phone)
     if (!number) { Alert.alert('Check your number', 'Enter the 10-digit mobile number you use in these apps.'); return }
     await PlatformSession.secureSet({ key: 'phone', value: number }).catch(() => {})
-    if (!SastaNative.hasNotificationAccess()) {
-      const go = await new Promise<'settings' | 'without' | 'cancel'>((resolve) => Alert.alert(
-        'Let Sasta read OTPs?',
-        'Allow Notification access for Sasta, then come back and tap Connect again. Sasta reads codes only while it is signing in, and only passes each code to the app it is for. Without it, Sasta still types your number and you type each OTP.',
-        [{ text: 'Cancel', style: 'cancel', onPress: () => resolve('cancel') }, { text: 'Without', onPress: () => resolve('without') }, { text: 'Open settings', onPress: () => resolve('settings') }],
-      ))
-      if (go === 'settings') { SastaNative.openNotificationAccess(); return }
-      if (go === 'cancel') return
-    }
     setAll(true)
     try {
-      const r = await s.connectAllWithOtp(number)
+      const r = await s.connectAll(number)
       s.showToast(r.missed.length ? `Connected ${r.connected.length}. Finish ${r.missed.map((p) => PLATFORM[p].short).join(', ')} below.` : `All ${r.connected.length} apps connected`)
     } finally { setAll(false) }
   }
@@ -107,7 +97,7 @@ export default function AccountScreen() {
               <Smartphone size={18} color={t.ink} />
               <View style={{ flex: 1 }}>
                 <T kind="bodyStrong">Connect {remaining === PLATFORMS.length ? 'all apps' : `the other ${remaining}`} at once</T>
-                <T kind="small">Sasta signs in to each app with this number and fills each OTP from your notifications.</T>
+                <T kind="small">Sasta fills your number. Open each app below to enter its OTP and finish signing in.</T>
               </View>
             </View>
             <TextInput value={phone} onChangeText={setPhone} placeholder="Mobile number" placeholderTextColor={t.faint} keyboardType="phone-pad"
@@ -197,7 +187,7 @@ export default function AccountScreen() {
         <View style={[styles.privacy, { backgroundColor: t.surface }]}>
           <ShieldCheck size={18} color={t.good} />
           <T kind="small" style={{ flex: 1, lineHeight: 18 }}>
-            You type your number and OTP on each app&apos;s own page, never in Sasta. Sessions stay on this phone and are never sent to any server. Disconnect wipes them.
+            Your saved number and sessions stay on this phone. Sign-in details go to the shopping app you connect. Enter each OTP on its own sign-in page. Disconnect clears that session.
           </T>
         </View>
       </ScrollView>

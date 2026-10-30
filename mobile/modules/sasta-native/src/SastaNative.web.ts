@@ -7,9 +7,5 @@ const SastaNative = {
   async cookieNames(_urls: string[]): Promise<string[]> { return [] },
   async clearSession(_urls: string[]): Promise<void> {},
   async flushCookies(): Promise<void> {},
-  hasNotificationAccess(): boolean { return false },
-  openNotificationAccess(): void {},
-  armOtp(_ms: number): void {},
-  addListener(_event: 'otp', _fn: (e: { code: string; text: string; package: string }) => void) { return { remove() {} } },
 }
 export default SastaNative

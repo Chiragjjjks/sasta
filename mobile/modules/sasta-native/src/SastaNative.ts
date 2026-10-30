@@ -1,8 +1,6 @@
 import { NativeModule, requireNativeModule } from 'expo'
 
-export interface OtpEvent { code: string; text: string; package: string }
-
-declare class SastaNativeModule extends NativeModule<{ otp: (e: OtpEvent) => void }> {
+declare class SastaNativeModule extends NativeModule {
   legacyPreference(key: string): Promise<string | null>
   removeLegacyPreference(key: string): Promise<void>
   legacySwiggySecret(): Promise<string | null>
@@ -12,11 +10,6 @@ declare class SastaNativeModule extends NativeModule<{ otp: (e: OtpEvent) => voi
   /** Expires every cookie and clears web storage for these URLs. */
   clearSession(urls: string[]): Promise<void>
   flushCookies(): Promise<void>
-  /** Whether the user granted Sasta "Notification access" in Android Settings. */
-  hasNotificationAccess(): boolean
-  openNotificationAccess(): void
-  /** Read one-time codes from notifications for this long (max 10 minutes); 0 stops. */
-  armOtp(ms: number): void
 }
 
 export default requireNativeModule<SastaNativeModule>('SastaNative')

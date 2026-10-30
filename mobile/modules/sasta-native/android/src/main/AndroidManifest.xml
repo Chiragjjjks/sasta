@@ -1,14 +1,3 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-  <application>
-    <!-- Reads one-time codes from notifications, only while Sasta is signing in to apps. Needs "Notification access", granted by the user in Settings. -->
-    <service
-      android:name="expo.modules.sastanative.OtpListenerService"
-      android:label="Sasta OTP auto-fill"
-      android:exported="true"
-      android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
-      <intent-filter>
-        <action android:name="android.service.notification.NotificationListenerService" />
-      </intent-filter>
-    </service>
-  </application>
+  <application />
 </manifest>

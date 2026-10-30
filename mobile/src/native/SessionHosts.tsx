@@ -5,7 +5,6 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { WebView as RNWebView, type WebViewMessageEvent, type WebViewProps } from 'react-native-webview'
 import SastaNative from '../../modules/sasta-native'
 import readerScripts from '@/core/adapters/readers.generated.json'
-import { routeOtp } from '@/core/otp'
 import { PLATFORM } from '@/core/platforms'
 import type { Platform as Shop } from '@/core/types'
 import { plural } from '@/core/utils'
@@ -285,10 +284,10 @@ const styles = StyleSheet.create({
 
 /* ------------------------------------------------------------------ auto sign-in */
 
-type AutoStatus = 'starting' | 'login-opened' | 'phone-filled' | 'waiting-otp' | 'otp-filled' | 'needs-you' | 'done'
+type AutoStatus = 'starting' | 'login-opened' | 'phone-filled' | 'waiting-otp' | 'needs-you' | 'done'
 interface AutoSession {
   id: number; platform: Shop; opts: SignInOptions; resolve: (r: SignInResult) => void
-  status: AutoStatus; done: string[]; otp: string | null; detail?: string; settled?: boolean
+  status: AutoStatus; done: string[]; detail?: string; settled?: boolean
 }
 
 const HOST_PLATFORM: [RegExp, Shop][] = [
@@ -300,17 +299,16 @@ const platformFor = (url: string): Shop => HOST_PLATFORM.find(([re]) => re.test(
 const AUTO_LABEL: Record<AutoStatus, string> = {
   'starting': 'Opening sign-in…',
   'login-opened': 'Opening sign-in…',
-  'phone-filled': 'Number entered · waiting for OTP',
-  'waiting-otp': 'Waiting for OTP',
-  'otp-filled': 'OTP entered · signing in…',
+  'phone-filled': 'Number entered · tap to finish',
+  'waiting-otp': 'Enter OTP · tap to finish',
   'needs-you': 'Needs you · tap to finish',
   'done': 'Signed in',
 }
 
 /**
- * Signs in to several apps at once on their own pages: types the number, requests the OTP, and types
- * each OTP that arrives in a notification into the app it belongs to. Every page stays one tap away,
- * so anything the script can't do (captcha, password) is finished by hand.
+ * Opens several apps' own sign-in pages, types the number and requests the OTP once.
+ * Each page stays one tap away for the user to enter its OTP, password or captcha.
+ * Sasta never reads notifications or messages.
  */
 export function AutoSignInHost() {
   const t = useTheme()
@@ -340,21 +338,9 @@ export function AutoSignInHost() {
     registerHosts({ autoSignIn: (opts, number) => new Promise<SignInResult>((resolve) => {
       phone.current = number
       const id = nextId.current++
-      setSessions((all) => [...all, { id, platform: platformFor(opts.url), opts, resolve, status: 'starting', done: [], otp: null }])
+      setSessions((all) => [...all, { id, platform: platformFor(opts.url), opts, resolve, status: 'starting', done: [] }])
     }) })
   }, [])
-
-  // OTPs from notifications go to the app the message names (or the only app still waiting).
-  useEffect(() => {
-    if (Platform.OS !== 'android' || !sessions.length) return
-    const sub = SastaNative.addListener('otp', (e) => {
-      const waiting = list.current.filter((x) => !x.settled && ['phone-filled', 'waiting-otp'].includes(x.status) && !x.otp)
-      const to = routeOtp(e.text, waiting.map((x) => x.platform))
-      const s = waiting.find((x) => x.platform === to)
-      if (s) update(s.id, { otp: e.code })
-    })
-    return () => sub.remove()
-  }, [sessions.length, update])
 
   // Drive each page one step at a time, and watch for the signed-in signal each app gives.
   useEffect(() => {
@@ -362,7 +348,7 @@ export function AutoSignInHost() {
     const timer = setInterval(async () => {
       for (const s of list.current) {
         if (s.settled || s.status === 'needs-you' && s.id === shown) continue
-        const step = `(function(){try{var r=(${readerScripts.autofillStep})(${JSON.stringify(phone.current)},${JSON.stringify(s.otp)},${JSON.stringify(s.done)});window.ReactNativeWebView.postMessage(JSON.stringify({__auto:r}))}catch(e){}})();true;`
+        const step = `(function(){try{var r=(${readerScripts.autofillStep})(${JSON.stringify(phone.current)},${JSON.stringify(s.done)});window.ReactNativeWebView.postMessage(JSON.stringify({__auto:r}))}catch(e){}})();true;`
         const doneCheck = s.opts.doneScript ? `(function(){try{if(${s.opts.doneScript})window.ReactNativeWebView.postMessage('__sasta_signed_in__')}catch(e){}})();true;` : ''
         views.current.get(s.id)?.injectJavaScript(doneCheck + step)
         const { doneCookies, doneOrigins } = s.opts
@@ -383,12 +369,6 @@ export function AutoSignInHost() {
     const done = [...s.done]
     if (r.step === 'login-opened' && !done.includes('opener')) done.push('opener')
     if (r.step === 'phone-filled' && !done.includes('phone')) done.push('phone')
-    if (r.step === 'otp-filled' && s.otp && !done.includes(`otp:${s.otp}`)) done.push(`otp:${s.otp}`)
-    // Apps without a sign-in signal (BigBasket, Flipkart): the OTP form going away means it worked.
-    if (r.step === 'waiting' && s.status === 'otp-filled' && !s.opts.doneScript && !s.opts.doneCookies?.length && !s.opts.interceptPrefix) {
-      if (done.filter((d) => d === 'gone').length >= 2) return settle(s.id, { kind: 'done' })
-      done.push('gone')
-    }
     const status: AutoStatus = r.step === 'waiting' ? (s.status === 'starting' ? 'starting' : s.status) : r.step
     if (status !== s.status || done.length !== s.done.length || r.detail !== s.detail) update(s.id, { status, done, detail: r.detail })
   }
@@ -415,7 +395,7 @@ export function AutoSignInHost() {
               {current ? `Sign in to ${PLATFORM[current.platform].name}` : `Connecting ${plural(open.length, 'app')}`}
             </Text>
             <Text style={[styles.hint, { color: t.muted, fontFamily: t.fonts.body }]} numberOfLines={2}>
-              {current ? 'Finish here if the page needs you. Sasta fills the number and OTP.' : 'Sasta types your number and fills each OTP from your notifications.'}
+              {current ? 'Enter the OTP on this page. If sign-in does not close it, tap “I’m signed in”.' : 'Sasta fills your number. Open each app to enter its OTP.'}
             </Text>
           </View>
           {current && (
@@ -435,7 +415,7 @@ export function AutoSignInHost() {
                     {x.settled ? 'Signed in' : x.detail ? `${x.detail} · tap to finish` : AUTO_LABEL[x.status]}
                   </Text>
                 </View>
-                {!x.settled && <Text style={{ color: t.ink, fontFamily: t.fonts.bodySemi, fontSize: 12.5 }}>View</Text>}
+                {!x.settled && <Text style={{ color: t.ink, fontFamily: t.fonts.bodySemi, fontSize: 12.5 }}>{x.status === 'waiting-otp' ? 'Enter OTP' : 'View'}</Text>}
               </Pressable>
             ))}
             <Text style={{ color: t.muted, fontFamily: t.fonts.body, fontSize: 12, textAlign: 'center', marginTop: 4 }}>

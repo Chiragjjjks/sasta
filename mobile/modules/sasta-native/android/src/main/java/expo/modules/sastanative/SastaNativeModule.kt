@@ -1,9 +1,6 @@
 package expo.modules.sastanative
 
 import android.content.Context
-import android.content.Intent
-import android.provider.Settings
-import androidx.core.app.NotificationManagerCompat
 import android.net.Uri
 import android.util.Base64
 import android.webkit.CookieManager
@@ -22,25 +19,6 @@ import javax.crypto.spec.GCMParameterSpec
 class SastaNativeModule : Module() {
   override fun definition() = ModuleDefinition {
     Name("SastaNative")
-    Events("otp")
-
-    OnCreate { OtpBus.listener = { code, text, pkg -> sendEvent("otp", mapOf("code" to code, "text" to text, "package" to pkg)) } }
-    OnDestroy { OtpBus.listener = null; OtpBus.armedUntil = 0L }
-
-    // OTP auto-fill: notification access is a user-granted setting; reading happens only while armed.
-    Function("hasNotificationAccess") {
-      val context = requireNotNull(appContext.reactContext)
-      NotificationManagerCompat.getEnabledListenerPackages(context).contains(context.packageName)
-    }
-    Function("openNotificationAccess") {
-      val context = requireNotNull(appContext.reactContext)
-      context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-      Unit
-    }
-    Function("armOtp") { ms: Double ->
-      OtpBus.armedUntil = if (ms <= 0) 0L else System.currentTimeMillis() + ms.toLong().coerceAtMost(10 * 60 * 1000L)
-      Unit
-    }
 
     // Preserve on-device data when the v0.3 Capacitor APK is updated in place.
     AsyncFunction("legacyPreference") { key: String ->

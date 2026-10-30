@@ -106,10 +106,10 @@
     <div class="marquee" aria-hidden="true">
       <div class="marquee__track">
         <div class="marquee__set">
-          <span>6 apps</span><i></i><span>1 search</span><i></i><span>₹ cheapest first</span><i></i><span>MCP official</span><i></i><span>no backend</span><i></i><span>on-device accounts</span><i></i><span>OTP auto-fill</span><i></i><span>pin 560010</span><i></i><span>brand → variant → pack</span><i></i><span>never pays</span><i></i><span>no tracking</span><i></i><span>food delivery · coming soon</span><i></i>
+          <span>6 apps</span><i></i><span>1 search</span><i></i><span>₹ cheapest first</span><i></i><span>MCP official</span><i></i><span>no backend</span><i></i><span>on-device accounts</span><i></i><span>phone number auto-fill</span><i></i><span>pin 560010</span><i></i><span>brand → variant → pack</span><i></i><span>never pays</span><i></i><span>no tracking</span><i></i><span>food delivery · coming soon</span><i></i>
         </div>
         <div class="marquee__set">
-          <span>6 apps</span><i></i><span>1 search</span><i></i><span>₹ cheapest first</span><i></i><span>MCP official</span><i></i><span>no backend</span><i></i><span>on-device accounts</span><i></i><span>OTP auto-fill</span><i></i><span>pin 560010</span><i></i><span>brand → variant → pack</span><i></i><span>never pays</span><i></i><span>no tracking</span><i></i><span>food delivery · coming soon</span><i></i>
+          <span>6 apps</span><i></i><span>1 search</span><i></i><span>₹ cheapest first</span><i></i><span>MCP official</span><i></i><span>no backend</span><i></i><span>on-device accounts</span><i></i><span>phone number auto-fill</span><i></i><span>pin 560010</span><i></i><span>brand → variant → pack</span><i></i><span>never pays</span><i></i><span>no tracking</span><i></i><span>food delivery · coming soon</span><i></i>
         </div>
       </div>
     </div>
@@ -237,8 +237,8 @@
           <article class="step" id="accounts" data-step="4">
             <p class="step__k"><span class="num">05</span>Accounts</p>
             <h3 class="h3">One number.<br><span class="serif">Every app.</span></h3>
-            <p>Optional. Enter your mobile once; Sasta signs in to each app's own page in parallel and types the OTP from your notifications. It gives member prices and the right dark store, and it all stays on the phone.</p>
-            <ul class="ticks"><li>Notification access is yours to grant, armed only during sign-in</li><li>Instamart and Zepto use official, read-only MCP</li></ul>
+            <p>Optional. Enter your mobile once; Sasta opens each app's own sign-in page and fills your number. Open each page to enter its OTP. Connected accounts give member prices and the right dark store.</p>
+            <ul class="ticks"><li>Enter each OTP on the shopping app's own page</li><li>Instamart and Zepto use official, read-only MCP</li></ul>
             <div class="step__phone"></div>
           </article>
         </div>
@@ -350,7 +350,7 @@
                     <div class="card connect">
                       <b>Connect every app with one number</b>
                       <div class="field"><span>+91 ••••• ••210</span><i class="ok"><svg width="12" height="12"><use href="#i-check"/></svg></i></div>
-                      <div class="otp"><svg width="13" height="13"><use href="#i-msg"/></svg>OTP auto-filled · Zepto</div>
+                      <div class="otp"><svg width="13" height="13"><use href="#i-msg"/></svg>Enter OTP · Zepto</div>
                     </div>
                     <div class="card card--list acc">
                       <div class="ar"><span class="pt p-b">B</span><b>Blinkit</b><u class="st ok">Connected</u></div>
@@ -409,12 +409,12 @@
           <article class="gcard" data-reveal data-spotlight>
             <svg class="gcard__i" width="26" height="26"><use href="#i-phone"/></svg>
             <h3>No backend</h3>
-            <p>Your number, sessions and lists live only on the phone, in encrypted storage. There is no Sasta server to leak from or to track you.</p>
+            <p>Your number and sign-in secrets are encrypted on the phone. Lists stay on the phone too. Requests go directly to the shopping services; there is no Sasta backend.</p>
           </article>
           <article class="gcard" data-reveal data-spotlight>
             <svg class="gcard__i" width="26" height="26"><use href="#i-msg"/></svg>
-            <h3>OTP auto-fill, on your terms</h3>
-            <p>With notification access you grant yourself, Sasta reads the sign-in code and types it into the app the message names. It listens only while you are signing in.</p>
+            <h3>Your codes. Your sign-in.</h3>
+            <p>Sasta fills your mobile number once. Enter the OTP directly on each shopping app's sign-in page, then come back to compare prices.</p>
           </article>
           <article class="gcard" data-reveal data-spotlight>
             <svg class="gcard__i" width="26" height="26"><use href="#i-out"/></svg>
@@ -504,8 +504,8 @@
             <div class="faq__a"><p>Nowhere. There is no backend. Your number is encrypted on the phone and sessions are kept only on the phone. Instamart and Zepto sign in through their official OAuth flow with read-only scopes; the others use their own website session inside a hidden page.</p></div>
           </details>
           <details>
-            <summary>Why does it ask for notification access?<i aria-hidden="true"></i></summary>
-            <div class="faq__a"><p>Only to auto-fill sign-in codes. You grant it yourself, it is armed only while you are connecting apps, and the code is passed straight to the app the message names. Skip it and type the OTPs yourself.</p></div>
+            <summary>Can I enter my OTPs myself?<i aria-hidden="true"></i></summary>
+            <div class="faq__a"><p>Yes. Open each shopping app's sign-in page and enter its OTP there. If an older Sasta build offers notification access, choose Without to enter your codes yourself.</p></div>
           </details>
           <details>
             <summary>Will it compare food delivery too?<i aria-hidden="true"></i></summary>
