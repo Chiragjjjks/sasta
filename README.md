@@ -14,6 +14,8 @@ How searches, prices and other actions are triggered and what metadata they retu
 
 Download `Sasta-vX.Y.Z-android.apk` from [Releases](https://github.com/Chiragjjjks/sasta/releases/latest) and open it on your Android phone (Android 7 or newer; ARM64 or x86_64). Install over the previous release to keep your lists, cart and location. The rebuild migrates data from v0.3.2 on first launch.
 
+If Google Play Protect blocks v0.8.0, see [Android installation](docs/ANDROID-INSTALL.md). Main removes the notification-reading service used by that release; sign-in now fills your number and lets you enter each OTP on the provider's own page. This fix needs a new release before it reaches the public download.
+
 ## Website
 
 The landing page at https://chiragjjjks.github.io/sasta/ is built from `site/` (plain HTML, CSS and JS). `.github/workflows/site.yml` publishes it to the `gh-pages` branch whenever `site/` changes on `main`, and GitHub Pages serves that branch.
