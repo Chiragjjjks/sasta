@@ -1,13 +1,13 @@
 import { Check } from 'lucide-react-native'
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
-import { PLATFORM } from '@/core/platforms'
-import type { Platform } from '@/core/types'
+import { APP } from '@/core/platforms'
+import type { AnyPlatform } from '@/core/types'
 import { rupee } from '@/core/utils'
 import { tap } from './kit'
 import { PlatformMark } from './PlatformMark'
 import { useTheme } from './theme'
 
-export interface HeroChoice { key: string; label: string; on: boolean; platform?: Platform; onPress: () => void }
+export interface HeroChoice { key: string; label: string; on: boolean; platform?: AnyPlatform; onPress: () => void }
 
 /** The answer first: the total, how it splits across apps (bar and legend), and the alternatives as pills. */
 export function PlanHero({ label, total, sub, groups, saving, choices }: {
@@ -15,7 +15,7 @@ export function PlanHero({ label, total, sub, groups, saving, choices }: {
   /** Undefined when nothing can be bought. */
   total?: number
   sub: string
-  groups: { platform: Platform; total: number }[]
+  groups: { platform: AnyPlatform; total: number }[]
   saving?: string
   choices?: HeroChoice[]
 }) {
@@ -29,14 +29,14 @@ export function PlanHero({ label, total, sub, groups, saving, choices }: {
       </View>
       {groups.length > 0 && (
         <View style={styles.bar}>
-          {groups.map((g) => <View key={g.platform} style={[styles.segment, { flex: Math.max(g.total, 0.01), backgroundColor: PLATFORM[g.platform].mark.bg }]} />)}
+          {groups.map((g) => <View key={g.platform} style={[styles.segment, { flex: Math.max(g.total, 0.01), backgroundColor: APP[g.platform].mark.bg }]} />)}
         </View>
       )}
       <View style={styles.legend}>
         {groups.map((g) => (
           <View key={g.platform} style={styles.legendItem}>
             <PlatformMark platform={g.platform} size={18} />
-            <Text style={{ color: t.heroText, fontFamily: t.fonts.bodySemi, fontSize: 12.5 }}>{PLATFORM[g.platform].short} {rupee(g.total)}</Text>
+            <Text style={{ color: t.heroText, fontFamily: t.fonts.bodySemi, fontSize: 12.5 }}>{APP[g.platform].short} {rupee(g.total)}</Text>
           </View>
         ))}
       </View>

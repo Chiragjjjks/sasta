@@ -32,7 +32,7 @@ export function Button({ label, onPress, variant = 'primary', icon, disabled, lo
   )
 }
 
-export function Chip({ label, active, onPress, dot, style }: { label: string; active?: boolean; onPress?: () => void; dot?: string; style?: StyleProp<ViewStyle> }) {
+export function Chip({ label, active, onPress, dot, leading, style }: { label: string; active?: boolean; onPress?: () => void; dot?: string; leading?: ReactNode; style?: StyleProp<ViewStyle> }) {
   const t = useTheme()
   return (
     <Pressable
@@ -42,6 +42,7 @@ export function Chip({ label, active, onPress, dot, style }: { label: string; ac
       accessibilityState={{ selected: !!active }}
     >
       {dot && <View style={[styles.dot, { backgroundColor: dot }]} />}
+      {leading}
       <Text style={{ color: active ? t.bg : t.ink, fontFamily: t.fonts.bodySemi, fontSize: 13 }} numberOfLines={1}>{label}</Text>
     </Pressable>
   )

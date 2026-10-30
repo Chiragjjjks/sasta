@@ -1,15 +1,15 @@
-import type { Adapter, AdapterStatus, Location, Offer, Platform } from './types'
+import type { Adapter, AdapterStatus, Location, Offer, Platform, Source } from './types'
 import { relevantOffers } from './normalize'
 import { NeedsLocationError, NeedsLoginError, NotLiveError, ProviderBlockedError, ProviderUnavailableError } from './types'
 
 export const ADAPTER_TIMEOUT_MS = 15000
 const CACHE_TTL_MS = 10 * 60 * 1000
 
-const cache = new Map<string, { at: number; offers: Offer[] }>()
-const turns = new WeakMap<Adapter, Promise<void>>()
+const cache = new Map<string, { at: number; offers: unknown[] }>()
+const turns = new WeakMap<object, Promise<void>>()
 
 /** A full shopping page can serve one query at a time. Queue wait is outside its timeout. */
-async function withAdapterTurn(adapter: Adapter, signal: AbortSignal, work: () => Promise<void>) {
+async function withAdapterTurn(adapter: { serial?: boolean }, signal: AbortSignal, work: () => Promise<void>) {
   if (!adapter.serial) return work()
   const job = (turns.get(adapter) ?? Promise.resolve()).then(() => signal.aborted ? undefined : work())
   const tail = job.then(() => {}, () => {})
@@ -20,12 +20,12 @@ async function withAdapterTurn(adapter: Adapter, signal: AbortSignal, work: () =
   try { await Promise.race([job, cancelled]) } finally { signal.removeEventListener('abort', onAbort) }
 }
 
-export interface SearchCallbacks {
-  onStatus: (s: AdapterStatus) => void
-  onOffers: (platform: Platform, offers: Offer[]) => void
+export interface SearchCallbacks<P extends string = Platform, R = Offer> {
+  onStatus: (s: AdapterStatus<P>) => void
+  onOffers: (platform: P, offers: R[]) => void
 }
 
-async function withTimeout<T>(p: (signal: AbortSignal) => Promise<T>, parent: AbortSignal, ms: number): Promise<T> {
+export async function withTimeout<T>(p: (signal: AbortSignal) => Promise<T>, parent: AbortSignal, ms: number): Promise<T> {
   const ctrl = new AbortController()
   let onAbort: () => void = () => {}
   let timer: ReturnType<typeof setTimeout> | undefined
@@ -51,13 +51,21 @@ async function withTimeout<T>(p: (signal: AbortSignal) => Promise<T>, parent: Ab
   }
 }
 
-/**
- * Runs every adapter in parallel and streams results as each finishes.
- * One adapter failing, timing out or needing login never breaks the others.
- */
-export async function runSearch(
+/** Grocery search: every store in parallel, keeping offers that match the query. */
+export function runSearch(
   adapters: Adapter[], query: string, loc: Location, signal: AbortSignal, cb: SearchCallbacks,
   opts: { force?: boolean } = {},
+): Promise<void> {
+  return runSources(adapters, query, loc, signal, cb, { ...opts, filter: relevantOffers })
+}
+
+/**
+ * Runs every source in parallel and streams results as each finishes.
+ * One source failing, timing out or needing login never breaks the others.
+ */
+export async function runSources<P extends string, R>(
+  adapters: Source<P, R>[], query: string, loc: Location, signal: AbortSignal, cb: SearchCallbacks<P, R>,
+  opts: { force?: boolean; filter: (items: R[], query: string) => R[] },
 ): Promise<void> {
   await Promise.all(
     adapters.map((adapter) => withAdapterTurn(adapter, signal, async () => {
@@ -67,7 +75,7 @@ export async function runSearch(
       const started = performance.now()
       const hit = cache.get(key)
       if (!opts.force && hit && Date.now() - hit.at < CACHE_TTL_MS) {
-        cb.onOffers(platform, hit.offers)
+        cb.onOffers(platform, hit.offers as R[])
         cb.onStatus({ platform, state: 'done', count: hit.offers.length, ms: 0 })
         return
       }
@@ -78,7 +86,7 @@ export async function runSearch(
           const offers = await withTimeout(async (s) => {
             await adapter.setLocation(loc)
             if (s.aborted) throw new DOMException('Aborted', 'AbortError')
-            return relevantOffers(await adapter.search(query, s), query)
+            return opts.filter(await adapter.search(query, s), query)
           }, signal, adapter.timeoutMs ?? ADAPTER_TIMEOUT_MS)
           if (signal.aborted) return
           cache.set(key, { at: Date.now(), offers })

@@ -6,6 +6,10 @@ export type Platform =
   | 'flipkart_minutes'
   | 'amazon_now'
 
+/** Food delivery apps. A separate section: dishes from restaurants, not packs from stores. */
+export type FoodPlatform = 'zomato' | 'swiggy_food' | 'ownly' | 'swish'
+export type AnyPlatform = Platform | FoodPlatform
+
 export interface Location {
   lat?: number
   lng?: number
@@ -50,8 +54,8 @@ export interface ProductGroup {
 
 export type AdapterState = 'searching' | 'done' | 'failed' | 'needs_login' | 'needs_location' | 'blocked' | 'timeout' | 'unavailable'
 
-export interface AdapterStatus {
-  platform: Platform
+export interface AdapterStatus<P extends string = Platform> {
+  platform: P
   state: AdapterState
   count: number
   ms?: number
@@ -59,7 +63,7 @@ export interface AdapterStatus {
 }
 
 export class NeedsLoginError extends Error {
-  constructor(platform: Platform) {
+  constructor(platform: AnyPlatform) {
     super(`${platform} needs login`)
     this.name = 'NeedsLoginError'
   }
@@ -67,7 +71,7 @@ export class NeedsLoginError extends Error {
 
 /** Thrown by platforms that have no live search yet. */
 export class NotLiveError extends Error {
-  constructor(platform: Platform) {
+  constructor(platform: AnyPlatform) {
     super(`${platform} is not live yet`)
     this.name = 'NotLiveError'
   }
@@ -84,11 +88,14 @@ export class ProviderUnavailableError extends Error {
   constructor(message: string) { super(message); this.name = 'ProviderUnavailableError' }
 }
 
-export interface Adapter {
-  platform: Platform
+/** One live source the search runner calls in parallel: a grocery store (Offer) or a food app (Dish). */
+export interface Source<P extends string, R> {
+  platform: P
   timeoutMs?: number
   attempts?: number
   serial?: boolean
   setLocation(loc: Location): Promise<void>
-  search(query: string, signal: AbortSignal): Promise<Offer[]>
+  search(query: string, signal: AbortSignal): Promise<R[]>
 }
+
+export type Adapter = Source<Platform, Offer>

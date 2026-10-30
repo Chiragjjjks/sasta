@@ -1,0 +1,218 @@
+{
+  "_note": "Trimmed logged-out response of GET https://www.swiggy.com/dapi/restaurants/search/v3?lat=12.9915&lng=77.5544&str=biryani&submitAction=ENTER&queryUniqueId=<uuid>&selectedPLTab=RESTAURANT (fetched 2026-10-29). costForTwo is paise-as-string (\"50000\" = Rs 500). tid/sid/deviceId/csrfToken, ad tracking removed. Note: no offer text and no delivery fee in this payload (feeDetails is {}).",
+  "statusCode": 0,
+  "data": {
+    "statusMessage": "done successfully",
+    "cards": [
+      {
+        "groupedCard": {
+          "cardGroupMap": {
+            "RESTAURANT": {
+              "cards": [
+                {
+                  "card": {
+                    "card": {
+                      "@type": "type.googleapis.com/swiggy.presentation.food.v2.Restaurant",
+                      "info": {
+                        "id": "690552",
+                        "name": "Narmada Chain of Restaurant",
+                        "city": "1",
+                        "slugs": {
+                          "restaurant": "narmada-chain-of-restaurant-rajajinagar-rajajinagar",
+                          "city": "bangalore"
+                        },
+                        "cloudinaryImageId": "FOOD_CATALOG/IMAGES/CMS/2025/8/12/ac6ce3bc-6b4c-42be-b340-592685820ab0_e8d1412a-2044-43df-8a77-e81aa310a775.jpg",
+                        "address": "706, 1st Floor, WCR 2nd Stage, 9th Cross, Modi Hospital Rd, Bengaluru, Karnataka 560086",
+                        "locality": "Rajajinagar",
+                        "areaName": "Rajajinagar",
+                        "costForTwo": "50000",
+                        "costForTwoMessage": "₹500 FOR TWO",
+                        "cuisines": [
+                          "Andhra",
+                          "Biryani",
+                          "South Indian"
+                        ],
+                        "avgRating": 4.3,
+                        "feeDetails": {},
+                        "parentId": "411277",
+                        "avgRatingString": "4.3",
+                        "totalRatingsString": "8.2K+",
+                        "promoted": true,
+                        "sla": {
+                          "deliveryTime": 22,
+                          "minDeliveryTime": 15,
+                          "maxDeliveryTime": 20,
+                          "lastMileTravel": 1.8,
+                          "serviceability": "SERVICEABLE",
+                          "rainMode": "RAIN_MODE_NONE",
+                          "slaString": "15-20 MINS",
+                          "lastMileTravelString": "1.8 km",
+                          "iconType": "ICON_TYPE_EMPTY"
+                        },
+                        "availability": {
+                          "opened": true,
+                          "restaurantClosedMeta": {}
+                        },
+                        "aggregatedDiscountInfo": {
+                          "visible": true
+                        },
+                        "aggregatedDiscountInfoV2": {
+                          "visible": true
+                        },
+                        "ratingSlab": "RATING_SLAB_5",
+                        "showEoOffer": true,
+                        "priceComparisonComms": {}
+                      },
+                      "ctaWithParams": {
+                        "link": "swiggy://menu",
+                        "type": "DEEPLINK",
+                        "params": {
+                          "restaurant_id": "690552",
+                          "query": "biryani"
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "card": {
+                    "card": {
+                      "@type": "type.googleapis.com/swiggy.presentation.food.v2.Restaurant",
+                      "info": {
+                        "id": "25118",
+                        "name": "1947 Restaurant",
+                        "city": "1",
+                        "slugs": {
+                          "restaurant": "1947-banashankari-banashankari",
+                          "city": "bangalore"
+                        },
+                        "cloudinaryImageId": "FOOD_CATALOG/IMAGES/CMS/2024/9/28/c5a7e3cb-3e23-4b69-916a-27bc26e8a0c4_8e4210a6-0cb2-462f-822f-8d2bce84973f.jpg",
+                        "address": "296, Ram Towers, 100 Feet Ring Road, Banashankari, Bangalore - 560085",
+                        "locality": "Banashankari",
+                        "areaName": "Banashankari",
+                        "costForTwo": "75000",
+                        "costForTwoMessage": "₹750 FOR TWO",
+                        "cuisines": [
+                          "North Indian",
+                          "Chinese",
+                          "Desserts",
+                          "Biryani",
+                          "Continental"
+                        ],
+                        "avgRating": 4.1,
+                        "veg": true,
+                        "feeDetails": {},
+                        "parentId": "22564",
+                        "avgRatingString": "4.1",
+                        "totalRatingsString": "8.4K+",
+                        "promoted": true,
+                        "sla": {
+                          "deliveryTime": 47,
+                          "minDeliveryTime": 40,
+                          "maxDeliveryTime": 50,
+                          "lastMileTravel": 9.9,
+                          "serviceability": "SERVICEABLE",
+                          "rainMode": "RAIN_MODE_NONE",
+                          "slaString": "40-50 MINS",
+                          "lastMileTravelString": "9.9 km",
+                          "iconType": "ICON_TYPE_EMPTY"
+                        },
+                        "availability": {
+                          "nextCloseMessage": "Closes soon",
+                          "opened": true,
+                          "restaurantClosedMeta": {}
+                        },
+                        "aggregatedDiscountInfo": {
+                          "visible": true
+                        },
+                        "sld": true,
+                        "aggregatedDiscountInfoV2": {
+                          "visible": true
+                        },
+                        "ratingSlab": "RATING_SLAB_5",
+                        "showEoOffer": true,
+                        "priceComparisonComms": {}
+                      },
+                      "ctaWithParams": {
+                        "link": "swiggy://menu",
+                        "type": "DEEPLINK",
+                        "params": {
+                          "restaurant_id": "25118",
+                          "query": "biryani"
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "card": {
+                    "card": {
+                      "@type": "type.googleapis.com/swiggy.presentation.food.v2.Restaurant",
+                      "info": {
+                        "id": "30034",
+                        "name": "Mani's Dum Biryani",
+                        "city": "1",
+                        "slugs": {
+                          "restaurant": "manis-dum-biryani-ulsoor-central-bangalore",
+                          "city": "bangalore"
+                        },
+                        "cloudinaryImageId": "FOOD_CATALOG/IMAGES/CMS/2024/3/27/bc960282-e31e-4e77-97e9-6c6ec9cec813_c46e6499-a9ca-43e8-91d5-85aa6f0afa15.jpg",
+                        "address": "#No.18/1, 1st Floor, Haudin Road  Ulsoor, Bangalore-560042",
+                        "locality": "Haudin Road",
+                        "areaName": "Ulsoor",
+                        "costForTwo": "49900",
+                        "costForTwoMessage": "₹499 FOR TWO",
+                        "cuisines": [
+                          "Andhra",
+                          "Biryani",
+                          "North Indian"
+                        ],
+                        "avgRating": 4.5,
+                        "feeDetails": {},
+                        "parentId": "623",
+                        "avgRatingString": "4.5",
+                        "totalRatingsString": "26K+",
+                        "sla": {
+                          "deliveryTime": 45,
+                          "minDeliveryTime": 40,
+                          "maxDeliveryTime": 45,
+                          "lastMileTravel": 9.1,
+                          "serviceability": "SERVICEABLE",
+                          "rainMode": "RAIN_MODE_NONE",
+                          "slaString": "40-45 MINS",
+                          "lastMileTravelString": "9.1 km",
+                          "iconType": "ICON_TYPE_EMPTY"
+                        },
+                        "availability": {
+                          "opened": true,
+                          "restaurantClosedMeta": {}
+                        },
+                        "aggregatedDiscountInfo": {
+                          "visible": true
+                        },
+                        "aggregatedDiscountInfoV2": {
+                          "visible": true
+                        },
+                        "ratingSlab": "RATING_SLAB_5",
+                        "showEoOffer": true,
+                        "priceComparisonComms": {}
+                      },
+                      "ctaWithParams": {
+                        "link": "swiggy://menu",
+                        "type": "DEEPLINK",
+                        "params": {
+                          "restaurant_id": "30034",
+                          "query": "biryani"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  }
+}
