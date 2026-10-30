@@ -44,14 +44,17 @@ Open work outside main:
 v0.8.0 published (2026-10-29): **one-tap connect with OTP auto-fill**.
 - Account takes one mobile number (encrypted on the phone) and connects every app at once.
 - `AutoSignInHost` (`native/SessionHosts.tsx`) runs each app's own sign-in page in parallel. `autofillStep` (`core/adapters/autofill.ts`) types the number once and requests the OTP.
-- `OtpListenerService` (Kotlin, user-granted Notification access, armed only during sign-in) passes each code to `routeOtp` (`core/otp.ts`), which types it into the app the message names.
+- That release included `OtpListenerService` for notification-based OTP auto-fill. **Removed on main after v0.8.0** because the notification-listener declaration can trigger Google Play Protect installation blocks for sideloaded APKs.
 - Not yet verified on a phone with real OTPs. Amazon may ask for a password; that app then shows "Needs you".
 
 Since v0.8.0 (on `main`, unreleased):
+- **Sideload permission fix (2026-10-30):** removed the notification listener, its native bridge/events and automatic OTP injection. Connect-all still fills the phone number once; users open each provider page to enter its OTP. `app.json` also blocks unused storage, overlay, biometric and vibration permissions. CI decodes the final APK manifest and runs `scripts/check-apk-manifest.py` to allow only internet, foreground location and the app-private receiver permission, and reject notification-reading/accessibility services. See `docs/ANDROID-INSTALL.md`. The published v0.8.0 still has the old notification listener until an explicitly approved new release.
 - **Landing site** in `site/` (plain HTML/CSS/JS, no build step; preview with `npx serve site`). It is modelled on the Downmix Renderer page, with editorial touches from Kenpath's Svara page, and includes an interactive sample-price demo. It is live at https://chiragjjjks.github.io/sasta/. `.github/workflows/site.yml` publishes `site/` to the `gh-pages` branch on every change, and Pages serves that branch, the same way Downmix Renderer is hosted. Download buttons link straight to the APK, and `main.js` switches them to the newest release at load time. The site also announces food delivery as **coming soon** (Zomato, Swiggy food, Ownly by Rapido, Swish). None of these are in the app yet.
 - **App UI polish:** JetBrains Mono is now loaded (`fonts.mono`, `fonts.monoBold`), and the kit has `Eyebrow` (mono section label, optionally numbered or live), `Headline` (two-line display heading, second line muted) and `LiveDot`. They are used on the Search home, Lists, Cart, ranked rows and the plan card.
 
 ## Next, in order
+
+Before the next release, confirm the permission-fixed APK installs with Play Protect enabled on the owner's phone; emulator installation alone does not test Google's install-time classification. A release still needs explicit owner approval.
 
 1. Finish and merge the `automation/` site index, then use it to fix Flipkart Minutes and Amazon Now.
 2. Wishlist and list follow-ups the owner asked for after the list redesign.

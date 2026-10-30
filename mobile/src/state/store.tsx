@@ -3,7 +3,6 @@ import { adapters, canSearch, IS_NATIVE } from '@/core/adapters'
 import { connectionReport, probeSearch } from '@/core/connection-test'
 import { migrateLists } from '@/core/identity'
 import { beginAutoSignIn, endAutoSignIn, PlatformSession } from '@/native/platformSession'
-import SastaNative from '../../modules/sasta-native'
 import { blinkitIdentity, fetchBlinkitBill, openBlinkitWithCart, prepareBlinkitSignIn } from '@/core/adapters/blinkit'
 import {
   ACCOUNT_CONFIG, connectWeb, connectWebsite, disconnectWeb, loadAccounts, recheckWebSessions, saveAccounts,
@@ -84,8 +83,8 @@ interface Store {
   // accounts
   accounts: Partial<Record<Platform, Account>>
   connect: (p: Platform, opts?: { website?: boolean }) => Promise<Account>
-  /** Signs in to every app not yet connected, all at once, typing this number and each OTP from notifications. */
-  connectAllWithOtp: (phone: string) => Promise<{ connected: Platform[]; missed: Platform[] }>
+  /** Opens sign-in for every app not yet connected and fills the number; the user enters each OTP. */
+  connectAll: (phone: string) => Promise<{ connected: Platform[]; missed: Platform[] }>
   disconnect: (p: Platform) => Promise<void>
   testConnection: (p: Platform) => Promise<void>
   setupProvider: (p: Platform) => Promise<void>
@@ -380,17 +379,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return acc
   }, [runTest, updateAccount])
 
-  const connectAllWithOtp = useCallback(async (phone: string) => {
+  const connectAll = useCallback(async (phone: string) => {
     const todo = PLATFORMS.map((x) => x.id).filter((p) => accounts[p]?.status !== 'connected')
     beginAutoSignIn(phone)
-    SastaNative.armOtp(10 * 60 * 1000)
     try {
       const results = await Promise.allSettled(todo.map((p) => connect(p)))
       const connected = todo.filter((_, n) => results[n].status === 'fulfilled' && (results[n] as PromiseFulfilledResult<Account>).value.status === 'connected')
       return { connected, missed: todo.filter((p) => !connected.includes(p)) }
     } finally {
       endAutoSignIn()
-      SastaNative.armOtp(0)
     }
   }, [accounts, connect])
 
@@ -439,7 +436,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     },
     exportLists: async () => { await shareFile(`sasta-lists-${new Date().toISOString().slice(0, 10)}.json`, exportLists(lists)).catch(() => setToast('Could not export')) },
     importLists: importListsFn,
-    accounts, connect, connectAllWithOtp, disconnect, testConnection, setupProvider, instamartAddress, listInstamartAddresses, chooseInstamartAddress,
+    accounts, connect, connectAll, disconnect, testConnection, setupProvider, instamartAddress, listInstamartAddresses, chooseInstamartAddress,
     toast, showToast: setToast,
   }
 
