@@ -5,7 +5,8 @@ import { ActivityIndicator, FlatList, Keyboard, Pressable, ScrollView, StyleShee
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { IS_SAMPLE_DATA } from '@/core/adapters'
 import { searchLabel } from '@/core/capabilities'
-import { relevance, variantFromQuery } from '@/core/normalize'
+import { variantFromQuery } from '@/core/normalize'
+import { rankGroups } from '@/core/search-batch'
 import { PLATFORM, PLATFORMS } from '@/core/platforms'
 import type { AdapterStatus, ProductGroup } from '@/core/types'
 import { formatSize, plural, rupee } from '@/core/utils'
@@ -48,10 +49,7 @@ export default function SearchScreen() {
   const activeSize = size !== null && sizes.includes(size) ? size : null
   const visible = useMemo(() => {
     const list = byVariant.filter((g) => activeSize === null || g.sizeGrams === activeSize)
-    return [...list].sort((a, b) => {
-      if (a.best.inStock !== b.best.inStock) return a.best.inStock ? -1 : 1
-      return relevance(b.best, s.submitted) - relevance(a.best, s.submitted) || a.best.price - b.best.price || (a.best.etaMinutes ?? 99) - (b.best.etaMinutes ?? 99)
-    })
+    return rankGroups(list, s.submitted)
   }, [byVariant, activeSize, s.submitted])
   const bestValue = useMemo(() => byVariant.filter((g) => g.best.inStock && g.pricePer100g).sort((a, b) => a.pricePer100g! - b.pricePer100g!)[0], [byVariant])
   const cartQty = useMemo(() => new Map(s.cart.map((i) => [i.key, i.qty])), [s.cart])

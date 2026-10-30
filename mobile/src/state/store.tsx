@@ -20,6 +20,7 @@ import {
 import { groupOffers } from '@/core/normalize'
 import { PLATFORM, PLATFORMS } from '@/core/platforms'
 import { clearSearchCache, runSearch } from '@/core/search'
+import { buildBatch, createBatchScheduler, batchSleep, parseTerms, type SearchBatch, type SourceRef } from '@/core/search-batch'
 import { shareFile, shareText } from '@/core/share'
 import {
   DEFAULT_LOCATION, DEFAULT_RECENTS, loadCart, loadFees, loadLists, loadLocation, loadRecents, pushRecent, saveCart,
@@ -40,13 +41,19 @@ interface Store {
   groups: ProductGroup[]
   elapsed: number | null
   recents: string[]
-  groupByKey: (key: string) => ProductGroup | undefined
+  batch: SearchBatch | null
+  searchMany: (texts: string[]) => { ok: true; batchId: string } | { ok: false; reason: 'empty' | 'overflow' }
+  stopBatch: () => void
+  removeQuery: (queryId: string) => void
+  retryQuery: (queryId: string) => void
+  clearBatch: () => void
+  groupByKey: (key: string, source?: SourceRef) => ProductGroup | undefined
   // location
   location: Location; setLocation: (l: Location) => void
   // cart
   cart: CartItem[]
   /** Adds one pack. With a platform, buys it there (or from the cheapest app when that is the cheapest). */
-  addToCart: (g: ProductGroup, platform?: Platform) => void
+  addToCart: (g: ProductGroup, platform?: Platform, source?: SourceRef) => void
   setCartQty: (key: string, qty: number) => void
   pinItem: (key: string, p: Platform | undefined) => void
   pinAllTo: (p: Platform | undefined) => void
@@ -64,8 +71,8 @@ interface Store {
   // lists
   lists: ShoppingList[]
   isSaved: (key: string) => boolean
-  toggleSaved: (listId: string, g: ProductGroup) => void
-  createList: (name: string, emoji: string, save?: ProductGroup) => string
+  toggleSaved: (listId: string, g: ProductGroup, source?: SourceRef) => void
+  createList: (name: string, emoji: string, save?: ProductGroup, source?: SourceRef) => string
   renameList: (id: string, name: string, emoji: string) => void
   deleteList: (id: string) => void
   setListQty: (listId: string, key: string, qty: number) => void
@@ -134,18 +141,43 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const locationRef = useRef(location)
   useEffect(() => { locationRef.current = location }, [location])
   const lastCartGroups = useRef(new Map<string, ProductGroup>())
+  const [batch, setBatch] = useState<SearchBatch | null>(null)
+  const batchRef = useRef<SearchBatch | null>(null)
+  const contextVersion = useRef(0)
+  const batchSequence = useRef(0)
+  const schedulerRef = useRef<ReturnType<typeof createBatchScheduler> | null>(null)
+  useEffect(() => {
+    const scheduler = createBatchScheduler({
+      runSearch: (q, signal, cb) => runSearch(adapters, q, locationRef.current, signal, cb),
+      sleep: batchSleep, now: Date.now, contextVersion: () => contextVersion.current,
+      onChange: next => { batchRef.current = next; setBatch(next) },
+    })
+    schedulerRef.current = scheduler
+    return () => { scheduler.clear(); abortRef.current?.abort(); schedulerRef.current = null }
+  }, [])
+  const invalidateContext = useCallback(() => {
+    contextVersion.current++
+    schedulerRef.current?.invalidate()
+  }, [])
+  const updateInstamartAddress = useCallback((address: SelectedAddress | null) => {
+    invalidateContext()
+    setInstamartAddress(address)
+  }, [invalidateContext])
 
   useEffect(() => {
-    loadLocation().then(setLocationState)
+    loadLocation().then(l => { invalidateContext(); locationRef.current = l; setLocationState(l) })
     loadRecents().then((r) => setRecents(r.filter(isReasonableQuery)))
     loadCart().then((c) => { setCart(c); loadedCart.current = true })
     loadLists().then((l) => { setLists(l); loadedLists.current = true })
     loadFees().then(setFees)
-    loadInstamartAddress().then(setInstamartAddress)
+    loadInstamartAddress().then(updateInstamartAddress)
     loadAccounts().then(async (a) => {
+      invalidateContext()
       setAccounts(a)
       if (!IS_NATIVE) return
       const checked = await recheckWebSessions(a).catch(() => a)
+      // Only a real change of sign-in state makes open results stale, not the routine launch check.
+      if ((Object.keys(checked) as Platform[]).some((p) => checked[p]?.status !== a[p]?.status)) invalidateContext()
       // Merge per app, so a connection made while this check ran is not overwritten.
       setAccounts((cur) => {
         const next = { ...cur }
@@ -154,7 +186,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         return next
       })
     })
-  }, [])
+  }, [invalidateContext, updateInstamartAddress])
 
   useEffect(() => { if (loadedCart.current) saveCart(cart) }, [cart])
   useEffect(() => { if (loadedLists.current) saveLists(lists) }, [lists])
@@ -165,6 +197,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const search = useCallback(async (raw: string, opts: { loc?: Location; force?: boolean } = {}) => {
     const q = raw.trim()
     if (!q) return
+    schedulerRef.current?.clear()
     abortRef.current?.abort()
     const ctrl = new AbortController()
     abortRef.current = ctrl
@@ -187,29 +220,62 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setSubmitted(''); setQuery(''); setOffers({}); setStatuses({})
   }, [])
 
+  const searchMany = useCallback((texts: string[]): ReturnType<Store['searchMany']> => {
+    const { terms, rejected } = parseTerms(texts.join('\n'))
+    if (rejected.length) return { ok: false, reason: 'overflow' }
+    if (!terms.length) return { ok: false, reason: 'empty' }
+    abortRef.current?.abort()
+    // No single-search submission remains to re-run when the location changes.
+    setSubmitted(''); setOffers({}); setStatuses({}); setElapsed(null)
+    const next = buildBatch(terms, contextVersion.current, `batch-${Date.now()}-${++batchSequence.current}`)
+    schedulerRef.current!.start(next)
+    return { ok: true, batchId: next.id }
+  }, [])
+
+  const sourceSection = useCallback((source: SourceRef) => {
+    const current = batchRef.current
+    if (!current || current.id !== source.batchId || current.stale || current.contextVersion !== contextVersion.current) return undefined
+    return current.sections.find(section => section.id === source.queryId)
+  }, [])
+  const resolveAction = useCallback((g: ProductGroup, source?: SourceRef) => {
+    if (!source) return { group: g, query: submitted || g.variant }
+    const section = sourceSection(source)
+    const group = section?.groups.find(item => item.key === g.key)
+    if (!section || !group) { setToast('Results are out of date. Search again.'); return undefined }
+    return { group, query: section.text }
+  }, [submitted, sourceSection])
+
   const allOffers = useMemo(() => Object.values(offers).flat() as Offer[], [offers])
   const groups = useMemo(() => groupOffers(allOffers), [allOffers])
-  const groupByKey = useCallback((key: string) => groups.find((g) => g.key === key) ?? lastCartGroups.current.get(key), [groups])
+  const groupByKey = useCallback((key: string, source?: SourceRef) => source
+    ? sourceSection(source)?.groups.find(g => g.key === key)
+    : groups.find((g) => g.key === key) ?? lastCartGroups.current.get(key), [groups, sourceSection])
 
   /* ---------------------------------------------------------------- location */
 
   const setLocation = useCallback((l: Location) => {
+    invalidateContext()
     locationRef.current = l
     setLocationState(l)
     saveLocation(l)
-    if (submitted) search(submitted, { loc: l, force: true })
-  }, [submitted, search])
+    if (submitted && !batchRef.current) search(submitted, { loc: l, force: true })
+  }, [submitted, search, invalidateContext])
 
   /* ---------------------------------------------------------------- cart */
 
-  const addToCart = useCallback((g: ProductGroup, platform?: Platform) => {
+  const addToCart = useCallback((g: ProductGroup, platform?: Platform, source?: SourceRef) => {
+    const resolved = resolveAction(g, source)
+    if (!resolved) return
+    g = resolved.group
     lastCartGroups.current.set(g.key, g)
     setCart((c) => {
-      const item = fromGroup(g, submitted || g.variant)
-      const next = addItem(c, item)
+      const item = fromGroup(g, resolved.query)
+      // addItem preserves an existing item's query; a sourced add must retain this section's text.
+      const previous = source ? c.map(i => i.key === g.key ? { ...i, query: resolved.query } : i) : c
+      const next = addItem(previous, item)
       return platform === undefined ? next : pin(next, g.key, platform === cheapestOffer(item)?.platform ? undefined : platform)
     })
-  }, [submitted])
+  }, [resolveAction])
 
   const refreshPrices = useCallback(async (opts: { force?: boolean } = { force: true }) => {
     const before = cartRef.current
@@ -251,18 +317,26 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const isSaved = useCallback((key: string) => lists.some((l) => l.items.some((i) => i.key === key)), [lists])
 
-  const toggleSaved = useCallback((listId: string, g: ProductGroup) => {
+  const toggleSaved = useCallback((listId: string, g: ProductGroup, source?: SourceRef) => {
+    const resolved = resolveAction(g, source)
+    if (!resolved) return
+    g = resolved.group
     setLists((ls) => {
       const saved = ls.find((l) => l.id === listId)?.items.some((i) => i.key === g.key)
-      return saved ? removeFromList(ls, listId, g.key) : saveToList(ls, listId, listItemFromGroup(g, submitted || g.variant))
+      return saved ? removeFromList(ls, listId, g.key) : saveToList(ls, listId, listItemFromGroup(g, resolved.query))
     })
-  }, [submitted])
+  }, [resolveAction])
 
-  const createListFn = useCallback((name: string, emoji: string, save?: ProductGroup) => {
+  const createListFn = useCallback((name: string, emoji: string, save?: ProductGroup, source?: SourceRef) => {
+    const resolved = save ? resolveAction(save, source) : undefined
+    if ((save && !resolved) || (source && !sourceSection(source))) {
+      setToast('Results are out of date. Search again.')
+      return ''
+    }
     const [next, list] = createList(lists, name, emoji)
-    setLists(save ? saveToList(next, list.id, listItemFromGroup(save, submitted || save.variant)) : next)
+    setLists(resolved ? saveToList(next, list.id, listItemFromGroup(resolved.group, resolved.query)) : next)
     return list.id
-  }, [lists, submitted])
+  }, [lists, resolveAction, sourceSection])
 
   const addListToCart = useCallback(async (listId: string, keys: string[]) => {
     const list = lists.find((l) => l.id === listId)
@@ -301,9 +375,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   /* ---------------------------------------------------------------- accounts */
 
   const updateAccount = useCallback((a: Account) => {
+    invalidateContext()
     clearSearchCache()
     setAccounts((prev) => { const next = { ...prev, [a.platform]: a }; saveAccounts(next); return next })
-  }, [])
+  }, [invalidateContext])
 
   const testAccount = useCallback(async (p: Platform, acc: Account): Promise<{ ok: boolean; detail: string }> => {
     if (isMcpPlatform(p) && acc.via !== 'web') {
@@ -328,7 +403,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return tested
     }
     const probe = await probeSearch(p, canSearch(p) ? adapters.find(a => a.platform === p) : undefined, submitted || 'milk', locationRef.current)
-    if (p === 'instamart') loadInstamartAddress().then(setInstamartAddress)
+    if (p === 'instamart') loadInstamartAddress().then(updateInstamartAddress)
     const report = connectionReport(t, probe)
     const tested: Account = { ...acc, status: t.ok ? 'connected' : acc.status, connectedAt: t.ok ? acc.connectedAt ?? Date.now() : acc.connectedAt, lastTest: report, verified: t.ok }
     updateAccount(tested)
@@ -338,7 +413,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
     if (announce) setToast(`${PLATFORM[p].name}: ${report.detail}`)
     return tested
-  }, [testAccount, updateAccount, submitted])
+  }, [testAccount, updateAccount, submitted, updateInstamartAddress])
 
   const setupProvider = useCallback(async (p: Platform) => {
     const config = ACCOUNT_CONFIG[p]
@@ -363,7 +438,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       if (p === 'instamart' && acc.status === 'connected') {
         // Show which saved address Instamart will search, so the user can change it.
         await saveInstamartAddress(null)
-        setInstamartAddress(await resolveInstamartAddress(mcpClient('instamart')).catch(() => null))
+        updateInstamartAddress(await resolveInstamartAddress(mcpClient('instamart')).catch(() => null))
       }
     } else if (isMcpPlatform(p)) acc = await connectWebsite(p)
     else {
@@ -377,7 +452,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     updateAccount(acc)
     if (acc.status === 'connected') acc = await runTest(p, acc)
     return acc
-  }, [runTest, updateAccount])
+  }, [runTest, updateAccount, updateInstamartAddress])
 
   const connectAll = useCallback(async (phone: string) => {
     const todo = PLATFORMS.map((x) => x.id).filter((p) => accounts[p]?.status !== 'connected')
@@ -394,24 +469,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const disconnect = useCallback(async (p: Platform) => {
     const acc = accounts[p]
     updateAccount(isMcpPlatform(p) && acc?.via !== 'web' ? await disconnectMcp(p) : await disconnectWeb(p))
-    if (p === 'instamart') { await saveInstamartAddress(null); setInstamartAddress(null) }
-  }, [accounts, updateAccount])
+    if (p === 'instamart') { await saveInstamartAddress(null); updateInstamartAddress(null) }
+  }, [accounts, updateAccount, updateInstamartAddress])
 
   const listInstamartAddresses = useCallback(async () => (await listSwiggyAddresses()).addresses, [])
 
   const chooseInstamartAddress = useCallback(async (a: SwiggyAddress) => {
     const chosen = { ...a, auto: false }
     await saveInstamartAddress(chosen)
-    setInstamartAddress(chosen)
+    updateInstamartAddress(chosen)
     clearSearchCache()
     await runTest('instamart', accounts.instamart ?? { platform: 'instamart', status: 'connected' }, true)
-  }, [accounts, runTest])
+  }, [accounts, runTest, updateInstamartAddress])
 
   const testConnection = useCallback(async (p: Platform) => {
     await runTest(p, accounts[p] ?? { platform: p, status: 'disconnected' })
   }, [accounts, runTest])
 
   const value: Store = {
+    batch, searchMany, stopBatch: () => schedulerRef.current?.stop(), removeQuery: id => schedulerRef.current?.remove(id), retryQuery: id => schedulerRef.current?.retry(id), clearBatch: () => schedulerRef.current?.clear(),
     query, setQuery, submitted, search, clearSearch, statuses, offers, groups, elapsed, recents, groupByKey,
     location, setLocation,
     cart, addToCart,
