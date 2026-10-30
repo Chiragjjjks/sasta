@@ -14,7 +14,9 @@ How searches, prices and other actions are triggered and what metadata they retu
 
 Download `Sasta-vX.Y.Z-android.apk` from [Releases](https://github.com/Chiragjjjks/sasta/releases/latest) and open it on your Android phone (Android 7 or newer; ARM64 or x86_64). Install over the previous release to keep your lists, cart and location. The rebuild migrates data from v0.3.2 on first launch.
 
-If Google Play Protect blocks v0.8.0, see [Android installation](docs/ANDROID-INSTALL.md). Main removes the notification-reading service used by that release; sign-in now fills your number and lets you enter each OTP on the provider's own page. This fix needs a new release before it reaches the public download.
+**Food (v0.9.0):** the Food tab compares one dish or restaurant across Zomato and Swiggy at your location, matching the same dish at the same restaurant on both apps. Ownly and Swish are app-only, so Sasta links to them. Food prices were checked in desktop Chrome; phone verification is pending.
+
+If Google Play Protect blocks v0.8.0, see [Android installation](docs/ANDROID-INSTALL.md). v0.9.0 removes the notification-reading service used by that release; sign-in now fills your number and lets you enter each OTP on the provider's own page.
 
 ## Website
 

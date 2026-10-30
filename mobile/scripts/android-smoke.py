@@ -183,7 +183,14 @@ try:
     find('Delivery area')
     shot('04-account')
 
-    tap_tab('Search')
+    # Food is its own tab. Ownly and Swish have no website, so they must say so rather than show prices.
+    tap_tab('Food')
+    find('Dish or restaurant')
+    find('Same biryani, different prices.')
+    find('Ownly: app only', contains=True, scroll=True)
+    shot('04b-food-home')
+
+    tap_tab('Grocery')
     find('Search any product')
     adb('shell', 'svc', 'wifi', 'disable')
     adb('shell', 'svc', 'data', 'disable')
