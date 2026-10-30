@@ -3,6 +3,7 @@ import { memo } from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { inStockCount } from '@/core/normalize'
 import { PLATFORM } from '@/core/platforms'
+import type { SourceRef } from '@/core/search-batch'
 import type { ProductGroup } from '@/core/types'
 import { formatSize, rupee } from '@/core/utils'
 import { Stepper, T, tap } from './kit'
@@ -14,9 +15,12 @@ import { useTheme } from './theme'
 const ROWS = 3
 
 /** One product: its top apps ranked by price, then Save and Add (or a quantity once it is in the cart). */
-function ProductCardImpl({ group, total, inCart, saved, onOpen, onAdd, onQty, onSave }: {
+function ProductCardImpl({ group, total, inCart, saved, source, onOpen, onAdd, onQty, onSave }: {
   group: ProductGroup; total: number; inCart: number; saved: boolean
-  onOpen: (g: ProductGroup) => void; onAdd: (g: ProductGroup) => void; onQty: (g: ProductGroup, qty: number) => void; onSave: (g: ProductGroup) => void
+  /** The search section this card came from (several-product search). It rides along on every action. */
+  source?: SourceRef
+  onOpen: (g: ProductGroup, source?: SourceRef) => void; onAdd: (g: ProductGroup, source?: SourceRef) => void
+  onQty: (g: ProductGroup, qty: number) => void; onSave: (g: ProductGroup, source?: SourceRef) => void
 }) {
   const t = useTheme()
   const { best } = group
@@ -25,7 +29,7 @@ function ProductCardImpl({ group, total, inCart, saved, onOpen, onAdd, onQty, on
   const pack = (group.packLabel ?? formatSize(group.sizeGrams)) || group.brand
   return (
     <Pressable
-      onPress={() => onOpen(group)}
+      onPress={() => onOpen(group, source)}
       android_ripple={{ color: t.dark ? '#ffffff12' : '#0000000b' }}
       style={[styles.card, { backgroundColor: t.surface }]}
       accessibilityRole="button"
@@ -46,7 +50,7 @@ function ProductCardImpl({ group, total, inCart, saved, onOpen, onAdd, onQty, on
       <View style={styles.footer}>
         <Pressable
           hitSlop={4}
-          onPress={() => { tap(); onSave(group) }}
+          onPress={() => { tap(); onSave(group, source) }}
           style={[styles.iconBtn, { backgroundColor: saved ? t.ink : t.chip }]}
           accessibilityLabel={saved ? 'Saved to a list' : 'Save to list'}
         >
@@ -63,7 +67,7 @@ function ProductCardImpl({ group, total, inCart, saved, onOpen, onAdd, onQty, on
         ) : (
           <Pressable
             hitSlop={4}
-            onPress={() => { tap(); onAdd(group) }}
+            onPress={() => { tap(); onAdd(group, source) }}
             style={[styles.addBtn, { backgroundColor: t.ink }]}
             accessibilityLabel={`Add to cart from ${PLATFORM[best.platform].name}`}
           >
@@ -76,8 +80,14 @@ function ProductCardImpl({ group, total, inCart, saved, onOpen, onAdd, onQty, on
   )
 }
 
+/**
+ * Callbacks are compared too: they used to be ignored, which was safe only while none of them captured
+ * a search section. Callers pass stable (useCallback) handlers, so this still skips most re-renders.
+ */
 export const ProductCard = memo(ProductCardImpl, (a, b) =>
-  a.group === b.group && a.inCart === b.inCart && a.saved === b.saved && a.total === b.total)
+  a.group === b.group && a.inCart === b.inCart && a.saved === b.saved && a.total === b.total
+  && a.source?.batchId === b.source?.batchId && a.source?.queryId === b.source?.queryId
+  && a.onOpen === b.onOpen && a.onAdd === b.onAdd && a.onQty === b.onQty && a.onSave === b.onSave)
 
 const styles = StyleSheet.create({
   card: { borderRadius: 20, padding: 12, paddingBottom: 12, overflow: 'hidden', gap: 6 },

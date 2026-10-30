@@ -12,16 +12,22 @@ import { useTheme } from '@/ui/theme'
 
 export default function SaveScreen() {
   const t = useTheme()
-  const { key } = useLocalSearchParams<{ key: string }>()
+  const { key, batchId, queryId } = useLocalSearchParams<{ key: string; batchId?: string; queryId?: string }>()
   const s = useStore()
-  const group = s.groupByKey(String(key))
+  const source = batchId && queryId ? { batchId: String(batchId), queryId: String(queryId) } : undefined
+  const group = s.groupByKey(String(key), source)
   const [name, setName] = useState('')
   const starters = STARTER_LISTS.filter((x) => !s.lists.some((l) => l.name.toLowerCase() === x.name.toLowerCase()))
-  if (!group) return <View style={{ flex: 1, padding: 24 }}><T kind="bodyStrong">This product is no longer in your results.</T></View>
+  if (!group) return (
+    <View style={{ flex: 1, padding: 24, gap: 12 }}>
+      <T kind="bodyStrong">{source ? 'These results are out of date. Search again.' : 'This product is no longer in your results.'}</T>
+      <Button label="Back" onPress={() => router.back()} />
+    </View>
+  )
 
   const create = (n: string, emoji: string) => {
     if (!n.trim()) return
-    s.createList(n.trim(), emoji, group)
+    s.createList(n.trim(), emoji, group, source)
     s.showToast(`Saved to ${n.trim()}`)
     setName('')
   }
@@ -40,7 +46,7 @@ export default function SaveScreen() {
                 return (
                   <View key={l.id}>
                     {i > 0 && <Divider />}
-                    <Pressable onPress={() => s.toggleSaved(l.id, group)} style={styles.row} android_ripple={{ color: '#00000010' }} accessibilityState={{ checked: saved }}>
+                    <Pressable onPress={() => s.toggleSaved(l.id, group, source)} style={styles.row} android_ripple={{ color: '#00000010' }} accessibilityState={{ checked: saved }}>
                       <View style={[styles.emoji, { backgroundColor: t.chip }]}><Text style={{ fontSize: 18 }}>{l.emoji}</Text></View>
                       <View style={{ flex: 1 }}>
                         <T kind="bodyStrong">{l.name}</T>

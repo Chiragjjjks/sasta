@@ -15,15 +15,16 @@ import { useTheme } from '@/ui/theme'
 
 export default function CompareScreen() {
   const t = useTheme()
-  const { key } = useLocalSearchParams<{ key: string }>()
+  const { key, batchId, queryId } = useLocalSearchParams<{ key: string; batchId?: string; queryId?: string }>()
   const s = useStore()
   const [pick, setPick] = useState<Platform | undefined>(undefined)
-  const group = s.groupByKey(String(key))
+  const source = batchId && queryId ? { batchId: String(batchId), queryId: String(queryId) } : undefined
+  const group = s.groupByKey(String(key), source)
   if (!group) {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 12 }}>
-        <T kind="bodyStrong">This product is no longer in your results.</T>
-        <Button label="Back to search" onPress={() => router.back()} />
+        <T kind="bodyStrong" style={{ textAlign: 'center' }}>{source ? 'These results are out of date. Search again.' : 'This product is no longer in your results.'}</T>
+        <Button label={source ? 'Back' : 'Back to search'} onPress={() => router.back()} />
       </View>
     )
   }
@@ -91,13 +92,13 @@ export default function CompareScreen() {
           </>
         ) : (
           <>
-            <Pressable onPress={() => { tap(); router.push({ pathname: '/save/[key]', params: { key: group.key } }) }}
+            <Pressable onPress={() => { tap(); router.push({ pathname: '/save/[key]', params: { key: group.key, ...source } }) }}
               style={[styles.save, { backgroundColor: saved ? t.ink : t.chip }]} accessibilityLabel={saved ? 'Saved to a list' : 'Save to list'}>
               <Bookmark size={18} color={saved ? t.bg : t.ink} fill={saved ? t.bg : 'transparent'} />
             </Pressable>
             {chosen && (
               <Button flex label={`Add · ${rupee(chosen.price)} · ${PLATFORM[chosen.platform].short}`}
-                icon={<ShoppingBag size={16} color={t.bg} />} onPress={() => s.addToCart(group, chosen.platform)} />
+                icon={<ShoppingBag size={16} color={t.bg} />} onPress={() => s.addToCart(group, chosen.platform, source)} />
             )}
           </>
         )}
