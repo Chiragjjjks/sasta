@@ -1,0 +1,31 @@
+{
+  "name": "sasta-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sasta's price-comparison actions as an MCP server (stdio or local HTTP)",
+  "type": "module",
+  "bin": {
+    "sasta-mcp": "dist/sasta-mcp.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "start": "node dist/sasta-mcp.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "check": "npm run typecheck && npm test && npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "playwright-core": "^1.64.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "esbuild": "^0.28.2",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.5"
+  }
+}
