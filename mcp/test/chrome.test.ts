@@ -30,8 +30,8 @@ describe.skipIf(!chromePath)('Chrome host', () => {
       hits++
       res.writeHead(200, { 'content-type': 'text/html', 'set-cookie': 'sid=1; Path=/' }).end(`<title>${req.url}</title><p>ok</p>`)
     })
-    await new Promise<void>((r) => server.listen(0, '127.0.0.1', r))
-    const origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`
+    await new Promise<void>((r) => server.listen(0, 'localhost', r))
+    const origin = `http://localhost:${(server.address() as { port: number }).port}`
     const host = new ChromeHost({ profile: mkdtempSync(join(tmpdir(), 'sasta-chrome-')), executablePath: chromePath })
     try {
       expect(await host.pageRun({ origin, path: '/start', script: 'return document.title + ":" + navigator.userAgent.includes("Headless")' })).toEqual({ ok: true, value: '/start:false' })
@@ -42,7 +42,8 @@ describe.skipIf(!chromePath)('Chrome host', () => {
       expect(await host.pageRun({ origin, path: '/hop', script: 'await new Promise(r => setTimeout(r, 400)); return location.pathname', timeoutMs: 8000 })).toEqual({ ok: true, value: '/landed' })
       await host.pageReset(origin)
       expect((await host.pageRun({ origin, path: '/missing', script: 'return 1' })).error).toBe('Shopping site returned HTTP 404')
-      expect(await host.cookieNames([origin])).toContain('sid')
+      expect(await host.pageRun({ origin, path: '/start', script: 'document.cookie = "pref=1; path=/"; return document.cookie.includes("pref")' })).toEqual({ ok: true, value: true })
+      expect(await host.cookieNames([origin])).toContain('pref')
       await host.clearSession([origin])
       expect(await host.cookieNames([origin])).toEqual([])
     } finally {
