@@ -9,7 +9,8 @@ const generated = {}
 for (const [file, name] of readers) {
   const source = ts.createSourceFile(file, fs.readFileSync(path.join(directory, file + '.ts'), 'utf8'), ts.ScriptTarget.Latest, true)
   const node = source.statements.find(n => ts.isFunctionDeclaration(n) && n.name?.text === name)
-  generated[name] = ts.transpileModule(node.getText(source).replace(/^export /, ''), { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None } }).outputText
+  // The text is used as an expression, "(<function>)(args)", so the "use strict" prologue TypeScript adds would be a syntax error.
+  generated[name] = ts.transpileModule(node.getText(source).replace(/^export /, ''), { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None } }).outputText.replace(/^"use strict";\s*/, '').trim()
 }
 const destination = path.join(directory, 'readers.generated.json')
 const content = JSON.stringify(generated, null, 2) + '\n'
