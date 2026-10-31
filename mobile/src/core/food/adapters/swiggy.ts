@@ -100,9 +100,9 @@ export function parseSwiggyMenu(json: unknown, at: FoodOutlet, now = Date.now())
   return out
 }
 
-function requestScript(path: string, uuid = false): string {
+function requestScript(path: string, uuid = false, suffix = ''): string {
   return `
-    const res = await fetch(${JSON.stringify(path)}${uuid ? ' + crypto.randomUUID()' : ''}, { credentials: 'include', headers: { Accept: 'application/json' } });
+    const res = await fetch(${JSON.stringify(path)}${uuid ? ' + crypto.randomUUID()' : ''}${suffix ? ` + ${JSON.stringify(suffix)}` : ''}, { credentials: 'include', headers: { Accept: 'application/json' } });
     if ([202, 403, 429].includes(res.status) || res.headers.get('x-amzn-waf-action') === 'challenge') throw new Error('blocked:' + res.status);
     const body = await res.text();
     if (/captcha|awswaf|waf challenge|access denied|just a moment|verify you are human/i.test(body) && !res.headers.get('content-type')?.includes('application/json')) throw new Error('blocked:challenge');
@@ -111,10 +111,11 @@ function requestScript(path: string, uuid = false): string {
   `
 }
 
-export function swiggySearchScript(query: string, loc: Location): string {
+/** `tab: 'DISH'` asks for the Dishes tab: a restaurant name ("meghana") otherwise answers with restaurant cards only. */
+export function swiggySearchScript(query: string, loc: Location, tab?: 'DISH'): string {
   exactLocation(loc, 'Swiggy Food')
   const params = `lat=${loc.lat}&lng=${loc.lng}&str=${encodeURIComponent(query)}&trackingId=undefined&submitAction=ENTER&queryUniqueId=`
-  return requestScript('/dapi/restaurants/search/v3?' + params, true)
+  return requestScript('/dapi/restaurants/search/v3?' + params, true, tab ? `&selectedPLTab=${tab}` : '')
 }
 
 export function swiggyMenuScript(at: FoodOutlet, loc: Location): string {
@@ -147,7 +148,11 @@ export function createSwiggyFoodSource(): FoodSource {
     async setLocation(next) { location = { ...next } },
     async search(query, signal) {
       exactLocation(location, 'Swiggy Food')
-      return parseSwiggySearch(await run(swiggySearchScript(query, location), signal), query)
+      const first = await run(swiggySearchScript(query, location), signal)
+      const dishes = parseSwiggySearch(first, query)
+      // A restaurant name lands on the Restaurants tab; its dishes are one request away (still ≤ 2 per search).
+      if (dishes.length || !parseSwiggyRestaurants(first, query).length) return dishes
+      return parseSwiggySearch(await run(swiggySearchScript(query, location, 'DISH'), signal), query)
     },
     async menu(at, loc, signal) {
       exactLocation(loc, 'Swiggy Food')
