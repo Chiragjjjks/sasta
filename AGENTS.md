@@ -21,7 +21,7 @@ Owner: Chirag (GitHub `Chiragjjjks`), Bengaluru. The test location is Rajajinaga
 - They care a lot about UI clarity ("instinct-to-UI"). Before declaring UI work done, check it visually. The browser preview with sample data is fine for that.
 - When a delegated agent asks a question meant for the owner (for example a login prompt), tell the owner. Never answer it on their behalf.
 
-## Current state: v0.8.0 published (tag on fea695f); v0.9.0 prepared on main, not tagged
+## Current state: v0.9.0 published (tag on f6628dc, 2026-10-31)
 
 | Platform | How Sasta searches | Status |
 |---|---|---|
@@ -47,8 +47,8 @@ v0.8.0 published (2026-10-29): **one-tap connect with OTP auto-fill**.
 - That release included `OtpListenerService` for notification-based OTP auto-fill. **Removed on main after v0.8.0** because the notification-listener declaration can trigger Google Play Protect installation blocks for sideloaded APKs.
 - Not yet verified on a phone with real OTPs. Amazon may ask for a password; that app then shows "Needs you".
 
-Since v0.8.0 (on `main`, versioned 0.9.0 / versionCode 900, notes in `docs/releases/v0.9.0.md`; **not tagged until the owner approves**):
-- **Sideload permission fix (2026-10-30):** removed the notification listener, its native bridge/events and automatic OTP injection. Connect-all still fills the phone number once; users open each provider page to enter its OTP. `app.json` also blocks unused storage, overlay, biometric and vibration permissions. CI decodes the final APK manifest and runs `scripts/check-apk-manifest.py` to allow only internet, foreground location and the app-private receiver permission, and reject notification-reading/accessibility services. See `docs/ANDROID-INSTALL.md`. The published v0.8.0 still has the old notification listener until an explicitly approved new release.
+v0.9.0 published 2026-10-31 (versionCode 900, notes in `docs/releases/v0.9.0.md`, CI run 41200623069). It contains:
+- **Sideload permission fix (2026-10-30):** removed the notification listener, its native bridge/events and automatic OTP injection. Connect-all still fills the phone number once; users open each provider page to enter its OTP. `app.json` also blocks unused storage, overlay, biometric and vibration permissions. CI decodes the final APK manifest and runs `scripts/check-apk-manifest.py` to allow only internet, foreground location and the app-private receiver permission, and reject notification-reading/accessibility services. See `docs/ANDROID-INSTALL.md`. v0.8.0 still has the old notification listener; v0.9.0 does not.
 - **Landing site** in `site/` (plain HTML/CSS/JS, no build step; preview with `npx serve site`). It is modelled on the Downmix Renderer page, with editorial touches from Kenpath's Svara page, and includes an interactive sample-price demo. It is live at https://chiragjjjks.github.io/sasta/. `.github/workflows/site.yml` publishes `site/` to the `gh-pages` branch on every change, and Pages serves that branch, the same way Downmix Renderer is hosted. Download buttons link straight to the APK, and `main.js` switches them to the newest release at load time. The site also announces food delivery as **coming soon** (Zomato, Swiggy food, Ownly by Rapido, Swish). The app now has them (see Food section below); keep the site at "coming soon" until food is verified on a phone.
 - **Multi-product search (merged from `feat/multi-search` 2026-10-31):** in Grocery, type or paste up to 5 products (`lays, maggi, amul butter`); each becomes a chip and **Compare N** searches them one at a time, with a 2 s pause after network work. Results show a best-price-per-product card, then one section per product. Engine: `core/search-batch.ts` (`parseTerms`, `createBatchScheduler`, `rankGroups`), store `batch`/`searchMany`/`stopBatch`/`removeQuery`/`retryQuery`, and `SourceRef {batchId, queryId}` on compare/save/cart actions with no fallback. UI: `ui/TermsInput.tsx` (passed to `SearchHeader` as its `bar`), `ui/BatchResults.tsx`. Spec and follow-ups: `docs/MULTI_SEARCH_PLAN.md`. Planned by a researcher, a backend agent (GPT-6.1 Sol) and a frontend agent (Claude Sonnet), led by Claude. Checked in the browser preview only; not yet on a phone.
 - **App UI polish:** JetBrains Mono is now loaded (`fonts.mono`, `fonts.monoBold`), and the kit has `Eyebrow` (mono section label, optionally numbered or live), `Headline` (two-line display heading, second line muted) and `LiveDot`. They are used on the Search home, Lists, Cart, ranked rows and the plan card.
@@ -61,7 +61,7 @@ Since v0.8.0 (on `main`, versioned 0.9.0 / versionCode 900, notes in `docs/relea
 
 ## Next, in order
 
-Before the next release, confirm the permission-fixed APK installs with Play Protect enabled on the owner's phone; emulator installation alone does not test Google's install-time classification. A release still needs explicit owner approval.
+Confirm on the owner's phone that v0.9.0 installs with Play Protect enabled (it was released before this was checked; emulator installation does not test Google's install-time classification), and check several-product search and Food with live prices. Every release still needs explicit owner approval.
 
 1. Finish and merge the `automation/` site index, then use it to fix Flipkart Minutes and Amazon Now.
 2. Wishlist and list follow-ups the owner asked for after the list redesign.
