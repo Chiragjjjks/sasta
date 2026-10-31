@@ -2,7 +2,7 @@
 
 Sasta's actions (`docs/ACTIONS.md`) exposed as an MCP server, so Claude, Codex, or any other MCP client can ask "where is this cheapest, delivered to me?" and get the same answer the app gives.
 
-The owner asked for this on 2026-11-01 ("do MCP for Sasta so we can connect it to other things"). Branch: `feat/mcp-server`. Pushes and PRs go through the `prospeck` GitHub account.
+The owner asked for this on 2026-11-01 ("do MCP for Sasta so we can connect it to other things"). Merged to `main` on 2026-11-01 in PR #3 (`f3653af`). Pushes and PRs go through the `prospeck` GitHub account.
 
 ## Design
 
@@ -45,7 +45,9 @@ The owner asked for this on 2026-11-01 ("do MCP for Sasta so we can connect it t
 - [x] HTTP transport (bearer token; live `search_food` over HTTP)
 - [x] Tests (15, including real Chrome against a local page) and the CI workflow `.github/workflows/mcp.yml`
 - [x] Live check through a real stdio client (`scripts/smoke.mjs --live`)
-- [ ] Docs, PR, CI green, merge
+- [x] Docs, PR #3, CI green (Android APK and MCP server workflows), merged as `f3653af`
+
+Next: run `connect_app instamart` and `connect_app zepto` with the owner at the Chrome window, and `open_app` for BigBasket, Flipkart Minutes and Zepto. Then re-run `scripts/smoke.mjs --live` in the daytime, when Meghana and the other restaurants are open.
 
 ## Findings
 
