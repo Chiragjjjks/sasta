@@ -12,3 +12,6 @@ export function isReasonableQuery(q: string): boolean {
   const t = q.trim()
   return t.length >= 2 && t.length <= 40 && /[a-z0-9]/i.test(t)
 }
+
+/** "Zomato", "Zomato and Swiggy", "Zomato, Swiggy and Ownly". */
+export const listNames = (names: string[]) => names.length < 3 ? names.join(' and ') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`

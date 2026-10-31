@@ -30,7 +30,6 @@ This plan came out of a three-agent review on 2026-10-30. The researcher and bac
 - A shared query scheduler that also covers `refreshCart` and list refresh (`core/cart.ts` still fans out with `Promise.all`) and connection probes.
 - Blinkit: origin-queue wait eats into its search timeout (`core/adapters/blinkit.ts`, `core/session-turn.ts`).
 - Per-section Stop and Resume, and keeping batches across restarts.
-- Moving the search box onto the shared `SearchHeader` once `feat/food-compare` merges.
 - Android multiline paste, if a device test shows newlines turning into spaces. Commas always work.
 
 ## Files

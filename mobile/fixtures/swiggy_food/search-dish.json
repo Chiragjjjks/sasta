@@ -1,0 +1,780 @@
+{
+  "_note": "Trimmed logged-out response of GET https://www.swiggy.com/dapi/restaurants/search/v3?lat=12.9915&lng=77.5544&str=biryani&submitAction=ENTER&queryUniqueId=<uuid> (Rajajinagar 560010, fetched 2026-10-29). Prices are paise. tid/sid/deviceId/csrfToken, ad tracking, analytics blobs and most addons removed.",
+  "statusCode": 0,
+  "data": {
+    "statusMessage": "done successfully",
+    "cards": [
+      {
+        "card": {
+          "card": {
+            "@type": "type.googleapis.com/swiggy.gandalf.widgets.v2.Navigation",
+            "tab": [
+              {
+                "id": "RESTAURANT",
+                "title": "Restaurants"
+              },
+              {
+                "id": "DISH",
+                "title": "Dishes",
+                "selected": true
+              }
+            ]
+          }
+        }
+      },
+      {
+        "groupedCard": {
+          "cardGroupMap": {
+            "DISH": {
+              "cards": [
+                {
+                  "card": {
+                    "card": {
+                      "@type": "type.googleapis.com/swiggy.presentation.food.v2.DishGroup",
+                      "restaurant": {
+                        "info": {
+                          "id": "690552",
+                          "name": "Narmada Chain of Restaurant",
+                          "city": "1",
+                          "slugs": {
+                            "restaurant": "narmada-chain-of-restaurant-rajajinagar-rajajinagar",
+                            "city": "bangalore"
+                          },
+                          "cloudinaryImageId": "3bf711cdef6072ae50c099c7e353497e",
+                          "address": "706, 1st Floor, WCR 2nd Stage, 9th Cross, Modi Hospital Rd, Bengaluru, Karnataka 560086",
+                          "locality": "Rajajinagar",
+                          "areaName": "Rajajinagar",
+                          "costForTwo": "50000",
+                          "costForTwoMessage": "₹500 FOR TWO",
+                          "cuisines": [
+                            "Andhra",
+                            "Biryani",
+                            "South Indian"
+                          ],
+                          "avgRating": 4.3,
+                          "feeDetails": {},
+                          "parentId": "411277",
+                          "avgRatingString": "4.3",
+                          "totalRatingsString": "8.2K+",
+                          "promoted": true,
+                          "sla": {
+                            "deliveryTime": 22,
+                            "minDeliveryTime": 15,
+                            "maxDeliveryTime": 20,
+                            "lastMileTravel": 1.8,
+                            "serviceability": "SERVICEABLE",
+                            "rainMode": "RAIN_MODE_NONE",
+                            "slaString": "15-20 MINS",
+                            "lastMileTravelString": "1.8 km",
+                            "iconType": "ICON_TYPE_EMPTY"
+                          },
+                          "availability": {
+                            "opened": true,
+                            "restaurantClosedMeta": {}
+                          },
+                          "aggregatedDiscountInfo": {
+                            "visible": true
+                          },
+                          "aggregatedDiscountInfoV2": {
+                            "visible": true
+                          },
+                          "ratingSlab": "RATING_SLAB_5",
+                          "showEoOffer": true
+                        },
+                        "ctaWithParams": {
+                          "link": "swiggy://menu",
+                          "type": "DEEPLINK",
+                          "params": {
+                            "restaurant_id": "690552",
+                            "query": "biryani"
+                          }
+                        }
+                      },
+                      "dishes": [
+                        {
+                          "info": {
+                            "id": "179560165",
+                            "name": "Chicken Boneless Biriyani",
+                            "category": "Non Veg Biryani",
+                            "imageId": "FOOD_CATALOG/IMAGES/CMS/2025/8/12/ac6ce3bc-6b4c-42be-b340-592685820ab0_e8d1412a-2044-43df-8a77-e81aa310a775.jpg",
+                            "inStock": 1,
+                            "price": 34500,
+                            "variants": {},
+                            "variantsV2": {},
+                            "maxAddons": -1,
+                            "maxFreeAddons": -1,
+                            "isBolt": true,
+                            "parentId": "128723779"
+                          }
+                        },
+                        {
+                          "info": {
+                            "id": "112348388",
+                            "name": "Paneer Biryani",
+                            "category": "Veg Biryani",
+                            "imageId": "FOOD_CATALOG/IMAGES/CMS/2025/8/12/7562fe53-16bc-4a03-9d52-1ba10a9ac120_e2da1bb7-4f36-443c-b62b-024312f6cc80.jpg",
+                            "inStock": 1,
+                            "isVeg": 1,
+                            "price": 34500,
+                            "variants": {},
+                            "variantsV2": {},
+                            "maxAddons": -1,
+                            "maxFreeAddons": -1,
+                            "isBolt": true,
+                            "parentId": "128723889"
+                          }
+                        }
+                      ],
+                      "id": "searchRIGWidget",
+                      "isMenuVisitable": true
+                    }
+                  }
+                },
+                {
+                  "card": {
+                    "card": {
+                      "@type": "type.googleapis.com/swiggy.presentation.food.v2.DishGroup",
+                      "restaurant": {
+                        "info": {
+                          "id": "657646",
+                          "name": "Dum Safar Biryani",
+                          "city": "1",
+                          "slugs": {
+                            "restaurant": "dum-safar-biryani-global-malls-rajajinagar",
+                            "city": "bangalore"
+                          },
+                          "cloudinaryImageId": "adbdb21826ddaf4174418e993acc70c9",
+                          "address": "C/o BARBEQUE NATION -BARBEQUE NATION, NO 19/2, UNIT NO LGF 02,03 & 04, LOWER GROUND FLOOR, GLOBAL MALLS, RAJAJI NAGAR, (GOPALPURA) BANGALORE, Rajajinagara , B.B.M.P West, Karnataka-560023",
+                          "locality": "GLOBAL MALLS",
+                          "areaName": "RAJAJI NAGAR",
+                          "costForTwo": "50000",
+                          "costForTwoMessage": "₹500 FOR TWO",
+                          "cuisines": [
+                            "Biryani",
+                            "Hyderabadi",
+                            "Kebabs",
+                            "North Indian",
+                            "barbeque"
+                          ],
+                          "avgRating": 3.8,
+                          "feeDetails": {},
+                          "parentId": "351013",
+                          "avgRatingString": "3.8",
+                          "totalRatingsString": "1.0K+",
+                          "promoted": true,
+                          "sla": {
+                            "deliveryTime": 30,
+                            "minDeliveryTime": 25,
+                            "maxDeliveryTime": 35,
+                            "lastMileTravel": 2,
+                            "serviceability": "SERVICEABLE",
+                            "rainMode": "RAIN_MODE_NONE",
+                            "slaString": "25-35 MINS",
+                            "lastMileTravelString": "2.0 km",
+                            "iconType": "ICON_TYPE_EMPTY"
+                          },
+                          "availability": {
+                            "opened": true,
+                            "restaurantClosedMeta": {}
+                          },
+                          "aggregatedDiscountInfo": {
+                            "visible": true
+                          },
+                          "aggregatedDiscountInfoV2": {
+                            "visible": true
+                          },
+                          "ratingSlab": "RATING_SLAB_4",
+                          "showEoOffer": true
+                        },
+                        "ctaWithParams": {
+                          "link": "swiggy://menu",
+                          "type": "DEEPLINK",
+                          "params": {
+                            "restaurant_id": "657646",
+                            "query": "biryani"
+                          }
+                        }
+                      },
+                      "dishes": [
+                        {
+                          "info": {
+                            "id": "178506020",
+                            "name": "Chicken Dum Biryani - Bachelor",
+                            "category": "Bachelor Biryani",
+                            "description": "(Serving Size - 325 to 350gm)Flavorful Chicken Dum Biryani cooked with aromatic spices, served with raita.",
+                            "imageId": "FOOD_CATALOG/IMAGES/CMS/2025/8/19/df808c26-afab-4d22-8a55-ac265460e318_757a05a0-c746-41fe-87e3-4a18002ed0fa.png",
+                            "inStock": 1,
+                            "price": 17900,
+                            "variants": {},
+                            "variantsV2": {},
+                            "maxAddons": -1,
+                            "maxFreeAddons": -1,
+                            "addons": [
+                              {
+                                "groupId": "301444990",
+                                "groupName": "Quick (Addons)",
+                                "choices": [
+                                  {
+                                    "id": "139354228",
+                                    "name": "Extra Raita",
+                                    "price": 4900,
+                                    "inStock": 1,
+                                    "isVeg": 1,
+                                    "isEnabled": 1
+                                  },
+                                  {
+                                    "id": "139520559",
+                                    "name": "Extra Gravy (Non-Veg)",
+                                    "price": 5900,
+                                    "inStock": 1,
+                                    "isEnabled": 1
+                                  }
+                                ],
+                                "maxAddons": 9,
+                                "maxFreeAddons": -1
+                              }
+                            ],
+                            "parentId": "108335097"
+                          }
+                        },
+                        {
+                          "info": {
+                            "id": "178506022",
+                            "name": "Veg Dum Biryani - Bachelor",
+                            "category": "Bachelor Biryani",
+                            "description": "(Serving Size - 325 to 350gm)Flavorful Veg Dum Biryani cooked with aromatic spices, served with refreshing raita.",
+                            "imageId": "FOOD_CATALOG/IMAGES/CMS/2025/8/19/480c867b-9cc7-4c9d-84e5-d4d12f6a0315_b76551b3-68c8-4b57-886d-38eca7bac0a5.png",
+                            "inStock": 1,
+                            "isVeg": 1,
+                            "price": 16900,
+                            "variants": {},
+                            "variantsV2": {},
+                            "maxAddons": -1,
+                            "maxFreeAddons": -1,
+                            "addons": [
+                              {
+                                "groupId": "301444935",
+                                "groupName": "Quick (Addons)",
+                                "choices": [
+                                  {
+                                    "id": "139354228",
+                                    "name": "Extra Raita",
+                                    "price": 4900,
+                                    "inStock": 1,
+                                    "isVeg": 1,
+                                    "isEnabled": 1
+                                  },
+                                  {
+                                    "id": "139520559",
+                                    "name": "Extra Gravy (Non-Veg)",
+                                    "price": 5900,
+                                    "inStock": 1,
+                                    "isEnabled": 1
+                                  }
+                                ],
+                                "maxAddons": 9,
+                                "maxFreeAddons": -1
+                              }
+                            ],
+                            "parentId": "108335099"
+                          }
+                        },
+                        {
+                          "info": {
+                            "id": "181222165",
+                            "name": "Chicken Dum Biryani (Serves 1-2)",
+                            "category": "Dum Biryani (Serves 1-2)",
+                            "description": "Tender Juicy Chicken Biryani+ Veg Raita + Ghee + a rich garnish of Gourmet Nuts and Fried Onions+ Angoori Gulab Jamun . Satiate yourself with tender, juicy chicken pieces marinated in exquisite in-house spices and cooked with aromatic long grain Basmati rice in the Hyderabadi Dum Biryani Style.",
+                            "imageId": "ac68259a3f53d6fbd5233a69e6b32183",
+                            "inStock": 1,
+                            "price": 46900,
+                            "variants": {},
+                            "variantsV2": {
+                              "variantGroups": [
+                                {
+                                  "groupId": "65345123",
+                                  "name": "Choose Quantity",
+                                  "variations": [
+                                    {
+                                      "name": "Overload (50% Extra Meat & Veggies)",
+                                      "price": 54900,
+                                      "id": "205919657",
+                                      "inStock": 1,
+                                      "isEnabled": 1
+                                    },
+                                    {
+                                      "name": "Regular",
+                                      "price": 46900,
+                                      "default": 1,
+                                      "id": "198364035",
+                                      "inStock": 1,
+                                      "isEnabled": 1
+                                    },
+                                    {
+                                      "name": "Regular Combo(Chicken Tikka (4 Pcs) + Coke (1 No))",
+                                      "price": 59900,
+                                      "id": "206913606",
+                                      "inStock": 1,
+                                      "isEnabled": 1
+                                    },
+                                    {
+                                      "name": "Overload Combo(Chicken Tikka (4 Pcs) + Coke (1 No))",
+                                      "price": 72900,
+                                      "id": "206913607",
+                                      "inStock": 1,
+                                      "isEnabled": 1
+                                    }
+                                  ]
+                                }
+                              ],
+                              "pricingModels": [
+                                {
+                                  "variations": [
+                                    {
+                                      "groupId": "65345123",
+                                      "variationId": "205919657"
+                                    }
+                                  ],
+                                  "price": 54900,
+                                  "addonCombinations": [
+                                    {
+                                      "groupId": "301445056",
+                                      "addonId": "107993864"
+                                    },
+                                    {
+                                      "groupId": "301445056",
+                                      "addonId": "107993851"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "variations": [
+                                    {
+                                      "groupId": "65345123",
+                                      "variationId": "198364035"
+                                    }
+                                  ],
+                                  "price": 46900,
+                                  "addonCombinations": [
+                                    {
+                                      "groupId": "301445056",
+                                      "addonId": "107993864"
+                                    },
+                                    {
+                                      "groupId": "301445056",
+                                      "addonId": "107993851"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            "maxAddons": -1,
+                            "maxFreeAddons": -1,
+                            "addons": [
+                              {
+                                "groupId": "301445053",
+                                "groupName": "Quick (Addons)",
+                                "choices": [
+                                  {
+                                    "id": "139354228",
+                                    "name": "Extra Raita",
+                                    "price": 4900,
+                                    "inStock": 1,
+                                    "isVeg": 1,
+                                    "isEnabled": 1
+                                  },
+                                  {
+                                    "id": "139520559",
+                                    "name": "Extra Gravy (Non-Veg)",
+                                    "price": 5900,
+                                    "inStock": 1,
+                                    "isEnabled": 1
+                                  }
+                                ],
+                                "maxAddons": 9,
+                                "maxFreeAddons": -1
+                              }
+                            ],
+                            "defaultPrice": 46900,
+                            "parentId": "73277771"
+                          }
+                        }
+                      ],
+                      "id": "searchRIGWidget",
+                      "isMenuVisitable": true
+                    }
+                  }
+                },
+                {
+                  "card": {
+                    "card": {
+                      "@type": "type.googleapis.com/swiggy.presentation.food.v2.DishGroup",
+                      "restaurant": {
+                        "info": {
+                          "id": "813758",
+                          "name": "Sharief Bhai Biryani",
+                          "city": "1",
+                          "slugs": {
+                            "restaurant": "sharief-bhai-basaveshwaranagar-basaveshwaranagar",
+                            "city": "bangalore"
+                          },
+                          "cloudinaryImageId": "RX_THUMBNAIL/IMAGES/VENDOR/2026/5/12/5a98bc77-9643-4c77-ae81-b0c50b38283d_813758.JPG",
+                          "address": "# No- D36/1, SLI Reach, 80 Feet Road, Basaveshwaranagara,Bengaluru, Mahalakshmipuram, Karnataka-560079",
+                          "locality": "80 Feet Road",
+                          "areaName": "Basaveshwaranagar",
+                          "costForTwo": "40000",
+                          "costForTwoMessage": "₹400 FOR TWO",
+                          "cuisines": [
+                            "Biryani",
+                            "shawarma",
+                            "Kebabs",
+                            "Mughlai",
+                            "Arabian",
+                            "rolls",
+                            "Street Food",
+                            "Tea",
+                            "Desserts",
+                            "Beverages"
+                          ],
+                          "avgRating": 4,
+                          "feeDetails": {},
+                          "parentId": "469102",
+                          "avgRatingString": "4.0",
+                          "totalRatingsString": "4.7K+",
+                          "promoted": true,
+                          "sla": {
+                            "deliveryTime": 28,
+                            "minDeliveryTime": 25,
+                            "maxDeliveryTime": 30,
+                            "lastMileTravel": 2.7,
+                            "serviceability": "SERVICEABLE",
+                            "rainMode": "RAIN_MODE_NONE",
+                            "slaString": "25-30 MINS",
+                            "lastMileTravelString": "2.7 km",
+                            "iconType": "ICON_TYPE_EMPTY"
+                          },
+                          "availability": {
+                            "opened": true,
+                            "restaurantClosedMeta": {}
+                          },
+                          "aggregatedDiscountInfo": {
+                            "visible": true
+                          },
+                          "aggregatedDiscountInfoV2": {
+                            "visible": true
+                          },
+                          "ratingSlab": "RATING_SLAB_4",
+                          "showEoOffer": true
+                        },
+                        "ctaWithParams": {
+                          "link": "swiggy://menu",
+                          "type": "DEEPLINK",
+                          "params": {
+                            "restaurant_id": "813758",
+                            "query": "biryani"
+                          }
+                        }
+                      },
+                      "dishes": [
+                        {
+                          "info": {
+                            "id": "131958813",
+                            "name": "Mutton Biryani (Har-dil-Azeez Gosht)",
+                            "category": "Biryani - Dakhni Style",
+                            "description": "Traditional dum-cooked Zeerak Samba rice layered with 3 pieces of tender lamb meat, slow-cooked in rich Dakhni spices — just like in a true Muslim household. Experience the soulful flavors of authentic Dakhni Biryani — a fresh and aromatic alternative to the Mandi style.\n\nEnergy (kcal ) : 1408, Protein (g) : 41, Fat (g) : 78, Dietary fibre (gm) : 8, carbohydrates(g) : 131, Allergen : Dairy",
+                            "imageId": "FOOD_CATALOG/IMAGES/CMS/2026/2/16/b81a5589-4f88-4bc7-94e8-250403bb7c92_1990d444-f54d-4b6f-aba3-f9b648d1a0bc.png_compressed",
+                            "inStock": 1,
+                            "price": 47900,
+                            "variants": {},
+                            "variantsV2": {
+                              "variantGroups": [
+                                {
+                                  "groupId": "36454046",
+                                  "name": "Size",
+                                  "variations": [
+                                    {
+                                      "name": "Regular (Serves 1)",
+                                      "price": 47900,
+                                      "default": 1,
+                                      "id": "113342667",
+                                      "inStock": 1,
+                                      "isEnabled": 1
+                                    },
+                                    {
+                                      "name": "Large (Serves 2)",
+                                      "price": 91600,
+                                      "id": "113342669",
+                                      "inStock": 1,
+                                      "isEnabled": 1
+                                    },
+                                    {
+                                      "name": "Mini Bucket Biryani (Serves 3-4)",
+                                      "price": 139900,
+                                      "id": "113342671",
+                                      "inStock": 1,
+                                      "isEnabled": 1
+                                    },
+                                    {
+                                      "name": "Bucket Biryani (Serves 6-7)",
+                                      "price": 281200,
+                                      "id": "113342673",
+                                      "inStock": 1,
+                                      "isEnabled": 1
+                                    }
+                                  ]
+                                }
+                              ],
+                              "pricingModels": [
+                                {
+                                  "variations": [
+                                    {
+                                      "groupId": "36454046",
+                                      "variationId": "113342667"
+                                    }
+                                  ],
+                                  "price": 47900,
+                                  "addonCombinations": [
+                                    {
+                                      "groupId": "242689862",
+                                      "addonId": "139577073"
+                                    },
+                                    {
+                                      "groupId": "242689862",
+                                      "addonId": "139577074"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "variations": [
+                                    {
+                                      "groupId": "36454046",
+                                      "variationId": "113342669"
+                                    }
+                                  ],
+                                  "price": 91600,
+                                  "addonCombinations": [
+                                    {
+                                      "groupId": "242689862",
+                                      "addonId": "139577073"
+                                    },
+                                    {
+                                      "groupId": "242689862",
+                                      "addonId": "139577074"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            "maxAddons": -1,
+                            "maxFreeAddons": -1,
+                            "addons": [
+                              {
+                                "groupId": "242689862",
+                                "groupName": "Add-Ons",
+                                "choices": [
+                                  {
+                                    "id": "139577073",
+                                    "name": "2 Piece Mutton",
+                                    "price": 20500,
+                                    "inStock": 1,
+                                    "isEnabled": 1
+                                  },
+                                  {
+                                    "id": "139577074",
+                                    "name": "2 Piece Chicken",
+                                    "price": 11900,
+                                    "inStock": 1,
+                                    "isEnabled": 1
+                                  }
+                                ],
+                                "maxAddons": 11,
+                                "maxFreeAddons": -1
+                              }
+                            ],
+                            "defaultPrice": 47900,
+                            "parentId": "88407934"
+                          }
+                        },
+                        {
+                          "info": {
+                            "id": "165517668",
+                            "name": "Biryani Rice (Masala Khushka)",
+                            "category": "Biryani - Dakhni Style",
+                            "description": "Dum cooked traditional zeerak samba rice with rich flavours, served with raita  & salan,\n\nExperience the flavours of Dakhni Biryani, a very fresh alternate to the Mandi biryani.\n\nEnergy (kcal ) : 917, Protein (g) : 16, Fat (g) : 31, Dietary fibre (gm) : 9, carbohydrates(g) : 137, Allergen : Dairy",
+                            "imageId": "FOOD_CATALOG/IMAGES/CMS/2026/2/16/029f6284-970c-4ead-a27b-b5cdae2379d7_606ff8ef-1b2d-4ff6-ba58-0966c188e552.png_compressed",
+                            "inStock": 1,
+                            "isVeg": 1,
+                            "price": 24500,
+                            "variants": {},
+                            "variantsV2": {},
+                            "maxAddons": -1,
+                            "maxFreeAddons": -1,
+                            "addons": [
+                              {
+                                "groupId": "242689870",
+                                "groupName": "Add-Ons (Veg)",
+                                "choices": [
+                                  {
+                                    "id": "139577072",
+                                    "name": "Paneer (5 pieces)",
+                                    "price": 9500,
+                                    "inStock": 1,
+                                    "isVeg": 1,
+                                    "isEnabled": 1
+                                  },
+                                  {
+                                    "id": "111054451",
+                                    "name": "Matka Phirni",
+                                    "price": 9900,
+                                    "inStock": 1,
+                                    "isVeg": 1,
+                                    "isEnabled": 1
+                                  }
+                                ],
+                                "maxAddons": 4,
+                                "maxFreeAddons": -1
+                              }
+                            ],
+                            "parentId": "77971554"
+                          }
+                        },
+                        {
+                          "info": {
+                            "id": "131958853",
+                            "name": "Paneer Biryani",
+                            "category": "Biryani - Dakhni Style",
+                            "description": "Dum cooked traditional zeerak samba rice with rich flavours served only and topped with 10 bite size cubes of paneer, prepared with our home made special masala, served with raita & salan,\n\nExperience the flavours of Dakhni Biryani, a very fresh alternate to the Mandi biryani.\n\nEnergy (kcal ) : 1124, Protein (g) : 31, Fat (g) : 43, Dietary fibre (gm) : 9, carbohydrates(g) : 147, Allergen : Dairy",
+                            "imageId": "FOOD_CATALOG/IMAGES/CMS/2026/2/16/91d5dbc2-ee41-4557-8d4a-581fdb96de5a_dd1eb2b7-5c18-44eb-9c93-9d311c6e6e5f.png_compressed",
+                            "inStock": 1,
+                            "isVeg": 1,
+                            "price": 32500,
+                            "variants": {},
+                            "variantsV2": {
+                              "variantGroups": [
+                                {
+                                  "groupId": "36454058",
+                                  "name": "Size",
+                                  "variations": [
+                                    {
+                                      "name": "Regular (Serves 1)",
+                                      "price": 32500,
+                                      "default": 1,
+                                      "id": "113342743",
+                                      "inStock": 1,
+                                      "isVeg": 1,
+                                      "isEnabled": 1
+                                    },
+                                    {
+                                      "name": "Large (Serves 2)",
+                                      "price": 56900,
+                                      "id": "113342746",
+                                      "inStock": 1,
+                                      "isVeg": 1,
+                                      "isEnabled": 1
+                                    },
+                                    {
+                                      "name": "Mini Bucket Biryani (Serves 3-4)",
+                                      "price": 80900,
+                                      "id": "113342748",
+                                      "inStock": 1,
+                                      "isVeg": 1,
+                                      "isEnabled": 1
+                                    },
+                                    {
+                                      "name": "Bucket Biryani (Serves 6-7)",
+                                      "price": 156900,
+                                      "id": "113342750",
+                                      "inStock": 1,
+                                      "isVeg": 1,
+                                      "isEnabled": 1
+                                    }
+                                  ]
+                                }
+                              ],
+                              "pricingModels": [
+                                {
+                                  "variations": [
+                                    {
+                                      "groupId": "36454058",
+                                      "variationId": "113342743"
+                                    }
+                                  ],
+                                  "price": 32500,
+                                  "addonCombinations": [
+                                    {
+                                      "groupId": "242689871",
+                                      "addonId": "139577072"
+                                    },
+                                    {
+                                      "groupId": "242689871",
+                                      "addonId": "111054451"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "variations": [
+                                    {
+                                      "groupId": "36454058",
+                                      "variationId": "113342746"
+                                    }
+                                  ],
+                                  "price": 56900,
+                                  "addonCombinations": [
+                                    {
+                                      "groupId": "242689871",
+                                      "addonId": "139577072"
+                                    },
+                                    {
+                                      "groupId": "242689871",
+                                      "addonId": "111054451"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            "maxAddons": -1,
+                            "maxFreeAddons": -1,
+                            "addons": [
+                              {
+                                "groupId": "242689871",
+                                "groupName": "Add-Ons (Veg)",
+                                "choices": [
+                                  {
+                                    "id": "139577072",
+                                    "name": "Paneer (5 pieces)",
+                                    "price": 9500,
+                                    "inStock": 1,
+                                    "isVeg": 1,
+                                    "isEnabled": 1
+                                  },
+                                  {
+                                    "id": "111054451",
+                                    "name": "Matka Phirni",
+                                    "price": 9900,
+                                    "inStock": 1,
+                                    "isVeg": 1,
+                                    "isEnabled": 1
+                                  }
+                                ],
+                                "maxAddons": 4,
+                                "maxFreeAddons": -1
+                              }
+                            ],
+                            "defaultPrice": 32500,
+                            "parentId": "77971628"
+                          }
+                        }
+                      ],
+                      "id": "searchRIGWidget",
+                      "isMenuVisitable": true
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  }
+}

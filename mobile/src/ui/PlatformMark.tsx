@@ -1,11 +1,11 @@
 import { Text, View, type StyleProp, type ViewStyle } from 'react-native'
-import { PLATFORM } from '@/core/platforms'
-import type { Platform } from '@/core/types'
+import { APP } from '@/core/platforms'
+import type { AnyPlatform } from '@/core/types'
 import { fonts, useTheme } from './theme'
 
 /** The app's monogram tile (Zepto's purple Z, Instamart's orange I…), so apps are told apart without reading. */
-export function PlatformMark({ platform, size = 22, style }: { platform: Platform; size?: number; style?: StyleProp<ViewStyle> }) {
-  const { mark, name } = PLATFORM[platform]
+export function PlatformMark({ platform, size = 22, style }: { platform: AnyPlatform; size?: number; style?: StyleProp<ViewStyle> }) {
+  const { mark, name } = APP[platform]
   const { dark } = useTheme()
   return (
     <View accessibilityLabel={name} style={[{ width: size, height: size, borderRadius: Math.round(size * 0.3), backgroundColor: mark.bg, alignItems: 'center', justifyContent: 'center' },

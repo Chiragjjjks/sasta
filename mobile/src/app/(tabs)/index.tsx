@@ -1,5 +1,5 @@
 import { router } from 'expo-router'
-import { CircleAlert, Clock, MapPin } from 'lucide-react-native'
+import { CircleAlert, Clock } from 'lucide-react-native'
 import { useCallback, useMemo, useState } from 'react'
 import { ActivityIndicator, FlatList, Keyboard, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -11,10 +11,11 @@ import { PLATFORM, PLATFORMS } from '@/core/platforms'
 import type { AdapterStatus, ProductGroup } from '@/core/types'
 import { formatSize, plural, rupee } from '@/core/utils'
 import { useStore } from '@/state/store'
-import { Button, Card, Chip, Eyebrow, Headline, T, tap } from '@/ui/kit'
+import { Button, Card, Chip, Eyebrow, Headline, T } from '@/ui/kit'
 import { flavorColor, PackIcon } from '@/ui/PackIcon'
 import { BatchResults } from '@/ui/BatchResults'
 import { ProductCard } from '@/ui/ProductCard'
+import { SearchHeader } from '@/ui/SearchHeader'
 import { TermsInput } from '@/ui/TermsInput'
 import { useTheme } from '@/ui/theme'
 import { PlatformMark } from '@/ui/PlatformMark'
@@ -70,27 +71,9 @@ export default function SearchScreen() {
   const setQty = useCallback((g: ProductGroup, q: number) => setCartQty(g.key, q), [setCartQty])
 
   const header = (
-    <View style={styles.headerWrap}>
-      <View style={styles.topRow}>
-        <Text style={[styles.logo, { color: t.ink, fontFamily: t.fonts.display }]}>sasta<Text style={{ color: t.accent }}>.</Text></Text>
-        <Pressable onPress={() => router.push('/location')} style={[styles.locPill, { backgroundColor: t.surface }]} accessibilityLabel={`Delivery location ${s.location.label} ${s.location.pincode}`}>
-          <MapPin size={14} color={t.muted} />
-          <Text style={{ color: t.muted, fontFamily: t.fonts.body, fontSize: 13, flexShrink: 1 }} numberOfLines={1}>
-            {s.location.label} · {s.location.pincode}
-          </Text>
-        </Pressable>
-      </View>
-      <TermsInput value={s.query} onChangeText={s.setQuery} chips={chips} onChipsChange={setChips} onSubmit={submit} onClear={clear} placeholder="Search any product" />
-      {s.recents.length > 0 && !s.submitted && !s.batch && chips.length === 0 && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.recents} keyboardShouldPersistTaps="handled">
-          {s.recents.map((r) => (
-            <Pressable key={r} onPress={() => { tap(); setChips([]); submit([r]) }} style={[styles.recent, { borderColor: t.line }]}>
-              <Text style={{ color: t.muted, fontFamily: t.fonts.body, fontSize: 13 }} numberOfLines={1}>{r}</Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-      )}
-    </View>
+    <SearchHeader value={s.query} onChange={s.setQuery} onSubmit={(r) => { setChips([]); submit([r]) }} onClear={clear}
+      placeholder="Search any product" recents={s.recents} showRecents={!s.submitted && !s.batch && chips.length === 0}
+      bar={<TermsInput value={s.query} onChangeText={s.setQuery} chips={chips} onChipsChange={setChips} onSubmit={submit} onClear={clear} placeholder="Search any product" />} />
   )
 
   if (s.batch) return <BatchResults batch={s.batch} header={header} />
@@ -268,12 +251,6 @@ export default function SearchScreen() {
 }
 
 const styles = StyleSheet.create({
-  headerWrap: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 12, gap: 12 },
-  topRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  logo: { fontSize: 28, letterSpacing: -1.2 },
-  locPill: { marginLeft: 'auto', flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, height: 36, borderRadius: 18, maxWidth: '62%' },
-  recents: { gap: 8, paddingRight: 16 },
-  recent: { borderWidth: 1, borderRadius: 17, height: 34, paddingHorizontal: 13, justifyContent: 'center', maxWidth: 220 },
   appGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
   how: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingHorizontal: 16, paddingVertical: 13 },
   appTile: { width: '48.5%', flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, height: 48, borderRadius: 16 },

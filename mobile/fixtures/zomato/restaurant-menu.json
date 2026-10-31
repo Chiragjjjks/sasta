@@ -1,0 +1,162 @@
+{
+  "_note": "Trimmed logged-out response of GET https://www.zomato.com/webroutes/getPage?page_url=%2Fbangalore%2Fnandhana-palace-indiranagar%2Forder&location=&isMobile=0 (fetched 2026-10-29). Prices are rupees. Media, tracking, modifier groups removed; 4 of 175 items kept.",
+  "page_data": {
+    "sections": {
+      "SECTION_BASIC_INFO": {
+        "res_id": 50715,
+        "name": "Nandhana Palace",
+        "cuisine_string": "Biryani, Andhra, North Indian, Chinese, Desserts, Beverages, African",
+        "res_status_text": "Open now",
+        "is_temp_closed": false,
+        "is_perm_closed": false,
+        "resUrl": "/bangalore/nandhana-palace-indiranagar",
+        "rating": {
+          "aggregate_rating": "4.3",
+          "votes": 1898
+        }
+      }
+    },
+    "orderDetails": {
+      "hasOnlineOrdering": true,
+      "isServiceable": true,
+      "deeplink": "zomato://order/50715",
+      "deliveryTime": "44 min"
+    },
+    "order": {
+      "menuList": {
+        "menus": [
+          {
+            "menu": {
+              "name": "Non-Veg Biryani",
+              "categories": [
+                {
+                  "category": {
+                    "name": "Non-Veg Biryani",
+                    "items": [
+                      {
+                        "item": {
+                          "id": "ctl_481102763",
+                          "name": "Supreme Boneless Chicken Biryani",
+                          "price": 375,
+                          "default_price": 375,
+                          "display_price": 375,
+                          "min_price": 375,
+                          "max_price": 1214.52,
+                          "variant_id": "v_594324043",
+                          "item_state": "available",
+                          "item_image_url": "https://b.zmtcdn.com/data/dish_photos/e64/19f47ea918e13090bfe8ca1f69545e64.jpeg",
+                          "dietary_slugs": [
+                            "non-veg"
+                          ],
+                          "vendor_item_id": "i29968047",
+                          "name_slug": "supremebonelesschickenbiryani",
+                          "modifier_group_ids": [
+                            "mg_118081446",
+                            "mg_137754003",
+                            "mg_116038663"
+                          ],
+                          "desc": "Indulge in our delectable supreme boneless chicken biryani, a tantalizing blend of fragrant basmati rice dum cooked and succulent boneless c",
+                          "rating": {
+                            "total_rating_text": "1255 votes",
+                            "value": 4.40999985
+                          }
+                        }
+                      },
+                      {
+                        "item": {
+                          "id": "ctl_566124109",
+                          "name": "Hyderabadi Chicken Biryani",
+                          "price": 365,
+                          "default_price": 365,
+                          "display_price": 365,
+                          "min_price": 365,
+                          "max_price": 1184.52,
+                          "variant_id": "v_771751034",
+                          "item_state": "available",
+                          "item_image_url": "https://b.zmtcdn.com/data/dish_photos/67f/1f94f1b03062472421bba82ee5ab567f.jpeg",
+                          "dietary_slugs": [
+                            "non-veg"
+                          ],
+                          "vendor_item_id": "i33903912",
+                          "name_slug": "hyderabadichickenbiryani",
+                          "modifier_group_ids": [
+                            "mg_118081446",
+                            "mg_136720283",
+                            "mg_116038663"
+                          ],
+                          "desc": "Authentic hyderabadi biryani with tender chicken and fragrant basmati rice, slow-cooked in dum style. Experience the rich, aromatic flavors ",
+                          "rating": {
+                            "total_rating_text": "139 votes",
+                            "value": 4.07999992
+                          }
+                        }
+                      },
+                      {
+                        "item": {
+                          "id": "ctl_690252861",
+                          "name": "Nandhana Special Chicken 555 Boneless Biryani",
+                          "price": 395,
+                          "default_price": 395,
+                          "display_price": 395,
+                          "min_price": 395,
+                          "max_price": 1214.52,
+                          "variant_id": "v_927271026",
+                          "item_state": "available",
+                          "item_image_url": "https://b.zmtcdn.com/data/dish_photos/079/70b9b769b6eb2fdd153fe20414102079.jpeg",
+                          "dietary_slugs": [
+                            "non-veg"
+                          ],
+                          "vendor_item_id": "i98745288",
+                          "name_slug": "nandhanaspecialchicken555bonelessbiryani",
+                          "modifier_group_ids": [
+                            "mg_118081446",
+                            "mg_136720283",
+                            "mg_116038663"
+                          ],
+                          "desc": "We have curated a biryani like never before! rich & flavorful nellore biryani infused with tender chicken 555, marinated in aromatic spices,",
+                          "rating": {
+                            "total_rating_text": "94 votes",
+                            "value": 4.05999994
+                          }
+                        }
+                      },
+                      {
+                        "item": {
+                          "id": "ctl_618033287",
+                          "name": "Egg Biryani",
+                          "price": 289,
+                          "default_price": 289,
+                          "display_price": 289,
+                          "min_price": 289,
+                          "max_price": 1108.52,
+                          "variant_id": "v_839967077",
+                          "item_state": "available",
+                          "item_image_url": "https://b.zmtcdn.com/data/dish_photos/510/75e5a061cbc2afe521dbdd2a4ffde510.jpeg",
+                          "dietary_slugs": [
+                            "non-veg"
+                          ],
+                          "vendor_item_id": "i74218985",
+                          "name_slug": "eggbiryani",
+                          "modifier_group_ids": [
+                            "mg_118081446",
+                            "mg_136720283",
+                            "mg_116038663"
+                          ],
+                          "desc": "800G | serves 1-2 | spiced to perfection, the fragrant basmati rice layered with boiled eggs redefines the meaning of the comfort meal, this",
+                          "rating": {
+                            "total_rating_text": "84 votes",
+                            "value": 4.36000013
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}

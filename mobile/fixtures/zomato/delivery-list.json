@@ -1,0 +1,274 @@
+{
+  "_note": "Trimmed logged-out response of GET https://www.zomato.com/webroutes/getPage?page_url=%2Fbangalore%2Fdelivery&location=&isMobile=0 (fetched 2026-10-29 with plain curl; location defaulted to the Table Space UB City point, NOT Rajajinagar, because location comes from cookies). tracking payloads and ratingNew removed.",
+  "location": {
+    "entityName": "Table Space UB City, UB City, 8, 9Vittal Mallaya Road, KG Halli, D' Souza Layout, Ashok Nagar, Bengaluru, Karnataka",
+    "latitude": "12.9716060000000000",
+    "longitude": "77.5943760000000000",
+    "cityName": "Bengaluru",
+    "placeType": "DSZ",
+    "deliverySubzoneId": 3655,
+    "cellId": "4300399395616063488",
+    "fetchedFromCookie": false
+  },
+  "page_data": {
+    "sections": {
+      "SECTION_SEARCH_RESULT": [
+        {
+          "type": "restaurant",
+          "info": {
+            "resId": 50715,
+            "name": "Nandhana Palace",
+            "image": {
+              "url": "https://b.zmtcdn.com/data/pictures/5/50715/cf216bafd0f50b0232cc89c0582a72d2_o2_featured_v2.jpg"
+            },
+            "rating": {
+              "has_fake_reviews": 0,
+              "aggregate_rating": "4.4",
+              "rating_text": "4.4",
+              "rating_subtitle": "Very Good",
+              "rating_color": "5BA829",
+              "votes": "33.2K",
+              "subtext": "REVIEWS",
+              "is_new": false
+            },
+            "cft": {
+              "text": "₹1,400 for two"
+            },
+            "cfo": {
+              "text": "₹600 for one"
+            },
+            "locality": {
+              "name": "Indiranagar, Bangalore",
+              "address": "4034, HAL 2nd Stage, 100 Feet Road, Indiranagar, Bangalore",
+              "localityUrl": "bangalore/indiranagar-restaurants"
+            },
+            "timing": {
+              "text": "",
+              "color": ""
+            },
+            "cuisine": [
+              {
+                "name": "Biryani"
+              },
+              {
+                "name": "Andhra"
+              },
+              {
+                "name": "North Indian"
+              }
+            ],
+            "should_ban_ugc": false,
+            "costText": {
+              "text": "₹600 for one"
+            }
+          },
+          "order": {
+            "deliveryTime": "40–45 min",
+            "isServiceable": true,
+            "hasOnlineOrdering": true,
+            "actionInfo": {
+              "text": "Order Now",
+              "clickUrl": "/bangalore/nandhana-palace-indiranagar/order"
+            }
+          },
+          "gold": [],
+          "takeaway": [],
+          "cardAction": {
+            "text": "",
+            "clickUrl": "/bangalore/nandhana-palace-indiranagar/order",
+            "clickActionDeeplink": ""
+          },
+          "distance": "5.3 km",
+          "isPromoted": true,
+          "promotedText": "Promoted",
+          "allCTA": [],
+          "promoOffer": "",
+          "checkBulkOffers": true,
+          "bulkOffers": [
+            {
+              "text": "30% OFF",
+              "color": {
+                "tint": "500",
+                "type": "blue"
+              }
+            }
+          ],
+          "isDisabled": false,
+          "bottomContainers": []
+        },
+        {
+          "type": "restaurant",
+          "info": {
+            "resId": 50677,
+            "name": "McDonald's",
+            "image": {
+              "url": "https://b.zmtcdn.com/data/pictures/7/50677/8164dbe266388d55baaec830e73946c2_o2_featured_v2.jpg"
+            },
+            "rating": {
+              "has_fake_reviews": 0,
+              "aggregate_rating": "3.9",
+              "rating_text": "3.9",
+              "rating_subtitle": "Good",
+              "rating_color": "9ACD32",
+              "votes": "12.2K",
+              "subtext": "REVIEWS",
+              "is_new": false
+            },
+            "cft": {
+              "text": "₹400 for two"
+            },
+            "cfo": {
+              "text": "₹200 for one"
+            },
+            "locality": {
+              "name": "MG Road, Bangalore",
+              "address": "10, M/S India Garage, Kasturba Road, MG Road, Bangalore",
+              "localityUrl": "bangalore/mg-road-restaurants"
+            },
+            "timing": {
+              "text": "Closes in 1 hour 43 minutes",
+              "color": "#e5521f"
+            },
+            "cuisine": [
+              {
+                "name": "Burger"
+              },
+              {
+                "name": "American"
+              },
+              {
+                "name": "Fast Food"
+              }
+            ],
+            "should_ban_ugc": false,
+            "costText": {
+              "text": "₹200 for one"
+            }
+          },
+          "order": {
+            "deliveryTime": "25–30 min",
+            "isServiceable": true,
+            "hasOnlineOrdering": true,
+            "actionInfo": {
+              "text": "Order Now",
+              "clickUrl": "/bangalore/mcdonalds-mg-road/order"
+            }
+          },
+          "gold": [],
+          "takeaway": [],
+          "cardAction": {
+            "text": "",
+            "clickUrl": "/bangalore/mcdonalds-mg-road/order",
+            "clickActionDeeplink": ""
+          },
+          "distance": "648 m",
+          "isPromoted": false,
+          "promotedText": "",
+          "allCTA": [],
+          "promoOffer": "",
+          "checkBulkOffers": true,
+          "bulkOffers": [
+            {
+              "text": "70% OFF",
+              "color": {
+                "tint": "500",
+                "type": "blue"
+              }
+            }
+          ],
+          "isDisabled": false,
+          "bottomContainers": []
+        },
+        {
+          "type": "restaurant",
+          "info": {
+            "resId": 50112,
+            "name": "Beijing Bites",
+            "image": {
+              "url": "https://b.zmtcdn.com/data/pictures/2/50112/52cd53f0cbe4814b16e38eebaaf2d674_o2_featured_v2.jpg"
+            },
+            "rating": {
+              "has_fake_reviews": 0,
+              "aggregate_rating": "4.3",
+              "rating_text": "4.3",
+              "rating_subtitle": "Very Good",
+              "rating_color": "5BA829",
+              "votes": "11.3K",
+              "subtext": "REVIEWS",
+              "is_new": false
+            },
+            "cft": {
+              "text": "₹1,100 for two"
+            },
+            "cfo": {
+              "text": "₹450 for one"
+            },
+            "locality": {
+              "name": "Richmond Road, Bangalore",
+              "address": "11/2, Ground Floor, Sigma Trident, Off Richmond Road, Opposite Baldwin Girls High School, Richmond Road, Bangalore",
+              "localityUrl": "bangalore/richmond-road-restaurants"
+            },
+            "timing": {
+              "text": "Closes in 1 hour 14 minutes",
+              "color": "#e5521f"
+            },
+            "cuisine": [
+              {
+                "name": "Chinese"
+              },
+              {
+                "name": "Asian"
+              },
+              {
+                "name": "Thai"
+              }
+            ],
+            "should_ban_ugc": false,
+            "costText": {
+              "text": "₹450 for one"
+            }
+          },
+          "order": {
+            "deliveryTime": "25–30 min",
+            "isServiceable": true,
+            "hasOnlineOrdering": true,
+            "actionInfo": {
+              "text": "Order Now",
+              "clickUrl": "/bangalore/beijing-bites-richmond-road/order"
+            }
+          },
+          "gold": [],
+          "takeaway": [],
+          "cardAction": {
+            "text": "",
+            "clickUrl": "/bangalore/beijing-bites-richmond-road/order",
+            "clickActionDeeplink": ""
+          },
+          "distance": "1 km",
+          "isPromoted": true,
+          "promotedText": "Promoted",
+          "allCTA": [],
+          "promoOffer": "",
+          "checkBulkOffers": true,
+          "bulkOffers": [
+            {
+              "text": "30% OFF",
+              "color": {
+                "tint": "500",
+                "type": "blue"
+              }
+            }
+          ],
+          "isDisabled": false,
+          "bottomContainers": []
+        }
+      ],
+      "SECTION_SEARCH_META_INFO": {
+        "searchMetaData": {
+          "totalResults": 2503,
+          "hasMore": true
+        }
+      }
+    }
+  }
+}
