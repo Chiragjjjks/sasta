@@ -1,0 +1,43 @@
+name: MCP server
+
+on:
+  push:
+    branches: [main]
+    paths: ['mcp/**', 'mobile/src/core/**', 'mobile/fixtures/**', '.github/workflows/mcp.yml']
+  pull_request:
+    paths: ['mcp/**', 'mobile/src/core/**', 'mobile/fixtures/**', '.github/workflows/mcp.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mcp-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: mcp
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mcp/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      # The Chrome host test drives the runner's Google Chrome against a local page; no shopping site is contacted.
+      - run: npm test
+        env:
+          SASTA_CHROME_PATH: /usr/bin/google-chrome
+      - run: npm run build
+      - name: Stdio smoke test (tools and location, offline)
+        run: node scripts/smoke.mjs
+        env:
+          SASTA_MCP_HOME: ${{ runner.temp }}/sasta-mcp

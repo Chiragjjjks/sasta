@@ -38,11 +38,18 @@ The owner asked for this on 2026-11-01 ("do MCP for Sasta so we can connect it t
 
 ## Status
 
-- [ ] Package skeleton, host shims, bundle
-- [ ] Grocery tools
-- [ ] Food tools
-- [ ] Sessions (MCP OAuth + web)
-- [ ] HTTP transport
-- [ ] Tests + CI workflow
-- [ ] Live check against real sites (Rajajinagar)
-- [ ] README/AGENTS docs, PR, merge
+- [x] Package skeleton, host shims, bundle (`3ce5ae0`)
+- [x] Grocery tools: live Blinkit search and price_check at Rajajinagar
+- [x] Food tools: live Zomato and Swiggy, plus menu and order quote
+- [x] Sessions: `connect_app` (MCP OAuth redirect caught by Playwright routing; web sign-in by cookies or page check), `open_app`, `disconnect_app`. **Not yet tried live**: it needs the owner at the Chrome window to type OTPs
+- [x] HTTP transport (bearer token; live `search_food` over HTTP)
+- [x] Tests (15, including real Chrome against a local page) and the CI workflow `.github/workflows/mcp.yml`
+- [x] Live check through a real stdio client (`scripts/smoke.mjs --live`)
+- [ ] Docs, PR, CI green, merge
+
+## Findings
+
+- Generated readers began with `"use strict";`, a syntax error inside `(<reader>)(args)`. Fixed in PR #2 for the app as well.
+- Swiggy restaurant-name searches had no dishes. The fix is the Dishes tab (PR #2).
+- At night Zomato marks closed restaurants not serviceable and Sasta skips them. "meghana" at 2 am finds both outlets but returns no dishes. That is correct behaviour, not a bug.
+- BigBasket, Flipkart Minutes and Zepto's storefront price only after their own area picker has been used in the profile. `open_app` exists for that.

@@ -17,6 +17,7 @@ The **site index** (`automation/index/<platform>.json`) records each platform's 
 |---|---|---|
 | Android app (`mobile/`) | Everything the user sees | MCP client (`core/mcp.ts`), or a reader function run inside a hidden WebView on the platform's own site (`core/adapters/*`, shipped as `readers.generated.json`) |
 | Desktop (`automation/`) | Indexing, live verification of the app's readers, scripted checks | Playwright driving real Chrome with a persistent signed-in profile. It runs the **same** reader functions as the app where possible |
+| MCP server (`mcp/`) | The actions for other agents and tools (Claude, Codex, HTTP clients) | Imports `mobile/src/core` unchanged; `PlatformSession.pageRun` runs the **same** reader scripts in real Chrome (Playwright, one tab per site). Tools map to actions: `search_products` → `catalog.search`, `price_check` → `price.check`, `search_food` → `food.search`, `restaurant_menu` → `food.menu`, `connect_app`/`disconnect_app` → `session.*`. See `mcp/README.md` |
 
 ## Lifecycles
 

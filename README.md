@@ -20,6 +20,10 @@ Download `Sasta-vX.Y.Z-android.apk` from [Releases](https://github.com/Chiragjjj
 
 If Google Play Protect blocks v0.8.0, see [Android installation](docs/ANDROID-INSTALL.md). v0.9.0 removes the notification-reading service used by that release; sign-in now fills your number and lets you enter each OTP on the provider's own page.
 
+## Use Sasta from Claude, Codex or anything else (MCP)
+
+`mcp/` is an MCP server with the same comparison as the app: grocery search, shopping-list price checks, food search, restaurant menus and order quotes, at your saved location. It runs on your computer through your own Chrome and is read-only. To try it: `cd mcp && npm ci && npm run build`, then follow [mcp/README.md](mcp/README.md) to connect Claude Desktop, Claude Code, Codex or any HTTP client.
+
 ## Website
 
 The landing page at https://chiragjjjks.github.io/sasta/ is built from `site/` (plain HTML, CSS and JS). `.github/workflows/site.yml` publishes it to the `gh-pages` branch whenever `site/` changes on `main`, and GitHub Pages serves that branch.
