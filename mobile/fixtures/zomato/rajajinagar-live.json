@@ -1,0 +1,314 @@
+{
+  "_note": "Trimmed logged-out desktop response, 2026-10-29. Requested 12.9915, 77.5544 (Rajajinagar); delivery subzone 781 confirmed in every page. Two of four searched restaurants, three biryani dishes per menu; public menu/card fields only. No authentication, tracking, address or cookie payloads retained.",
+  "menus": [
+    {
+      "json": {
+        "location": {
+          "deliverySubzoneId": 781,
+          "fetchedFromCookie": true
+        },
+        "page_data": {
+          "order": {
+            "menuList": {
+              "menus": [
+                {
+                  "menu": {
+                    "categories": [
+                      {
+                        "category": {
+                          "items": [
+                            {
+                              "item": {
+                                "dietary_slugs": [
+                                  "non-veg"
+                                ],
+                                "id": "ctl_470602684",
+                                "item_state": "available",
+                                "name": "Non Veg Biryani Rice",
+                                "price": 280
+                              }
+                            },
+                            {
+                              "item": {
+                                "dietary_slugs": [
+                                  "non-veg"
+                                ],
+                                "id": "ctl_283964122",
+                                "item_state": "available",
+                                "name": "Chicken Boneless Biryani",
+                                "price": 375
+                              }
+                            },
+                            {
+                              "item": {
+                                "dietary_slugs": [
+                                  "non-veg"
+                                ],
+                                "id": "ctl_283964123",
+                                "item_state": "available",
+                                "name": "Meghana Special Boneless Biryani",
+                                "price": 383
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "name": "Non-Veg Biriyani"
+                  }
+                }
+              ]
+            }
+          },
+          "orderDetails": {
+            "deliveryTime": "23 min",
+            "hasOnlineOrdering": true,
+            "isServiceable": true
+          },
+          "sections": {
+            "SECTION_BASIC_INFO": {
+              "is_perm_closed": false,
+              "is_temp_closed": false,
+              "name": "Meghana Foods",
+              "rating": {
+                "aggregate_rating": "4.5",
+                "has_fake_reviews": 0,
+                "is_new": false,
+                "rating_color": "3F7E00",
+                "rating_subtitle": "Excellent",
+                "rating_text": "4.5",
+                "subtext": "REVIEWS",
+                "votes": 66850
+              },
+              "resUrl": "/bangalore/meghana-foods-rajajinagar-bangalore",
+              "res_id": 19544819
+            }
+          }
+        }
+      },
+      "resId": "19544819"
+    },
+    {
+      "json": {
+        "location": {
+          "deliverySubzoneId": 781,
+          "fetchedFromCookie": true
+        },
+        "page_data": {
+          "order": {
+            "menuList": {
+              "menus": [
+                {
+                  "menu": {
+                    "categories": [
+                      {
+                        "category": {
+                          "items": [
+                            {
+                              "item": {
+                                "dietary_slugs": [
+                                  "non-veg"
+                                ],
+                                "id": "ctl_675357008",
+                                "item_state": "available",
+                                "name": "RNR Special Donne Chicken Boneless Biryani (Regular Packaging)",
+                                "price": 359
+                              }
+                            },
+                            {
+                              "item": {
+                                "dietary_slugs": [
+                                  "non-veg"
+                                ],
+                                "id": "ctl_675356981",
+                                "item_state": "available",
+                                "name": "Donne Biryani Rice (No Chicken) (Regular Packaging)",
+                                "price": 229
+                              }
+                            },
+                            {
+                              "item": {
+                                "dietary_slugs": [
+                                  "non-veg"
+                                ],
+                                "id": "ctl_675356988",
+                                "item_state": "available",
+                                "name": "Donne Egg Biryani (Regular Packaging)",
+                                "price": 299
+                              }
+                            }
+                          ],
+                          "name": "Non Veg Biryani"
+                        }
+                      }
+                    ],
+                    "name": "RNR Donne Biryani Full (Regular Packaging)"
+                  }
+                }
+              ]
+            }
+          },
+          "orderDetails": {
+            "deliveryTime": "20 min",
+            "hasOnlineOrdering": true,
+            "isServiceable": true
+          },
+          "sections": {
+            "SECTION_BASIC_INFO": {
+              "is_perm_closed": false,
+              "is_temp_closed": false,
+              "name": "RNR Biryani - Taste Of 1953",
+              "rating": {
+                "aggregate_rating": "4.4",
+                "has_fake_reviews": 0,
+                "is_new": false,
+                "rating_color": "5BA829",
+                "rating_subtitle": "Very Good",
+                "rating_text": "4.4",
+                "subtext": "REVIEWS",
+                "votes": 11125
+              },
+              "resUrl": "/bangalore/rnr-biryani-taste-of-1953-1-rajajinagar-bangalore",
+              "res_id": 20511954
+            }
+          }
+        }
+      },
+      "resId": "20511954"
+    }
+  ],
+  "restaurants": {
+    "page_data": {
+      "sections": {
+        "SECTION_SEARCH_RESULT": [
+          {
+            "cardAction": {
+              "clickActionDeeplink": "",
+              "clickUrl": "/bangalore/meghana-foods-rajajinagar-bangalore/order?contextual_menu_params=eyJkaXNoX3NlYXJjaCI6eyJ0aXRsZSI6IkJlc3QgaW4gQmlyeWFuaSIsImRpc2hfaWRzIjpbIjMwMzA4Il0sImN1aXNpbmVfaWRzIjpbXX19",
+              "text": ""
+            },
+            "distance": "994 m",
+            "info": {
+              "locality": {
+                "name": "Rajajinagar, Bangalore"
+              },
+              "name": "Meghana Foods",
+              "rating": {
+                "aggregate_rating": "4.5",
+                "has_fake_reviews": 0,
+                "is_new": false,
+                "rating_color": "3F7E00",
+                "rating_subtitle": "Excellent",
+                "rating_text": "4.5",
+                "subtext": "REVIEWS",
+                "votes": "66.9K"
+              },
+              "resId": 19544819
+            },
+            "isDisabled": false,
+            "order": {
+              "actionInfo": {
+                "clickUrl": "/bangalore/meghana-foods-rajajinagar-bangalore/order",
+                "text": "Order Now"
+              },
+              "deliveryTime": "20–25 min",
+              "hasOnlineOrdering": true,
+              "isServiceable": true
+            },
+            "type": "restaurant"
+          },
+          {
+            "cardAction": {
+              "clickActionDeeplink": "",
+              "clickUrl": "/bangalore/rnr-biryani-taste-of-1953-1-rajajinagar-bangalore/order?contextual_menu_params=eyJkaXNoX3NlYXJjaCI6eyJ0aXRsZSI6IkJlc3QgaW4gQmlyeWFuaSIsImRpc2hfaWRzIjpbIjMwMzA4Il0sImN1aXNpbmVfaWRzIjpbXX19",
+              "text": ""
+            },
+            "distance": "455 m",
+            "info": {
+              "locality": {
+                "name": "Rajajinagar, Bangalore"
+              },
+              "name": "RNR Biryani - Taste Of 1953",
+              "rating": {
+                "aggregate_rating": "4.4",
+                "has_fake_reviews": 0,
+                "is_new": false,
+                "rating_color": "5BA829",
+                "rating_subtitle": "Very Good",
+                "rating_text": "4.4",
+                "subtext": "REVIEWS",
+                "votes": "11.1K"
+              },
+              "resId": 20511954
+            },
+            "isDisabled": false,
+            "order": {
+              "actionInfo": {
+                "clickUrl": "/bangalore/rnr-biryani-taste-of-1953-1-rajajinagar-bangalore/order",
+                "text": "Order Now"
+              },
+              "deliveryTime": "15–20 min",
+              "hasOnlineOrdering": true,
+              "isServiceable": true
+            },
+            "type": "restaurant"
+          }
+        ]
+      }
+    }
+  },
+  "suggest": {
+    "results": [
+      {
+        "distance": "0.8 km",
+        "entityId": "19544819",
+        "entityType": "restaurant",
+        "info": {
+          "locality": {
+            "name": "Rajajinagar, Bangalore"
+          },
+          "name": "Meghana Foods",
+          "rating": {
+            "color": "3F7E00",
+            "text": "4.5"
+          },
+          "resId": 19544819
+        },
+        "order": {
+          "actionInfo": {
+            "clickUrl": "/bangalore/meghana-foods-rajajinagar-bangalore/order",
+            "text": "Order Now"
+          },
+          "deliveryTime": "Delivery in 30 min",
+          "hasOnlineOrdering": true,
+          "isServiceable": true
+        }
+      },
+      {
+        "distance": "3 km",
+        "entityId": "21638952",
+        "entityType": "restaurant",
+        "info": {
+          "locality": {
+            "name": "Jayanagar, Bangalore"
+          },
+          "name": "Meghana Biryani",
+          "rating": {
+            "color": "CBCBCB",
+            "text": "-"
+          },
+          "resId": 21638952
+        },
+        "order": {
+          "actionInfo": {
+            "clickUrl": "/bangalore/meghana-biryani-jayanagar-bangalore/order",
+            "text": "Currently not accepting orders"
+          },
+          "deliveryTime": "",
+          "hasOnlineOrdering": true,
+          "isServiceable": false
+        }
+      }
+    ]
+  }
+}
