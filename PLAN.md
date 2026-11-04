@@ -21,7 +21,7 @@ The user types `lays`.
 
 `lays cream onion` runs the same flow, pre-filtered to Cream & Onion.
 
-## Current status (v0.9.0)
+## Current status (v0.9.1)
 
 The app now lives in `mobile/` (React Native + Expo). Root `src/` and `android/` are the old Capacitor app, kept for reference.
 
@@ -39,6 +39,8 @@ UI (v0.7.0): light/dark with an Appearance switch; every price is shown as a ran
 Lists (v0.7.0): opening a list checks every item on every app, ranks apps per item, lets you pick an app per item, and shows the cheapest plan by app (`core/lists.ts` `listPlan`, `rankedOffers`, `singleAppTotals`).
 
 Several products at once (v0.9.0): Grocery accepts up to 5 products in one search and shows the best price for each, then one section per product. See `docs/MULTI_SEARCH_PLAN.md`.
+
+Fix (v0.9.1): the in-page readers for Zepto's storefront fallback, BigBasket, Flipkart Minutes, Amazon Now and Connect all began with `"use strict";`, which broke them inside the reader wrapper, so none had run on a phone. Fixed in `generate-provider-readers.cjs`, guarded by `readers.test.ts`.
 
 Food (v0.9.0): a Food tab compares one dish or restaurant across Zomato and Swiggy (live, inside hidden WebViews), with Ownly and Swish shown as app-only. See `docs/FOOD_UI.md` and `docs/platforms/{zomato,swiggy_food,ownly,swish}.md`.
 

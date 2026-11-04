@@ -21,7 +21,7 @@ Owner: Chirag (GitHub `Chiragjjjks`), Bengaluru. The test location is Rajajinaga
 - They care a lot about UI clarity ("instinct-to-UI"). Before declaring UI work done, check it visually. The browser preview with sample data is fine for that.
 - When a delegated agent asks a question meant for the owner (for example a login prompt), tell the owner. Never answer it on their behalf.
 
-## Current state: v0.9.0 published (tag on 80c3df5, 2026-10-31)
+## Current state: v0.9.1 prepared on main (owner approved 2026-11-04; tag once the Android APK workflow passes); v0.9.0 published (tag on 80c3df5)
 
 | Platform | How Sasta searches | Status |
 |---|---|---|
@@ -66,11 +66,11 @@ v0.9.0 published 2026-10-31 (versionCode 900, notes in `docs/releases/v0.9.0.md`
 - **Fixes found while building it (PR #2, merged 2026-11-01):**
   - `readers.generated.json` began every reader with `"use strict";`, which is a syntax error inside `(<reader>)(args)`. The Zepto storefront, BigBasket, Flipkart Minutes, Amazon Now and connect-all auto-fill readers have therefore never run on a phone; they showed "timed out". The generator now strips the prologue, and `readers.test.ts` parses each reader in the real wrapper.
   - Swiggy food searches by restaurant name returned 0 dishes. The adapter now asks for the Dishes tab (`selectedPLTab=DISH`).
-  - Both need a new release (owner approval) to reach phones.
+  - Both ship in **v0.9.1** (versionCode 901, notes in `docs/releases/v0.9.1.md`), together with Expo SDK 58 patch updates.
 
 ## Next, in order
 
-Confirm on the owner's phone that v0.9.0 installs with Play Protect enabled (it was released before this was checked; emulator installation does not test Google's install-time classification), and check several-product search and Food with live prices. Every release still needs explicit owner approval.
+Confirm on the owner's phone that v0.9.1 installs with Play Protect enabled (emulator installation does not test Google's install-time classification). Then check, with live prices: BigBasket, Zepto's fallback, Flipkart Minutes and Amazon Now (their readers run for the first time in v0.9.1), Connect all, several-product search and Food. Every release still needs explicit owner approval.
 
 1. Finish and merge the `automation/` site index, then use it to fix Flipkart Minutes and Amazon Now.
 2. Wishlist and list follow-ups the owner asked for after the list redesign.
