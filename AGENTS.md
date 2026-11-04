@@ -21,7 +21,7 @@ Owner: Chirag (GitHub `Chiragjjjks`), Bengaluru. The test location is Rajajinaga
 - They care a lot about UI clarity ("instinct-to-UI"). Before declaring UI work done, check it visually. The browser preview with sample data is fine for that.
 - When a delegated agent asks a question meant for the owner (for example a login prompt), tell the owner. Never answer it on their behalf.
 
-## Current state: v0.9.1 prepared on main (owner approved 2026-11-04; tag once the Android APK workflow passes); v0.9.0 published (tag on 80c3df5)
+## Current state: v0.9.1 published (tag on 949e4b9, 2026-11-04, CI run 41840669580); v0.9.0 tag on 80c3df5
 
 | Platform | How Sasta searches | Status |
 |---|---|---|
@@ -155,6 +155,7 @@ Sign-in and live search only work in a native Android build, not Expo Go or the 
 3. Push to `main` and wait for the **Android APK** workflow (lint, types, tests, signed APK, emulator smoke test) to pass for that exact commit.
 4. Only after the owner approves: `git tag vX.Y.Z <sha> && git push origin vX.Y.Z`. The tag workflow publishes the same tested APK and `SHA256SUMS.txt`.
 5. Check the result with `gh release view vX.Y.Z -R Chiragjjjks/sasta`.
+6. Point the site's default download links at the new APK: replace the old version in `site/index.html` (every `data-apk` href and the `data-apk-ver` text). `main.js` swaps them to the newest release only when the GitHub API answers, so without this, visitors whose API call fails get the old APK.
 
 ## Known traps
 
