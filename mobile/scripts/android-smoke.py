@@ -18,7 +18,10 @@ APK = Path(sys.argv[1]).resolve()
 
 
 def adb(*args, check=True):
-    return subprocess.run(['adb', *args], check=check, capture_output=True, text=True, timeout=60).stdout.strip()
+    result = subprocess.run(['adb', *args], capture_output=True, text=True, timeout=60)
+    if check and result.returncode:
+        raise RuntimeError(f"adb {' '.join(args)} failed ({result.returncode}): {(result.stderr or result.stdout).strip()}")
+    return result.stdout.strip()
 
 
 def tree():
@@ -65,8 +68,17 @@ def tap_tab(name):
 
 
 def shot(name):
-    adb('shell', 'screencap', '-p', f'/sdcard/{name}.png')
-    adb('pull', f'/sdcard/{name}.png', str(OUT / f'{name}.png'))
+    # Screenshots are evidence, not checks. On 2026-11-08 adb dropped the emulator while copying one after
+    # every check had passed, which failed the run; retry, then warn instead.
+    for attempt in range(3):
+        try:
+            adb('wait-for-device')
+            adb('shell', 'screencap', '-p', f'/sdcard/{name}.png')
+            adb('pull', f'/sdcard/{name}.png', str(OUT / f'{name}.png'))
+            return
+        except (RuntimeError, subprocess.TimeoutExpired) as error:
+            print(f'warning: screenshot {name}, attempt {attempt + 1}: {error}')
+            time.sleep(3)
 
 
 def launch():
