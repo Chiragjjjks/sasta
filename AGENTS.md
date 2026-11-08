@@ -20,6 +20,7 @@ Owner: Chirag (GitHub `Chiragjjjks`), Bengaluru. The test location is Rajajinaga
 - They want visible progress: small commits, real verification (screenshots, live checks), plain-language reports.
 - They care a lot about UI clarity ("instinct-to-UI"). Before declaring UI work done, check it visually. The browser preview with sample data is fine for that.
 - When a delegated agent asks a question meant for the owner (for example a login prompt), tell the owner. Never answer it on their behalf.
+- Changes reach `main` through a branch and a pull request that is merged once CI passes, not by pushing to `main` directly (owner, 2026-11-08). On a Mac where `gh` has only a read-only account, push the branch and give the owner the PR link to open and merge.
 
 ## Current state: v0.10.0 published (tag on 67552f8, 2026-11-08, CI run 42479754012); v0.9.1 tag on 949e4b9
 
