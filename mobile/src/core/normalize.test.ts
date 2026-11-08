@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { catalogFor, mockOffers } from '@/core/adapters/mock'
 import { PLATFORMS } from './platforms'
-import { detectBrand, detectVariant, groupOffers, parseSizeGrams, variantFromQuery } from './normalize'
+import { detectBrand, detectVariant, discountPercent, groupOffers, parseSizeGrams, unitPrice, variantFromQuery } from './normalize'
 import type { Offer } from './types'
 
 const loc = { pincode: '560010', label: 'Rajajinagar' }
@@ -71,5 +71,27 @@ describe('mock adapter', () => {
   it('never prices above MRP', () => {
     for (const q of ['lays', 'maggi', 'amul butter'])
       for (const p of PLATFORMS) for (const o of mockOffers(p.id, q, loc)) expect(o.price).toBeLessThanOrEqual(o.mrp!)
+  })
+})
+
+describe('unitPrice and discountPercent', () => {
+  it('prices per 100 g, per 100 ml and per piece', () => {
+    expect(unitPrice(58, '500 g')).toEqual({ value: 11.6, per: '100 g' })
+    expect(unitPrice(134, '1 l')).toEqual({ value: 13.4, per: '100 ml' })
+    expect(unitPrice(120, '1 kg')).toEqual({ value: 12, per: '100 g' })
+    expect(unitPrice(60, '2 × 250 g')).toEqual({ value: 12, per: '100 g' })
+    expect(unitPrice(72, '6 pcs')).toEqual({ value: 12, per: 'pc' })
+  })
+  it('falls back to grams and says nothing for unknown or variable packs', () => {
+    expect(unitPrice(20, undefined, 50)).toEqual({ value: 40, per: '100 g' })
+    expect(unitPrice(40, '1 pcs')).toBeUndefined()
+    expect(unitPrice(99, '400-500 g')).toBeUndefined()
+    expect(unitPrice(99)).toBeUndefined()
+  })
+  it('rounds the saving against MRP and skips none or a higher price', () => {
+    expect(discountPercent({ price: 45, mrp: 58 })).toBe(22)
+    expect(discountPercent({ price: 120, mrp: 145 })).toBe(17)
+    expect(discountPercent({ price: 58, mrp: 58 })).toBeUndefined()
+    expect(discountPercent({ price: 58 })).toBeUndefined()
   })
 })

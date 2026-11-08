@@ -11,7 +11,7 @@ This plan came out of a three-agent review on 2026-10-30. The researcher and bac
 3. The limit is 5 distinct terms. Blanks and duplicates (any letter case) are dropped. Extra terms are refused with a caption, never silently cut.
 4. Results show:
    - a **best price per product** summary card first. It has one row per term: the top pick, its size, price and app mark, and a state. Tapping a row jumps to that section.
-   - one section per term below it. Each section has a sticky header with the term, state and best price, 2 full `ProductCard`s, and **More matches (n)**, which expands in place up to 8.
+   - one section per term below it. Each section has a sticky header with the term, state and best price, one grid row of 2 `ProductTile`s, and **More matches (n)**, which expands in place up to 8.
 5. Section states: **Queued** (Remove), **Searching** (`LiveDot`, "3 of 6 apps"), **Done** ("n products · 2.1 s"), **Empty**, **Failed** (Retry) and **Stopped**. One **Stop** button stops the whole batch. Sections that already finished are kept.
 6. Changing the location, account or Instamart address makes the batch **stale**. A banner reads "Location changed · Search again", prices are dimmed, and Add, Save and Compare are disabled. Nothing re-runs by itself.
 

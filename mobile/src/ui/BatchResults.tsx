@@ -1,7 +1,7 @@
 import { router } from 'expo-router'
 import { Check, ChevronDown, ChevronUp, CircleAlert, Clock, Square, X } from 'lucide-react-native'
 import { useCallback, useMemo, useRef, useState, type ComponentRef, type ReactNode } from 'react'
-import { Pressable, ScrollView, type LayoutChangeEvent, StyleSheet, Text, View } from 'react-native'
+import { Pressable, ScrollView, type LayoutChangeEvent, StyleSheet, Text, useWindowDimensions, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { PLATFORM, PLATFORMS } from '@/core/platforms'
 import type { BatchSection, SearchBatch, SourceRef } from '@/core/search-batch'
@@ -10,10 +10,10 @@ import { formatSize, plural, rupee } from '@/core/utils'
 import { useStore } from '@/state/store'
 import { Button, Card, Eyebrow, LiveDot, T, tap } from './kit'
 import { PlatformMark } from './PlatformMark'
-import { ProductCard } from './ProductCard'
+import { ProductTile } from './ProductTile'
 import { useTheme } from './theme'
 
-/** Full cards per section before "More matches", and the most a section ever shows. */
+/** Tiles per section before "More matches" (one row of two), and the most a section ever shows. */
 const SHOWN = 2
 const CAP = 8
 
@@ -30,6 +30,8 @@ const bestOf = (s: BatchSection) => s.groups.find((g) => g.best.inStock)
 export function BatchResults({ batch, header }: { batch: SearchBatch; header: ReactNode }) {
   const t = useTheme()
   const s = useStore()
+  const screenWidth = useWindowDimensions().width
+  const tileStyle = useMemo(() => ({ width: (screenWidth - 32 - 10) / 2 }), [screenWidth])
   const scroller = useRef<ComponentRef<typeof ScrollView>>(null)
   // Heights of everything above and between sections, so a jump can add them up. Reading each section's
   // y instead goes stale when an earlier section grows, and a sticky header reports y = 0 inside the
@@ -197,9 +199,9 @@ export function BatchResults({ batch, header }: { batch: SearchBatch; header: Re
     nodes.push(
       <View key={`b-${sec.id}`} onLayout={measure(`b-${sec.id}`)} style={[styles.pad, { gap: 10, paddingBottom: 18 }]}>
         {shown.length > 0 && (
-          <View style={[{ gap: 10 }, stale && { opacity: 0.5 }]} pointerEvents={stale ? 'none' : 'auto'}>
+          <View style={[styles.grid, stale && { opacity: 0.5 }]} pointerEvents={stale ? 'none' : 'auto'}>
             {shown.map((g) => (
-              <ProductCard key={g.key} group={g} total={total} source={source} inCart={cartQty.get(g.key) ?? 0} saved={s.isSaved(g.key)}
+              <ProductTile key={g.key} group={g} total={total} source={source} style={tileStyle} inCart={cartQty.get(g.key) ?? 0} saved={s.isSaved(g.key)}
                 onOpen={open} onAdd={add} onQty={setQty} onSave={save} />
             ))}
           </View>
@@ -243,6 +245,7 @@ export function BatchResults({ batch, header }: { batch: SearchBatch; header: Re
 
 const styles = StyleSheet.create({
   pad: { paddingHorizontal: 16 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44 },
   banner: { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 16, padding: 14, flexWrap: 'wrap' },
   sumRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, minHeight: 56, paddingVertical: 8 },

@@ -219,7 +219,7 @@ try:
                         adb('shell', 'input', 'tap', str((x1 + x2) // 2), str((y1 + y2) // 2))
                         break
         labels = ' '.join(n.get('text', '') + ' ' + n.get('content-desc', '') for n in current_tree)
-        match = re.search(r'\b\d+ products? from \d+ apps?', labels)
+        match = re.search(r'\bChecked \d+ apps? · \d+ products?', labels)
         if match:
             online_status = match.group()
             break

@@ -68,6 +68,9 @@ v0.9.0 published 2026-10-31 (versionCode 900, notes in `docs/releases/v0.9.0.md`
   - Swiggy food searches by restaurant name returned 0 dishes. The adapter now asks for the Dishes tab (`selectedPLTab=DISH`).
   - Both ship in **v0.9.1** (versionCode 901, notes in `docs/releases/v0.9.1.md`), together with Expo SDK 58 patch updates.
 
+Since v0.9.1 (on `main`):
+- **Results grid (2026-11-08, owner's request after seeing a comparison app's layout):** grocery results, and each section of a several-product search, are a two-column grid of `ui/ProductTile.tsx`. Each tile has the saving against MRP (`discountPercent`), Save and Add on the photo, then brand, name and pack, then **one row per app**: mark, ETA, MRP struck through, price, app name and price per 100 g, 100 ml or piece (`unitPrice` in `core/normalize.ts`). Rows at the lowest price are tinted green, so ties read as ties; out-of-stock apps are dimmed. The status line reads "Checked N apps · M products", which `scripts/android-smoke.py` waits for. `ProductCard` is gone; the compare screen, lists and cart keep `OfferSlots`.
+
 ## Next, in order
 
 Confirm on the owner's phone that v0.9.1 installs with Play Protect enabled (emulator installation does not test Google's install-time classification). Then check, with live prices: BigBasket, Zepto's fallback, Flipkart Minutes and Amazon Now (their readers run for the first time in v0.9.1), Connect all, several-product search and Food. Every release still needs explicit owner approval.
@@ -101,7 +104,7 @@ The app is in **`mobile/`** (Expo SDK 58, React Native 0.88, expo-router, Hermes
 | `modules/sasta-native/` | Local Expo module (Kotlin): shares WebView cookies, migrates old preferences, encrypted storage |
 | `plugins/withSastaAndroid.js` | Config plugin for Android settings (versionCode default, etc.) |
 | `src/core/food/`, `src/state/food.tsx` | The Food section: dish matching, food sources and its own store (see Current state) |
-| `src/ui/` | `kit.tsx` (Segmented, buttons, `Eyebrow`, `Headline`, `LiveDot`…), `SearchHeader.tsx` (logo, location, search bar, recents; Grocery and Food), `TermsInput.tsx` (search box with product chips), `BatchResults.tsx` (several-product results), `PlatformMark.tsx` (coloured app monogram; use it wherever an app is named), `OfferSlots.tsx` (ranked app rows; use them wherever prices are compared), `PlanHero.tsx` (total split by app with alternative pills), `ProductCard`, `PackIcon`, `theme.ts` (light/dark tokens and the saved Appearance choice) |
+| `src/ui/` | `kit.tsx` (Segmented, buttons, `Eyebrow`, `Headline`, `LiveDot`…), `SearchHeader.tsx` (logo, location, search bar, recents; Grocery and Food), `TermsInput.tsx` (search box with product chips), `BatchResults.tsx` (several-product results), `PlatformMark.tsx` (coloured app monogram; use it wherever an app is named), `OfferSlots.tsx` (ranked app rows; use them wherever prices are compared), `PlanHero.tsx` (total split by app with alternative pills), `ProductTile.tsx` (results grid card: one row per app with ETA, MRP, price and price per 100 g/ml), `PackIcon`, `theme.ts` (light/dark tokens and the saved Appearance choice) |
 | `fixtures/<platform>/` | Trimmed real responses for parser tests |
 | `scripts/android-smoke.py` | Emulator smoke test run by CI |
 

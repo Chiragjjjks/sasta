@@ -98,6 +98,24 @@ export function parsePack(text: string): Pack {
   return { count, ambiguous: false, identity: '?' }
 }
 
+/** Price per 100 g, per 100 ml or per piece, so packs of different sizes can be compared. */
+export function unitPrice(price: number, packLabel?: string, sizeGrams?: number): { value: number; per: '100 g' | '100 ml' | 'pc' } | undefined {
+  const cents = (n: number) => Math.round(n * 100) / 100
+  const pack = packLabel ? parsePack(packLabel) : undefined
+  if (pack && !pack.ambiguous && pack.amount) {
+    if (pack.unit === 'count') return pack.amount > 1 ? { value: cents(price / pack.amount), per: 'pc' } : undefined
+    return { value: cents(price / pack.amount * 100), per: pack.unit === 'ml' ? '100 ml' : '100 g' }
+  }
+  return sizeGrams ? { value: cents(price / sizeGrams * 100), per: '100 g' } : undefined
+}
+
+/** Whole-percent saving against MRP, or undefined when the app shows none. */
+export function discountPercent(offer: Pick<Offer, 'price' | 'mrp'>): number | undefined {
+  if (!offer.mrp || offer.mrp <= offer.price) return undefined
+  const pct = Math.round((offer.mrp - offer.price) / offer.mrp * 100)
+  return pct >= 1 ? pct : undefined
+}
+
 export function parseSizeGrams(title: string): number | undefined { return parsePack(title).grams }
 
 function hasPhrase(haystack: string, phrase: string): boolean {

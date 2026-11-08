@@ -1,7 +1,7 @@
 import { router } from 'expo-router'
 import { CircleAlert, Clock } from 'lucide-react-native'
 import { useCallback, useMemo, useState } from 'react'
-import { ActivityIndicator, FlatList, Keyboard, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, FlatList, Keyboard, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { IS_SAMPLE_DATA } from '@/core/adapters'
 import { searchLabel } from '@/core/capabilities'
@@ -14,7 +14,7 @@ import { useStore } from '@/state/store'
 import { Button, Card, Chip, Eyebrow, Headline, T } from '@/ui/kit'
 import { flavorColor, PackIcon } from '@/ui/PackIcon'
 import { BatchResults } from '@/ui/BatchResults'
-import { ProductCard } from '@/ui/ProductCard'
+import { ProductTile } from '@/ui/ProductTile'
 import { SearchHeader } from '@/ui/SearchHeader'
 import { TermsInput } from '@/ui/TermsInput'
 import { useTheme } from '@/ui/theme'
@@ -29,6 +29,8 @@ const HOW = [
 export default function SearchScreen() {
   const t = useTheme()
   const s = useStore()
+  const screenWidth = useWindowDimensions().width
+  const tileStyle = useMemo(() => ({ width: (screenWidth - 32 - GRID_GAP) / 2 }), [screenWidth])
   const [chips, setChips] = useState<string[]>([])
   const [filters, setFilters] = useState<{ query: string; variant: string | null; size: number | null }>({ query: '', variant: null, size: null })
   const variant = filters.query === s.submitted ? filters.variant : variantFromQuery(s.submitted) ?? null
@@ -130,7 +132,7 @@ export default function SearchScreen() {
           <T kind="small" style={{ flex: 1 }}>
             {searching
               ? `Searching ${active.length} ${active.length === 1 ? 'app' : 'apps'}…`
-              : `${plural(s.groups.length, 'product')} from ${plural(appsWithResults, 'app')}${s.elapsed !== null ? ` · ${(s.elapsed / 1000).toFixed(1)} s` : ''}`}
+              : `Checked ${plural(Math.max(1, statuses.filter((x) => x.state === 'done').length), 'app')} · ${plural(s.groups.length, 'product')}`}
           </T>
           <View style={{ flexDirection: 'row', gap: 4 }} accessibilityLabel={`${appsWithResults} of ${PLATFORMS.length} apps have results`}>
             {PLATFORMS.map((p) => (
@@ -208,21 +210,22 @@ export default function SearchScreen() {
         data={visible}
         keyExtractor={(g) => g.key}
         ListHeaderComponent={listHeader}
+        numColumns={2}
+        columnWrapperStyle={styles.gridRow}
         renderItem={({ item }) => (
-          <View style={{ paddingHorizontal: 16 }}>
-            <ProductCard
-              group={item}
-              total={Math.max(1, statuses.filter(s => s.state === 'done').length)}
-              inCart={cartQty.get(item.key) ?? 0}
-              saved={s.isSaved(item.key)}
-              onOpen={open}
-              onAdd={add}
-              onQty={setQty}
-              onSave={save}
-            />
-          </View>
+          <ProductTile
+            group={item}
+            style={tileStyle}
+            total={Math.max(1, statuses.filter(s => s.state === 'done').length)}
+            inCart={cartQty.get(item.key) ?? 0}
+            saved={s.isSaved(item.key)}
+            onOpen={open}
+            onAdd={add}
+            onQty={setQty}
+            onSave={save}
+          />
         )}
-        ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
+        ItemSeparatorComponent={() => <View style={{ height: GRID_GAP }} />}
         ListEmptyComponent={
           searching ? (
             <View style={{ padding: 40, alignItems: 'center', gap: 10 }}>
@@ -250,7 +253,11 @@ export default function SearchScreen() {
   )
 }
 
+/** Space between result tiles, across and down. */
+const GRID_GAP = 10
+
 const styles = StyleSheet.create({
+  gridRow: { gap: GRID_GAP, paddingHorizontal: 16 },
   appGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
   how: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingHorizontal: 16, paddingVertical: 13 },
   appTile: { width: '48.5%', flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, height: 48, borderRadius: 16 },
