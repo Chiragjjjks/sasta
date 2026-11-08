@@ -18,6 +18,8 @@ Download `Sasta-vX.Y.Z-android.apk` from [Releases](https://github.com/Chiragjjj
 
 **Food (v0.9.0):** the Food tab compares one dish or restaurant across Zomato and Swiggy at your location, matching the same dish at the same restaurant on both apps. Ownly and Swish are app-only, so Sasta links to them. Food prices were checked in desktop Chrome; phone verification is pending.
 
+**Results grid (v0.10.0):** results are a two-column grid; each product lists every app's delivery time, MRP, price and price per 100 g, cheapest tinted.
+
 **v0.9.1** fixes BigBasket, Flipkart Minutes, Amazon Now, Zepto's backup search and Connect all, whose page scripts never ran on a phone before.
 
 If Google Play Protect blocks v0.8.0, see [Android installation](docs/ANDROID-INSTALL.md). v0.9.0 removes the notification-reading service used by that release; sign-in now fills your number and lets you enter each OTP on the provider's own page.
