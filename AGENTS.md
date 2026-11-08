@@ -21,7 +21,7 @@ Owner: Chirag (GitHub `Chiragjjjks`), Bengaluru. The test location is Rajajinaga
 - They care a lot about UI clarity ("instinct-to-UI"). Before declaring UI work done, check it visually. The browser preview with sample data is fine for that.
 - When a delegated agent asks a question meant for the owner (for example a login prompt), tell the owner. Never answer it on their behalf.
 
-## Current state: v0.10.0 prepared on main (owner approved 2026-11-08; tag once the Android APK workflow passes); v0.9.1 published (tag on 949e4b9)
+## Current state: v0.10.0 published (tag on 67552f8, 2026-11-08, CI run 42479754012); v0.9.1 tag on 949e4b9
 
 | Platform | How Sasta searches | Status |
 |---|---|---|
@@ -68,12 +68,12 @@ v0.9.0 published 2026-10-31 (versionCode 900, notes in `docs/releases/v0.9.0.md`
   - Swiggy food searches by restaurant name returned 0 dishes. The adapter now asks for the Dishes tab (`selectedPLTab=DISH`).
   - Both ship in **v0.9.1** (versionCode 901, notes in `docs/releases/v0.9.1.md`), together with Expo SDK 58 patch updates.
 
-Since v0.9.1, versioned **0.10.0** (versionCode 1000, notes in `docs/releases/v0.10.0.md`):
+v0.10.0 published 2026-11-08 (versionCode 1000, notes in `docs/releases/v0.10.0.md`):
 - **Results grid (2026-11-08, owner's request after seeing a comparison app's layout):** grocery results, and each section of a several-product search, are a two-column grid of `ui/ProductTile.tsx`. Each tile has the saving against MRP (`discountPercent`), Save and Add on the photo, then brand, name and pack, then **one row per app**: mark, ETA, MRP struck through, price, app name and price per 100 g, 100 ml or piece (`unitPrice` in `core/normalize.ts`). Rows at the lowest price are tinted green, so ties read as ties; out-of-stock apps are dimmed. The status line reads "Checked N apps · M products", which `scripts/android-smoke.py` waits for. `ProductCard` is gone; the compare screen, lists and cart keep `OfferSlots`.
 
 ## Next, in order
 
-Confirm on the owner's phone that v0.9.1 installs with Play Protect enabled (emulator installation does not test Google's install-time classification). Then check, with live prices: BigBasket, Zepto's fallback, Flipkart Minutes and Amazon Now (their readers run for the first time in v0.9.1), Connect all, several-product search and Food. Every release still needs explicit owner approval.
+Confirm on the owner's phone that v0.10.0 installs with Play Protect enabled (emulator installation does not test Google's install-time classification). Then check, with live prices: BigBasket, Zepto's fallback, Flipkart Minutes and Amazon Now (their readers run for the first time in v0.9.1), Connect all, the results grid, several-product search and Food. Every release still needs explicit owner approval.
 
 1. Finish and merge the `automation/` site index, then use it to fix Flipkart Minutes and Amazon Now.
 2. Wishlist and list follow-ups the owner asked for after the list redesign.
