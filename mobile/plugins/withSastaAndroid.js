@@ -1,9 +1,10 @@
-// Release signing and version numbers for CI builds, applied at `expo prebuild` time
+// Release signing, version numbers and APK packaging for CI builds, applied at `expo prebuild` time
 // (the android/ folder is generated, never edited by hand).
 //  - VERSION_CODE env: Android versionCode (CI passes a number above every older release)
 //  - ANDROID_KEYSTORE_PATH / ANDROID_STORE_PASSWORD / ANDROID_KEY_ALIAS / ANDROID_KEY_PASSWORD: private key
 //  - otherwise the committed PUBLIC key in credentials/ signs, so sideloaded updates install over each other
-const { withAppBuildGradle } = require('expo/config-plugins')
+//  - native libraries are compressed inside the APK (expo.useLegacyPackaging), which halves the download
+const { withAppBuildGradle, withGradleProperties } = require('expo/config-plugins')
 
 const SIGNING = `
     signingConfigs {
@@ -24,7 +25,17 @@ const SIGNING = `
     }
 `
 
+// By default the .so files sit uncompressed in the APK so Android can map them in place. For Sasta
+// that is 47 of the APK's 60 MB, downloaded over mobile data from GitHub. Compressed, they are about
+// 16 MB; Android unpacks them once at install, which costs a little storage, not speed.
+const withCompressedNativeLibs = (config) => withGradleProperties(config, (cfg) => {
+  cfg.modResults = cfg.modResults.filter((p) => !(p.type === 'property' && p.key === 'expo.useLegacyPackaging'))
+  cfg.modResults.push({ type: 'property', key: 'expo.useLegacyPackaging', value: 'true' })
+  return cfg
+})
+
 module.exports = function withSastaAndroid(config) {
+  config = withCompressedNativeLibs(config)
   return withAppBuildGradle(config, (cfg) => {
     let g = cfg.modResults.contents
     if (!g.includes('sastaRelease')) {
