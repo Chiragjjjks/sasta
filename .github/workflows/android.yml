@@ -77,6 +77,14 @@ jobs:
           VERSION="$(node -p "require('./package.json').version")"
           cp android/app/build/outputs/apk/release/app-release.apk "out/Sasta-v${VERSION}-android.apk"
           "$ANDROID_HOME/build-tools/37.0.0/apksigner" verify --verbose --print-certs out/*.apk
+          # Phones download this over mobile data. Compressed native libraries keep it near 27 MB;
+          # if it grows past 40 MB, the expo.useLegacyPackaging setting has probably been lost.
+          SIZE="$(stat -c %s out/*.apk)"
+          echo "APK size: $SIZE bytes"
+          if [ "$SIZE" -gt 40000000 ]; then
+            echo "::error::The APK is $SIZE bytes, over the 40 MB budget. Check plugins/withSastaAndroid.js (compressed native libraries)."
+            exit 1
+          fi
           (cd out && sha256sum *.apk > SHA256SUMS.txt)
       - name: Check packaged APK permissions
         run: |

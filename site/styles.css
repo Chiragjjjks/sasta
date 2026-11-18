@@ -456,6 +456,8 @@ summary i::after { transform: rotate(90deg); }
 details[open] summary i::after { transform: rotate(0); }
 .faq__a { overflow: hidden; }
 .faq__a p { padding: 0 40px 28px 0; color: var(--mid); max-width: 640px; font-size: 16.5px; }
+.faq__a p:not(:last-child) { padding-bottom: 12px; }
+.faq__a b { color: var(--ink); font-weight: 600; }
 
 /* ---------- closing / footer ---------- */
 .closing { position: relative; text-align: center; padding: clamp(110px, 16vw, 230px) var(--pad); overflow: hidden; }
