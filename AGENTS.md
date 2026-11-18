@@ -72,6 +72,12 @@ v0.9.0 published 2026-10-31 (versionCode 900, notes in `docs/releases/v0.9.0.md`
 v0.10.0 published 2026-11-08 (versionCode 1000, notes in `docs/releases/v0.10.0.md`):
 - **Results grid (2026-11-08, owner's request after seeing a comparison app's layout):** grocery results, and each section of a several-product search, are a two-column grid of `ui/ProductTile.tsx`. Each tile has the saving against MRP (`discountPercent`), Save and Add on the photo, then brand, name and pack, then **one row per app**: mark, ETA, MRP struck through, price, app name and price per 100 g, 100 ml or piece (`unitPrice` in `core/normalize.ts`). Rows at the lowest price are tinted green, so ties read as ties; out-of-stock apps are dimmed. The status line reads "Checked N apps · M products", which `scripts/android-smoke.py` waits for. `ProductCard` is gone; the compare screen, lists and cart keep `OfferSlots`.
 
+v0.10.1 prepared 2026-11-18 (versionCode 1001, notes in `docs/releases/v0.10.1.md`), after the owner reported the APK would not download or open:
+- **Smaller APK:** `plugins/withSastaAndroid.js` sets `expo.useLegacyPackaging=true`, so native libraries are compressed inside the APK: 27 MB instead of 60 MB (47 MB of v0.10.0 was uncompressed `.so` files). CI fails the build past 40 MB.
+- **Findings** (details in `docs/ANDROID-INSTALL.md`): the v0.10.0 download is intact (checksum matches); it installs fresh, updates over v0.9.1 and v0.8.0, and opens on an ARM64 Android 15 emulator. Every main APK since v0.1.0 shares one signing key with rising versionCodes. Only the extra `-android-debug.apk` files on v0.1.0–v0.3.2 have their own keys, and installing over one fails ("App not installed"). The APK has no 32-bit ARM code.
+- **Site FAQ:** "The APK won't download, install or open" covers these cases.
+- Seen on the emulator, not yet fixed: a first search found 0 products. Blinkit returned an HTML page instead of JSON, and Zepto/Flipkart/Amazon timed out while the Mac's network was busy. "Checked 1 app" is shown even when no app answered (`Math.max(1, …)` in `(tabs)/index.tsx`).
+
 ## Next, in order
 
 Confirm on the owner's phone that v0.10.0 installs with Play Protect enabled (emulator installation does not test Google's install-time classification). Then check, with live prices: BigBasket, Zepto's fallback, Flipkart Minutes and Amazon Now (their readers run for the first time in v0.9.1), Connect all, the results grid, several-product search and Food. Every release still needs explicit owner approval.

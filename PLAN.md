@@ -21,7 +21,7 @@ The user types `lays`.
 
 `lays cream onion` runs the same flow, pre-filtered to Cream & Onion.
 
-## Current status (v0.10.0)
+## Current status (v0.10.1)
 
 The app now lives in `mobile/` (React Native + Expo). Root `src/` and `android/` are the old Capacitor app, kept for reference.
 
@@ -39,6 +39,8 @@ UI (v0.7.0): light/dark with an Appearance switch; every price is shown as a ran
 Lists (v0.7.0): opening a list checks every item on every app, ranks apps per item, lets you pick an app per item, and shows the cheapest plan by app (`core/lists.ts` `listPlan`, `rankedOffers`, `singleAppTotals`).
 
 Several products at once (v0.9.0): Grocery accepts up to 5 products in one search and shows the best price for each, then one section per product. See `docs/MULTI_SEARCH_PLAN.md`.
+
+Smaller APK (v0.10.1): native libraries are compressed inside the APK (`expo.useLegacyPackaging` in `plugins/withSastaAndroid.js`), 27 MB instead of 60 MB; CI fails past 40 MB. Install troubleshooting: `docs/ANDROID-INSTALL.md`.
 
 Results grid (v0.10.0): grocery results and several-product sections are a two-column grid of `ui/ProductTile.tsx`, one row per app with ETA, MRP, price and price per 100 g.
 
